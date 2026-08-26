@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>باخت | نظام التعرف على المواد</title>
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.20.0/dist/tf.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/mobilenet@2.1.1/dist/mobilenet.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/tesseract.js@5.1.0/dist/tesseract.min.js"></script>
+<style>
+:root{--bg:#f2f7f6;--card:#fff;--pri:#0f9d8f;--pri-d:#0b7c72;--amb:#f2a541;--amb-d:#d9822a;--txt:#22333b;--mut:#7b8a91;--dng:#e05252;--rad:18px;--sh:0 6px 18px rgba(20,60,55,.08)}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+[hidden]{display:none!important}
+body{margin:0;font-family:'Tajawal',Tahoma,sans-serif;background:var(--bg);color:var(--txt)}
+header{display:flex;gap:12px;align-items:center;padding:18px 16px;background:linear-gradient(135deg,#e7f5f2,#fdf3e3)}
+header .logo{font-size:34px}
+header h1{margin:0;font-size:20px;font-weight:800}
+header p{margin:2px 0 0;font-size:12px;color:var(--mut)}
+main{max-width:860px;margin:auto;padding:14px}
+.actions{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-bottom:18px}
+.action{border:none;border-radius:var(--rad);padding:18px 12px;font-family:inherit;font-size:16px;font-weight:800;cursor:pointer;box-shadow:var(--sh);transition:.2s;display:flex;flex-direction:column;gap:8px;align-items:center;color:#fff}
+.action:hover{transform:translateY(-3px)}
+.action:active{transform:scale(.96)}
+.action .ico{font-size:26px}
+.action.add{background:var(--pri)} .action.scan{background:var(--amb)} .action.list{background:#5b7c99}
+.action b{background:#ffffff33;border-radius:20px;padding:0 10px;font-size:13px}
+.search-wrap{position:relative;margin-bottom:14px}
+#searchInput{width:100%;border:2px solid #dcebe8;border-radius:14px;padding:13px 16px;font-family:inherit;font-size:15px;background:#fff;outline:none;transition:.2s}
+#searchInput:focus{border-color:var(--pri)}
+.suggest{position:absolute;top:105%;right:0;left:0;background:#fff;border-radius:14px;box-shadow:var(--sh);z-index:30;overflow:hidden}
+.suggest div{padding:11px 16px;cursor:pointer;font-size:14px;border-bottom:1px solid #f0f4f3}
+.suggest div:hover{background:#eef8f6}
+.suggest .tt{color:var(--mut);font-size:12px;cursor:default;background:#fafcfc}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px}
+.card{background:var(--card);border-radius:var(--rad);overflow:hidden;box-shadow:var(--sh);cursor:pointer;transition:.2s}
+.card:hover{transform:translateY(-3px)}
+.card img{width:100%;height:110px;object-fit:cover;background:#eee}
+.card h4{margin:8px 10px 2px;font-size:14px}
+.card p{margin:0 10px 10px;font-size:11px;color:var(--mut);min-height:14px}
+.empty{text-align:center;color:var(--mut);padding:30px 0;font-size:14px}
+.overlay{position:fixed;inset:0;background:rgba(15,35,32,.45);backdrop-filter:blur(3px);z-index:50;display:flex;align-items:center;justify-content:center;padding:12px}
+.modal{background:#fff;border-radius:22px;width:min(560px,96vw);max-height:92vh;overflow:auto;padding:16px;animation:up .25s}
+@keyframes up{from{transform:translateY(24px);opacity:0}}
+.m-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+.m-head h2{margin:0;font-size:18px}
+.x{border:none;background:#f1f5f4;width:34px;height:34px;border-radius:50%;font-size:15px;cursor:pointer}
+label{display:block;font-size:13px;font-weight:700;margin:10px 0 5px}
+input[type=text],textarea{width:100%;border:2px solid #dcebe8;border-radius:12px;padding:11px 12px;font-family:inherit;font-size:14px;outline:none;background:#fff}
+textarea{min-height:74px;resize:vertical}
+.row{display:flex;gap:10px;margin-top:14px;flex-wrap:wrap}
+.btn{border:none;border-radius:13px;padding:12px 16px;font-family:inherit;font-size:14px;font-weight:800;cursor:pointer;transition:.15s;flex:1}
+.btn:active{transform:scale(.96)}
+.btn.primary{background:var(--pri);color:#fff}
+.btn.ghost{background:#eef4f2;color:var(--txt)}
+.btn.danger{background:#fdecec;color:var(--dng)}
+.cam-video{width:100%;max-height:340px;object-fit:cover;border-radius:16px;background:#000}
+.cam-bar{display:flex;gap:14px;justify-content:center;align-items:center;margin-top:12px}
+.shot{width:64px;height:64px;border-radius:50%;border:4px solid #fff;background:var(--dng);box-shadow:var(--sh);cursor:pointer;font-size:20px;color:#fff}
+.shot:active{transform:scale(.9)}
+#prevImgAdd,.best img,.vimg{width:100%;border-radius:16px}
+.spin{width:44px;height:44px;border:4px solid #d7e5e3;border-top-color:var(--pri);border-radius:50%;margin:14px auto;animation:sp 1s linear infinite}
+@keyframes sp{to{transform:rotate(360deg)}}
+.bar{height:8px;background:#e5efec;border-radius:8px;overflow:hidden;margin-top:10px}
+.bar i{display:block;height:100%;width:0;background:var(--pri);transition:width .3s}
+.prog-txt{text-align:center;font-size:13px;color:var(--mut)}
+.switch{display:flex;gap:8px;align-items:center;font-size:13px;margin-bottom:10px;background:#f4faf8;padding:10px 12px;border-radius:12px}
+.switch input{accent-color:var(--pri);width:18px;height:18px}
+.best{border:2px solid var(--pri);border-radius:16px;padding:12px;margin-bottom:12px;cursor:pointer}
+.best.mid{border-color:var(--amb)} .best.low{border-color:var(--dng)}
+.best .imgs{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px}
+.best .imgs span{display:block;text-align:center;font-size:11px;color:var(--mut)}
+.best .imgs img{height:130px;object-fit:cover}
+.pct{display:inline-block;background:var(--pri);color:#fff;border-radius:20px;padding:3px 14px;font-weight:800;font-size:14px}
+.pct.mid{background:var(--amb)} .pct.low{background:var(--dng)}
+.cand{display:flex;align-items:center;gap:10px;background:#f7fbfa;border-radius:12px;padding:8px 10px;margin-bottom:8px;cursor:pointer}
+.cand img{width:44px;height:44px;border-radius:10px;object-fit:cover}
+.cand .nm{flex:1;font-size:13px;font-weight:700}
+.cand .cb{width:90px;height:7px;background:#e2ede a}
+.cand .cb{width:90px;height:7px;background:#e2edea;border-radius:7px;overflow:hidden}
+.cand .cb i{display:block;height:100%;background:var(--pri)}
+.cand .pv{font-size:12px;font-weight:800;width:44px;text-align:left}
+#toast{position:fixed;bottom:18px;right:50%;transform:translateX(50%);background:#22333b;color:#fff;border-radius:12px;padding:11px 20px;font-size:13px;z-index:99;box-shadow:var(--sh);max-width:90vw;text-align:center}
+#toast.err{background:var(--dng)}
+</style>
+</head>
+<body>
+<header>
+  <div class="logo">🎨</div>
+  <div><h1>باخت — التعرّف على المواد</h1><p>أضف موادك بالصورة، صوّر أي علبة، وتعرّف عليها فوراً</p></div>
+</header>
+<main>
+  <section class="actions">
+    <button class="action add" id="btnAdd"><span class="ico">➕</span>إضافة مادة</button>
+    <button class="action scan" id="btnScan"><span class="ico">📷</span>التقط صورة للمادة</button>
+    <button class="action list" id="btnList"><span class="ico">📦</span>قائمة المواد <b id="countBadge">0</b></button>
+  </section>
+  <section id="listSec">
+    <div class="search-wrap">
+      <input type="text" id="searchInput" placeholder="🔍 بحث ذكي: اكتب جزءاً من الاسم أو التفاصيل…">
+      <div class="suggest" id="suggest" hidden></div>
+    </div>
+    <div class="grid" id="grid"></div>
+    <p class="empty" id="emptyMsg" hidden></p>
+  </section>
+</main>
+
+<!-- نافذة إضافة مادة -->
+<div class="overlay" id="addModal" hidden>
+  <div class="modal">
+    <div class="m-head"><h2>إضافة مادة جديدة</h2><button class="x" data-close>✕</button></div>
+    <div id="addForm">
+      <label>اسم المادة *</label>
+      <input type="text" id="mName" placeholder="مثال: صبغة جوتن أبيض ثلجي 4 لتر">
+      <label>تفاصيل المادة</label>
+      <textarea id="mDetails" placeholder="الشركة، اللون، الحجم، الكود المطبوع على العلبة…"></textarea>
+      <div class="row">
+        <button class="btn primary" id="openCamAdd">📷 فتح الكاميرا</button>
+        <button class="btn ghost" id="fileAddBtn">🖼️ رفع صورة</button>
+        <input type="file" id="fileAdd" accept="image/*" hidden>
+      </div>
+    </div>
+    <div id="addCam" hidden>
+      <video class="cam-video" id="videoAdd" playsinline muted autoplay></video>
+      <div class="cam-bar">
+        <button class="btn ghost" id="backAdd">رجوع</button>
+        <button class="shot" id="shotAdd" title="التقاط">⬤</button>
+      </div>
+    </div>
+    <div id="addPrev" hidden>
+      <img id="prevImgAdd">
+      <div class="row">
+        <button class="btn primary" id="acceptAdd">✔ قبول وتحليل</button>
+        <button class="btn ghost" id="retakeAdd">🔁 إعادة الالتقاط</button>
+      </div>
+    </div>
+    <div id="addProg" hidden><div class="spin"></div><p class="prog-txt" id="addProgTxt">جارٍ التحليل…</p></div>
+  </div>
+</div>
+
+<!-- نافذة التعرف -->
+<div class="overlay" id="scanModal" hidden>
+  <div class="modal">
+    <div class="m-head"><h2>التعرف على المادة</h2><button class="x" data-close>✕</button></div>
+    <label class="switch"><input type="checkbox" id="ocrToggle" checked> قراءة النص المكتوب على العلبة (تعرف ذكي من زوايا مختلفة)</label>
+    <div id="scanCam">
+      <video class="cam-video" id="videoScan" playsinline muted autoplay></video>
+      <div class="cam-bar">
+        <button class="btn ghost" id="fileScanBtn">🖼️ صورة</button>
+        <button class="shot" id="shotScan" title="التقاط">⬤</button>
+        <input type="file" id="fileScan" accept="image/*" hidden>
+      </div>
+    </div>
+    <div id="scanProg" hidden><div class="spin"></div><p class="prog-txt" id="scanProgTxt"></p><div class="bar"><i id="scanBar"></i></div></div>
+    <div id="scanRes" hidden>
+      <div id="bestCard"></div>
+      <h3 style="font-size:15px">كل النتائج المرشحة:</h3>
+      <div id="candList"></div>
+      <div class="row"><button class="btn primary" id="rescan">🔁 تصوير مادة أخرى</button></div>
+    </div>
+  </div>
+</div>
+
+<!-- نافذة عرض مادة -->
+<div class="overlay" id="viewModal" hidden>
+  <div class="modal">
+    <div class="m-head"><h2 id="vName"></h2><button class="x" data-close>✕</button></div>
+    <img class="vimg" id="vImg">
+    <p id="vDetails" style="font-size:14px;white-space:pre-wrap"></p>
+    <button class="btn danger" id="vDelete">🗑 حذف المادة</button>
+  </div>
+</div>
+
+<div id="toast" hidden></div>
+
+<script>
+'use strict';
+const $=id=>document.getElementById(id);
+const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+let MATS=[], model=null, currentStream=null, currentViewId=null, capturedAdd=null;
+
+/* ---------- أدوات عامة ---------- */
+function toast(msg,type){const t=$('toast');t.textContent=msg;t.className=type||'';t.hidden=false;clearTimeout(t._h);t._h=setTimeout(()=>t.hidden=true,3500);}
+function esc(s){return (s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+function genId(){return Date.now().toString(36)+Math.random().toString(36).slice(2,7);}
+function imgEl(url){return new Promise((res,rej)=>{const i=new Image();i.onload=()=>res(i);i.onerror=rej;i.src=url;});}
+function scaleDataUrl(url,maxW,q){return new Promise(res=>{const i=new Image();i.onload=()=>{const s=Math.min(1,maxW/i.width);const c=document.createElement('canvas');c.width=Math.round(i.width*s);c.height=Math.round(i.height*s);c.getContext('2d').drawImage(i,0,0,c.width,c.height);res(c.toDataURL('image/jpeg',q||.85));};i.src=url;});}
+
+/* ---------- قاعدة البيانات (IndexedDB) ---------- */
+let dbP=null;
+function getDB(){if(!dbP){dbP=new Promise((res,rej)=>{const r=indexedDB.open('bahtDB',1);r.onupgradeneeded=()=>r.result.createObjectStore('materials',{keyPath:'id'});r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error);});}return dbP;}
+async function dbAll(){const db=await getDB();return new Promise(res=>{const q=db.transaction('materials','readonly').objectStore('materials').getAll();q.onsuccess=()=>res(q.result||[]);q.onerror=()=>res([]);});}
+async function dbPut(m){const db=await getDB();return new Promise(res=>{const tx=db.transaction('materials','readwrite');tx.objectStore('materials').put(m);tx.oncomplete=res;});}
+async function dbDel(id){const db=await getDB();return new Promise(res=>{const tx=db.transaction('materials','readwrite');tx.objectStore('materials').delete(id);tx.oncomplete=res;});}
+
+/* ---------- الكاميرا ---------- */
+async function startCamera(video){stopCamera();try{currentStream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'environment'},audio:false});video.srcObject=currentStream;await video.play();return true;}catch(e){toast('تعذر فتح الكاميرا: '+e.message+' — يمكنك استخدام زر رفع صورة','err');return false;}}
+function stopCamera(){if(currentStream){currentStream.getTracks().forEach(t=>t.stop());currentStream=null;}}
+function capture(video){const w=video.videoWidth,h=video.videoHeight;if(!w)return null;const s=Math.min(1,640/w);const c=document.createElement('canvas');c.width=Math.round(w*s);c.height=Math.round(h*s);c.getContext('2d').drawImage(video,0,0,c.width,c.height);return c.toDataURL('image/jpeg',.9);}
+
+/* ---------- التحليل البصري ---------- */
+async function getEmbed(url){if(!model)model=await mobilenet.load({version:2,alpha:0.75});const img=await imgEl(url);const t=model.infer(img,true);const arr=Array.from(await t.data());t.dispose();return arr;}
+function histFromDataUrl(url){return new Promise(res=>{const i=new Image();i.onload=()=>{const S=64,c=document.createElement('canvas');c.width=S;c.height=S;const x=c.getContext('2d');x.drawImage(i,0,0,S,S);const d=x.getImageData(0,0,S,S).data,h=new Array(64).fill(0);for(let p=0;p<d.length;p+=4){h[Math.min(3,d[p]>>6)*16+Math.min(3,d[p+1]>>6)*4+Math.min(3,d[p+2]>>6)]++;}res(h.map(v=>v/(S*S)));};i.src=url;});}
+function cosine(a,b){let d=0,na=0,nb=0;for(let i=0;i<Math.min(a.length,b.length);i++){d+=a[i]*b[i];na+=a[i]*a[i];nb+=b[i]*b[i];}return d/(Math.sqrt(na)*Math.sqrt(nb)+1e-9);}
+function histInter(a,b){let s=0;for(let i=0;i<a.length;i++)s+=Math.min(a[i],b[i]);return s;}
+
+/* ---------- OCR ومطابقة النص ---------- */
+function ocrText(url,onP){return new Promise(async res=>{try{if(!window.Tesseract)return res('');const r=await Tesseract.recognize(url,'ara+eng',{logger:m=>{if(onP&&m.status==='recognizing text')onP(Math.round(m.progress*100));}});res(r.data.text||'');}catch(e){res('');}});}
+function norm(s){return (s||'').toLowerCase().replace(/[\u064B-\u0652\u0640]/g,'').replace(/[أإآ]/g,'ا').replace(/ة/g,'ه').replace(/ى/g,'ي').replace(/[^\p{L}\p{N}]+/gu,' ').trim();}
+function lev(a,b){if(a===b)return 0;const m=a.length,n=b.length;if(!m||!n)return m||n;let p=Array.from({length:n+1},(_,i)=>i);for(let i=1;i<=m;i++){const c=[i];for(let j=1;j<=n;j++)c[j]=Math.min(p[j]+1,c[j-1]+1,p[j-1]+(a[i-1]===b[j-1]?0:1));p=c;}return p[n];}
+function ocrScoreFor(text,m){const hay=norm(text);if(!hay)return 0;const toks=(norm(m.name)+' '+norm(m.details)).split(' ').filter(w=>w.length>=3);if(!toks.length)return 0;let hit=0;for(const w of toks){if(hay.includes(w)){hit++;continue;}for(const p of hay.split(' ')){if(p.length>=3&&lev(p,w)<=1){hit++;break;}}}return Math.min(1,hit/toks.length);}
+
+/* ---------- البحث الذكي ---------- */
+function searchScore(q,m){const nq=norm(q);if(!nq)return 0;const name=norm(m.name),det=norm(m.details);let s=0;if(name===nq)s+=120;else if(name.includes(nq))s+=100;else if(det.includes(nq))s+=60;for(const t of nq.split(' ')){if(t.length<2)continue;if(name.includes(t))s+=30;else if(det.includes(t))s+=15;else for(const w of name.split(' '))if(w.length>=3&&lev(w,t)<=1){s+=18;break;}}return s;}
+
+/* ---------- العرض ---------- */
+function renderGrid(list,msg){$('grid').innerHTML=list.map(m=>`<div class="card" data-open="${m.id}"><img src="${m.thumb}" alt=""><h4>${esc(m.name)}</h4><p>${esc((m.details||'').slice(0,50))}</p></div>`).join('');const e=$('emptyMsg');if(!list.length){e.hidden=false;e.textContent=msg||'لا توجد مواد بعد — ابدأ بزر «إضافة مادة» ➕';}else e.hidden=true;}
+function renderAll(){$('countBadge').textContent=MATS.length;$('searchInput').value='';$('suggest').hidden=true;renderGrid(MATS);}
+function openView(id){const m=MATS.find(x=>x.id===id);if(!m)return;currentViewId=id;$('vName').textContent=m.name;$('vImg').src=m.thumb;$('vDetails').textContent=m.details||'لا توجد تفاصيل.';$('viewModal').hidden=false;}
+
+/* ---------- النوافذ ---------- */
+function closeModals(){document.querySelectorAll('.overlay').forEach(o=>o.hidden=true);stopCamera();}
+document.querySelectorAll('[data-close]').forEach(b=>b.onclick=closeModals);
+document.querySelectorAll('.overlay').forEach(o=>o.addEventListener('click',e=>{if(e.target===o)closeModals();}));
+document.addEventListener('click',e=>{const c=e.target.closest('[data-open]');if(c)openView(c.dataset.open);});
+
+/* ---------- إضافة مادة ---------- */
+$('btnAdd').onclick=()=>{$('addModal').hidden=false;$('addForm').hidden=false;$('addCam').hidden=true;$('addPrev').hidden=true;$('addProg').hidden=true;};
+$('openCamAdd').onclick=async()=>{$('addForm').hidden=true;$('addPrev').hidden=true;$('addCam').hidden=false;await startCamera($('videoAdd'));};
+$('backAdd').onclick=()=>{stopCamera();$('addCam').hidden=true;$('addForm').hidden=false;};
+$('shotAdd').onclick=()=>{const u=capture($('videoAdd'));if(!u)return toast('انتظر جاهزية الكاميرا','err');capturedAdd=u;$('prevImgAdd').src=u;stopCamera();$('addCam').hidden=true;$('addPrev').hidden=false;};
+$('retakeAdd').onclick=async()=>{$('addPrev').hidden=true;$('addCam').hidden=false;await startCamera($('videoAdd'));};
+$('fileAddBtn').onclick=()=>$('fileAdd').click();
+$('fileAdd').onchange=async e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=async()=>{capturedAdd=await scaleDataUrl(r.result,640,.9);$('prevImgAdd').src=capturedAdd;$('addForm').hidden=true;$('addCam').hidden=true;$('addPrev').hidden=false;};r.readAsDataURL(f);};
+$('acceptAdd').onclick=async()=>{
+  const name=$('mName').value.trim();
+  if(!name)return toast('اكتب اسم المادة أولاً','err');
+  if(!capturedAdd)return toast('التقط صورة أولاً','err');
+  $('addPrev').hidden=true;$('addProg').hidden=false;$('addProgTxt').textContent='جارٍ تحميل نموذج الذكاء الاصطناعي (أول مرة فقط)…';
+  try{
+    const emb=await getEmbed(capturedAdd);
+    $('addProgTxt').textContent='جارٍ تحليل الألوان وتجهيز المعرّف…';
+    const hist=await histFromDataUrl(capturedAdd);
+    const thumb=await scaleDataUrl(capturedAdd,240,.72);
+    const mat={id:genId(),name,details:$('mDetails').value.trim(),thumb,emb:emb.map(v=>+v.toFixed(4)),hist,ts:Date.now()};
+    await dbPut(mat);MATS.unshift(mat);renderAll();closeModals();
+    $('mName').value='';$('mDetails').value='';capturedAdd=null;
+    toast('تمت إضافة «'+name+'» وتحليل صورتها بنجاح ✔');
+  }catch(e){console.error(e);toast('خطأ أثناء التحليل: '+e.message,'err');$('addProg').hidden=true;$('addPrev').hidden=false;}
+};
+
+/* ---------- التعرف ---------- */
+$('btnScan').onclick=async()=>{if(!MATS.length)return toast('أضف مادة واحدة على الأقل أولاً','err');$('scanModal').hidden=false;$('scanCam').hidden=false;$('scanRes').hidden=true;$('scanProg').hidden=true;await startCamera($('videoScan'));};
+$('shotScan').onclick=()=>{const u=capture($('videoScan'));if(!u)return toast('انتظر جاهزية الكاميرا','err');stopCamera();recognize(u);};
+$('fileScanBtn').onclick=()=>$('fileScan').click();
+$('fileScan').onchange=async e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{stopCamera();recognize(r.result);};r.readAsDataURL(f);};
+$('rescan').onclick=async()=>{$('scanRes').hidden=true;$('scanCam').hidden=false;await startCamera($('videoScan'));};
+function setScanProg(t,p){$('scanProgTxt').textContent=t;$('scanBar').style.width=p+'%';}
+
+async function recognize(url){
+  $('scanCam').hidden=true;$('scanRes').hidden=true;$('scanProg').hidden=false;setScanProg('جارٍ التحليل البصري بالشبكة العصبية…',15);
+  try{
+    const emb=await getEmbed(url);
+    const hist=await histFromDataUrl(url);
+    setScanProg('مطابقة الشكل والألوان…',45);
+    let results=MATS.map(m=>{
+      const v=clamp((cosine(emb,m.emb)-0.45)/0.55,0,1);
+      const h=clamp((histInter(hist,m.hist)-0.45)/0.55,0,1);
+      return {m,v,h,s:.7*v+.3*h};
+    }).sort((a,b)=>b.s-a.s);
+    if($('ocrToggle').checked&&(!results[0]||results[0].s<0.85)){
+      setScanProg('قراءة النص المكتوب على العلبة…',60);
+      const small=await scaleDataUrl(url,800,.85);
+      const txt=await ocrText(small,p=>setScanProg('قراءة النص من العلبة… '+p+'%',60+Math.round(p*.3)));
+      if(txt)results=results.map(r=>({...r,s:.55*r.v+.2*r.h+.25*ocrScoreFor(txt,r.m)})).sort((a,b)=>b.s-a.s);
+    }
+    setScanProg('تجهيز النتائج…',95);
+    renderResults(url,results);
+  }catch(e){console.error(e);toast('تعذر التحليل: '+e.message,'err');$('scanCam').hidden=false;}
+  $('scanProg').hidden=true;
+}
+function renderResults(url,results){
+  const best=results[0],bc=$('bestCard');
+  if(!best){bc.innerHTML='<p class="empty">لا توجد مواد محفوظة.</p>';}
+  else{
+    const pct=Math.round(best.s*100),cls=pct>=60?'':(pct>=35?'mid':'low');
+    bc.innerHTML=`<div class="best ${cls}" data-open="${best.m.id}">
+      <div class="imgs"><div><img src="${url}"><span>الصورة الملتقطة</span></div><div><img src="${best.m.thumb}"><span>الصورة المخزّنة</span></div></div>
+      <span class="pct ${cls}">نسبة التطابق ${pct}%</span>
+      <h3 style="margin:8px 0 4px">${esc(best.m.name)}</h3>
+      <p style="margin:0;font-size:13px;color:var(--mut)">${esc(best.m.details||'')}</p></div>`;
+  }
+  $('candList').innerHTML=results.slice(0,5).map(r=>{const p=Math.round(r.s*100);return `<div class="cand" data-open="${r.m.id}"><img src="${r.m.thumb}"><span class="nm">${esc(r.m.name)}</span><span class="cb"><i style="width:${p}%"></i></span><span class="pv">${p}%</span></div>`;}).join('');
+  $('scanRes').hidden=false;
+}
+
+/* ---------- البحث ---------- */
+$('searchInput').addEventListener('input',e=>{
+  const q=e.target.value.trim(),sg=$('suggest');
+  if(!q){renderGrid(MATS);sg.hidden=true;return;}
+  const scored=MATS.map(m=>({m,s:searchScore(q,m)})).filter(x=>x.s>0).sort((a,b)=>b.s-a.s);
+  renderGrid(scored.map(x=>x.m),'لا نتائج مطابقة — جرّب كلمة أبسط');
+  if(scored.length){sg.innerHTML='<div class="tt">نتائج متوقعة:</div>'+scored.slice(0,5).map(x=>`<div data-open="${x.m.id}">🔹 ${esc(x.m.name)} <small style="color:var(--mut)">${Math.min(100,Math.round(x.s/1.5))}%</small></div>`).join('');sg.hidden=false;}
+  else sg.hidden=true;
+});
+$('searchInput').addEventListener('blur',()=>setTimeout(()=>$('suggest').hidden=true,250));
+
+/* ---------- حذف ---------- */
+$('vDelete').onclick=async()=>{if(!currentViewId)return;if(!confirm('حذف المادة نهائياً؟'))return;await dbDel(currentViewId);MATS=MATS.filter(m=>m.id!==currentViewId);renderAll();closeModals();toast('تم حذف المادة 🗑');};
+$('btnList').onclick=()=>$('listSec').scrollIntoView({behavior:'smooth'});
+
+/* ---------- بدء ---------- */
+(async()=>{try{MATS=await dbAll();MATS.sort((a,b)=>b.ts-a.ts);}catch(e){MATS=[];}renderAll();})();
+</script>
+</body>
+</html>
