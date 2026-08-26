@@ -27,7 +27,7 @@ header{max-width:960px;margin:14px auto 0;padding:0 12px}
 .btn:active{transform:scale(.96)}
 .btn.pri{background:var(--pri);color:#fff}.btn.grn{background:var(--grn);color:#fff}
 .btn.amb{background:var(--amb);color:#fff}.btn.ghost{background:#eef1f8;color:var(--txt)}
-.btn.danger{background:#fdecec;color:var(--dng)}
+.btn.danger{background:var(--dng);color:#fff}
 main{max-width:960px;margin:0 auto;padding:14px 12px 60px}
 .card{background:var(--card);border-radius:var(--rad);box-shadow:var(--sh);padding:14px;margin-bottom:14px}
 .sec-h{display:flex;gap:10px;align-items:center}
@@ -67,7 +67,6 @@ main{max-width:960px;margin:0 auto;padding:14px 12px 60px}
 .trow i{font-style:normal;font-size:11px;border-radius:12px;padding:2px 8px}
 .trow .q{background:#eef1f8;color:var(--pri2)}.trow .p{background:#fdf3e3;color:#a26a08}
 .empty{text-align:center;color:var(--mut);padding:26px 0;font-size:14px}
-.hint{font-size:12px;color:var(--mut);margin:6px 0}
 .overlay{position:fixed;inset:0;background:rgba(20,25,50,.45);backdrop-filter:blur(3px);z-index:50;display:flex;align-items:center;justify-content:center;padding:12px}
 .modal{background:#fff;border-radius:22px;width:min(600px,96vw);max-height:92vh;overflow:auto;padding:16px;animation:up .25s}
 @keyframes up{from{transform:translateY(24px);opacity:0}}
@@ -91,18 +90,24 @@ textarea:focus{border-color:var(--pri)}
 .bar i{display:block;height:100%;width:0;background:var(--pri);transition:width .3s}
 .prog-txt{text-align:center;font-size:12px;color:var(--mut);margin:6px 0 0}
 #imgPrev{width:100%;border-radius:14px;margin-top:8px}
+.imth{position:relative;display:inline-block;margin:4px}
+.imth img{width:64px;height:64px;border-radius:12px;object-fit:cover}
+.imth button{position:absolute;top:-6px;left:-6px;width:22px;height:22px;border:none;border-radius:50%;background:var(--dng);color:#fff;cursor:pointer;font-size:11px}
+#imgStrip{margin-top:6px}
 .best{border:2px solid var(--grn);border-radius:16px;padding:12px;margin-bottom:12px;cursor:pointer}
-.best.mid{border-color:var(--amb)}.best.low{border-color:var(--dng)}
+.best.mid{border-color:var(--amb)}.best.low{border-color:var(--dng);cursor:default}
 .best .imgs{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px}
 .best .imgs img{width:100%;height:130px;object-fit:cover;border-radius:12px}
 .best .imgs span{display:block;text-align:center;font-size:11px;color:var(--mut)}
 .pct{display:inline-block;background:var(--grn);color:#fff;border-radius:20px;padding:3px 14px;font-weight:800}
 .pct.mid{background:var(--amb)}.pct.low{background:var(--dng)}
-.cand{display:flex;align-items:center;gap:10px;background:#f7f8ff;border:1px solid #e8ebf7;border-radius:12px;padding:10px;margin-bottom:8px;cursor:pointer}
-.cand:active{background:#eef2ff}
+.mini{display:inline-block;background:#eef1f8;color:var(--pri2);border-radius:14px;padding:2px 10px;font-size:11px;font-weight:800;margin-right:4px}
+.cand{display:flex;align-items:center;gap:10px;background:#f7f8ff;border-radius:12px;padding:8px 10px;margin-bottom:8px;cursor:pointer}
+.cand img{width:44px;height:44px;border-radius:10px;object-fit:cover}
 .cand .nm{flex:1;font-size:13px;font-weight:700}
 .cand .pv{font-size:12px;font-weight:800;color:var(--pri2)}
-.cand .add{font-size:11px;background:#e7f7ee;color:#177a4c;border-radius:10px;padding:3px 8px;font-weight:800}
+.eye{border:none;background:#eef1f8;border-radius:10px;width:34px;height:34px;cursor:pointer;font-size:15px}
+.hint{font-size:11px;color:var(--mut);margin:4px 0 10px}
 footer{max-width:960px;margin:0 auto;padding:0 12px 26px;color:var(--mut);font-size:12px;text-align:center}
 #toast{position:fixed;bottom:18px;right:50%;transform:translateX(50%);background:#22333b;color:#fff;border-radius:12px;padding:11px 20px;font-size:13px;z-index:99;max-width:90vw;text-align:center}
 #toast.err{background:var(--dng)}
@@ -132,11 +137,11 @@ footer{max-width:960px;margin:0 auto;padding:0 12px 26px;color:var(--mut);font-s
   </section>
   <div class="statbar" id="statbar" hidden></div>
   <section id="groups"></section>
-  <p class="empty" id="emptyMsg">اضغط «تحديث من المستودع 🔄» لجلب ملف المواد من GitHub، أو «رفع ملف 📂».</p>
+  <p class="empty" id="emptyMsg">اضغط «تحديث من المستودع 🔄» لجلب ملف المواد، أو «رفع ملف 📂».</p>
 </main>
-<footer>اختصارات: Esc إغلاق • Enter التقاط/فتح • ↑↓ تنقل في نتائج البحث داخل البطاقة</footer>
+<footer>اختصارات: Esc إغلاق • Enter التقاط/فتح • ↑↓ التنقل في نتائج البحث داخل البطاقة</footer>
 
-<!-- تفاصيل مادة -->
+<!-- تفاصيل مادة + صيانة -->
 <div class="overlay" id="viewModal" hidden>
   <div class="modal">
     <div class="m-head"><h2 id="vName"></h2><button class="x" data-close>✕</button></div>
@@ -147,42 +152,63 @@ footer{max-width:960px;margin:0 auto;padding:0 12px 26px;color:var(--mut);font-s
       <label>إضافة تفاصيل تظهر مع المادة</label>
       <textarea id="noteInput" placeholder="اكتب أي ملاحظات إضافية…"></textarea>
       <div class="row"><button class="btn pri" id="saveNote">💾 حفظ التفاصيل</button></div>
-      <label>صورة المادة — تُعالج بثلاثة محركات وتُضاف كمرجع للتعرف</label>
+      <label>صور المادة المرجعية — تُعالج بالمحركات (شبكة عصبية + ألوان + OCR)</label>
       <img id="imgPrev" hidden>
+      <div id="imgStrip"></div>
+      <p class="hint" id="imgCount"></p>
       <div class="row">
-        <button class="btn amb" id="camAttach">📷 إرفاق صورة (كاميرا/رفع)</button>
-        <button class="btn danger" id="delImg" hidden>🗑 حذف الصور</button>
+        <button class="btn amb" id="camAttach">📷 فتح الكاميرا</button>
+        <button class="btn ghost" id="fileAttach">🖼 رفع صورة</button>
+        <button class="btn danger" id="delAllImg" hidden>🗑 حذف كل الصور</button>
       </div>
+      <input type="file" id="fileAttachInput" accept="image/*" hidden>
       <div id="procProg" hidden><div class="bar"><i id="procBar"></i></div><p class="prog-txt" id="procTxt"></p></div>
     </div>
   </div>
 </div>
 
-<!-- نافذة الكاميرا المعزولة -->
+<!-- الكاميرا المنعزلة -->
 <div class="overlay" id="camModal" hidden>
   <div class="modal">
-    <div class="m-head"><h2>📷 الكاميرا</h2><button class="x" id="camCancel">✕</button></div>
-    <video id="videoCam" class="cam-video" playsinline muted autoplay></video>
+    <div class="m-head"><h2>📷 الكاميرا</h2><button class="x" id="camClose">✕</button></div>
+    <video id="camVideo" class="cam-video" playsinline muted autoplay></video>
     <div class="row">
       <button class="btn danger" id="camShot">⬤ التقاط (Enter)</button>
-      <button class="btn ghost" id="camFileBtn">🖼 رفع صورة</button>
+      <button class="btn ghost" id="camUploadBtn">🖼 رفع صورة</button>
     </div>
-    <input type="file" id="camFile" accept="image/*" hidden>
+    <input type="file" id="camUpload" accept="image/*" hidden>
   </div>
 </div>
 
-<!-- نتائج التعرف -->
+<!-- التعرف على المادة -->
 <div class="overlay" id="scanModal" hidden>
   <div class="modal">
     <div class="m-head"><h2>📷 التعرف على المادة</h2><button class="x" data-close>✕</button></div>
+    <div id="scanStart">
+      <p class="hint">صوّر العلبة أو ارفع صورة — المطابقة تتم على: الشكل + الألوان + النص المطبوع + النص المخزّن. كلما أضفت صوراً مرجعية أكثر من ⚙ الصيانة صار التعرف أضمن.</p>
+      <div class="row">
+        <button class="btn amb" id="btnCamScan">📷 فتح الكاميرا</button>
+        <button class="btn ghost" id="fileScanBtn">🖼 رفع صورة</button>
+      </div>
+      <input type="file" id="fileScan" accept="image/*" hidden>
+    </div>
     <div id="scanProg" hidden><div class="bar"><i id="scanBar"></i></div><p class="prog-txt" id="scanProgTxt"></p></div>
     <div id="scanRes" hidden>
       <div id="bestCard"></div>
-      <h3 style="font-size:14px;margin:8px 0">بقية المرشحات (حتى 10):</h3>
-      <p class="hint">💡 انقر على أي مرشّح لاعتماد الصورة الملتقطة كصورةٍ إضافية له — يتقوّى التعرف مستقبلاً.</p>
+      <h3 style="font-size:14px;margin:8px 0">بقية المرشحات (12 الأكثر تشابهاً):</h3>
+      <p class="hint">اضغط على أي مرشح ⇐ سيُطلب تأكيدك ⇐ تُضاف الصورة الملتقطة كصورة مرجعية إضافية له وتُغلق النافذة. زر 👁 لفتح التفاصيل بدون إرفاق.</p>
       <div id="candList"></div>
       <div class="row"><button class="btn pri" id="rescan">🔁 تصوير مادة أخرى</button></div>
     </div>
+  </div>
+</div>
+
+<!-- تأكيد الإضافة -->
+<div class="overlay" id="confirmModal" hidden>
+  <div class="modal" style="width:min(430px,94vw)">
+    <div class="m-head"><h2>تأكيد الإضافة</h2></div>
+    <p id="confirmTxt" style="font-size:14px;line-height:1.9;margin:0"></p>
+    <div class="row"><button class="btn pri" id="confirmYes">✔ نعم، أضف الصورة</button><button class="btn ghost" id="confirmNo">✕ إلغاء</button></div>
   </div>
 </div>
 
@@ -193,22 +219,24 @@ footer{max-width:960px;margin:0 auto;padding:0 12px 26px;color:var(--mut);font-s
 const $=id=>document.getElementById(id);
 const NO_GROUP='مواد بدون بطاقة';
 const REPO_FILE='جميع المواد.xlsx';
-const REPO_URLS=['main','master'].map(b=>'https://raw.githubusercontent.com/AHMEDBRZAN/Baht/'+b+'/'+encodeURIComponent(REPO_FILE));
+const REPO_URLS=['main','master'].map(b=>'https://raw.githubusercontent.com/AHMEDBRZAN/Baht/'+b+'/'+encodeURIComponent(REPO_FILE))
+ .concat(['materials.xlsx','data.xlsx'].map(f=>'https://raw.githubusercontent.com/AHMEDBRZAN/Baht/main/'+f));
 
 let ROWS=[],ROWMAP={},GROUPS=[],IMAGES={},EXTRAS={},VIEWS={},EXP={},FILES=[];
-let currentId=null,modelP=null,camStream=null,camMode='scan',lastScanSig=null,busy=false;
+let currentId=null,model=null,tfOk=false,camStream=null,camMode=null,lastScanUrl=null;
 
 /* ---------- أدوات ---------- */
 function toast(m,t){const e=$('toast');e.textContent=m;e.className=t||'';e.hidden=false;clearTimeout(e._h);e._h=setTimeout(()=>e.hidden=true,3500);}
 function esc(s){return (s??'').toString().replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
 function short(s,n){n=n||42;s=s??'';return s.length>n?s.slice(0,n)+'…':s;}
-function parseNum(v){if(typeof v==='number')return isFinite(v)?v:0;if(v==null)return 0;let s=String(v).replace(/[٠-٩]/g,d=>'٠١٢٣٤٥٦٧٨٩'.indexOf(d)).replace(/[,،\s]/g,'');const n=parseFloat(s);return isFinite(n)?n:0;}
+function parseNum(v){if(typeof v==='number')return isFinite(v)?v:0;if(v==null)return 0;let s=String(v).replace(/[٠-٩]/g,d=>'٠١٢٤٥٦٧٨٩'.indexOf(d)).replace(/[,،\s]/g,'');const n=parseFloat(s);return isFinite(n)?n:0;}
 function fm(n){n=parseNum(n);return n?n.toLocaleString('en-US',{maximumFractionDigits:2}):'0';}
 function norm(s){return (s||'').toLowerCase().replace(/[\u064B-\u0652\u0640]/g,'').replace(/[أإآ]/g,'ا').replace(/ة/g,'ه').replace(/ى/g,'ي').replace(/[^\p{L}\p{N}]+/gu,' ').trim();}
 function lev(a,b){if(a===b)return 0;const m=a.length,n=b.length;if(!m||!n)return m||n;let p=Array.from({length:n+1},(_,i)=>i);for(let i=1;i<=m;i++){const c=[i];for(let j=1;j<=n;j++)c[j]=Math.min(p[j]+1,c[j-1]+1,p[j-1]+(a[i-1]===b[j-1]?0:1));p=c;}return p[n];}
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
 function scaleDataUrl(url,maxW,q){return new Promise(res=>{const i=new Image();i.onload=()=>{const s=Math.min(1,maxW/i.width);const c=document.createElement('canvas');c.width=Math.round(i.width*s);c.height=Math.round(i.height*s);c.getContext('2d').drawImage(i,0,0,c.width,c.height);res(c.toDataURL('image/jpeg',q||.85));};i.onerror=()=>res(url);i.src=url;});}
 function imgEl(url){return new Promise((res,rej)=>{const i=new Image();i.onload=()=>res(i);i.onerror=rej;i.src=url;});}
+function textSim(a,b){const A=norm(a).split(' ').filter(w=>w.length>=3),B=norm(b).split(' ').filter(w=>w.length>=3);if(!A.length||!B.length)return 0;let hit=0;for(const w of A){for(const p of B){if(p===w||(w.length>=4&&lev(w,p)<=1)){hit++;break;}}}return hit/A.length;}
 
 /* ---------- قاعدة البيانات ---------- */
 let dbP=null;
@@ -226,7 +254,7 @@ function parseWorkbook(buf){
     let hi=-1,col={};
     for(let i=0;i<Math.min(arr.length,30);i++){const cells=arr[i].map(c=>String(c).trim());if(cells.includes('اسم المادة')){hi=i;cells.forEach((c,j)=>col[c]=j);break;}}
     if(hi<0)return null;
-    const g=k=>col[k]??-1,rows=[];
+    const g=k=>col[k]??-1, rows=[];
     for(let i=hi+1;i<arr.length;i++){const r=arr[i];const name=String(r[g('اسم المادة')]??'').trim();
       if(!name||name==='اسم المادة')continue;
       const code=String(r[g('الرمز')]??'').trim();
@@ -245,10 +273,11 @@ function loadDataset(rows,meta){
   ROWS.forEach(r=>{const g=r.group||NO_GROUP;if(!m.has(g))m.set(g,[]);m.get(g).push(r);});
   GROUPS=[...m.entries()].map(([name,rws])=>({name,rows:rws,vis:rws,hi:-1}))
     .sort((a,b)=>((a.name===NO_GROUP)-(b.name===NO_GROUP))||a.name.localeCompare(b.name,'ar'));
-  GROUPS.forEach(g=>{if(!(g.name in EXP))EXP[g.name]=true;if(!VIEWS[g.name])VIEWS[g.name]='table';});
+  GROUPS.forEach(g=>{EXP[g.name]=false;if(!VIEWS[g.name])VIEWS[g.name]='table';}); /* البطاقات مغلقة افتراضياً */
   $('statbar').hidden=false;
   $('statbar').textContent='📊 '+ROWS.length+' مادة موزعة على '+GROUPS.length+' بطاقة مجموعة'+(meta?' — المصدر: '+meta.name:'');
-  $('emptyMsg').hidden=true;renderGroups();
+  $('emptyMsg').hidden=true;
+  renderGroups();
 }
 function groupEl(name){return [...document.querySelectorAll('.gcard')].find(c=>c.dataset.g===name);}
 function renderGroups(){
@@ -269,7 +298,8 @@ function renderGroups(){
         </div>
         <div class="g-content"></div>
       </div>
-    </div>`;}).join('');
+    </div>`;
+  }).join('');
   GROUPS.forEach(g=>{if(EXP[g.name])renderGroupContent(g.name);});
 }
 function renderGroupContent(name){
@@ -293,7 +323,7 @@ function searchScore(q,r){const nq=norm(q);if(!nq)return 0;let s=0;
     else for(const w of r.n.split(' '))if(w.length>=3&&lev(w,t)<=1){s+=18;break;}}
   return s;}
 
-/* ---------- الملفات ---------- */
+/* ---------- الملفات المحلية ---------- */
 function renderFiles(){
   $('filesList').innerHTML=FILES.length?FILES.map(f=>`<div class="file-item">
     <div class="fi">📗</div><div class="meta"><b>${esc(f.name)}</b><small>${new Date(f.ts).toLocaleString('ar-IQ')} • ${f.rows.length} مادة</small></div>
@@ -307,7 +337,7 @@ $('btnRepo').onclick=async()=>{toast('جارٍ الجلب من المستودع�
   for(const u of REPO_URLS){try{const r=await fetch(u,{cache:'no-store'});if(!r.ok)continue;
     const buf=await r.arrayBuffer();if(buf.byteLength<1000)continue;
     const rows=parseWorkbook(buf);if(rows){loadDataset(rows,{name:REPO_FILE});toast('تم الجلب من المستودع ✔ '+rows.length+' مادة');return;}}catch(e){}}
-  toast('تعذر الجلب — تأكد أن الملف مرفوع باسم «'+REPO_FILE+'» في جذر المستودع','err');};
+  toast('تعذر الجلب — تأكد أن الملف باسم «'+REPO_FILE+'» في جذر المستودع، أو استخدم «رفع ملف»','err');};
 $('btnUpload').onclick=()=>$('filePick').click();
 $('filePick').onchange=e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();
   r.onload=()=>{const rows=parseWorkbook(r.result);rows?(loadDataset(rows,{name:f.name}),toast('تم تحميل «'+f.name+'» ✔')):toast('ملف غير مدعوم','err');};
@@ -343,54 +373,90 @@ $('groups').addEventListener('keydown',e=>{
 });
 
 /* ---------- تفاصيل المادة ---------- */
-function getSigs(im){return im.sigs&&im.sigs.length?im.sigs:[{thumb:im.thumb,emb:im.emb,hist:im.hist,ocr:im.ocr}];}
 function openView(id){const r=ROWMAP[id];if(!r)return;currentId=id;
   $('vName').textContent=r.name;$('vGroup').textContent='📁 '+(r.group||NO_GROUP);
   $('vPrice').textContent='💰 '+fm(r.sell)+' د.ع';$('vQty').textContent='📦 الكمية: '+fm(r.qty);
   const lines=[['الرمز',r.code],['الوحدة',r.unit],['سعر الشراء',fm(r.buy)],['الباركود',r.barcode],['الاسم اللاتيني',r.latin]].filter(x=>x[1]);
   let html=lines.map(l=>`<div class="ln"><b>${l[0]}:</b><span>${esc(l[1])}</span></div>`).join('');
   const note=EXTRAS[id]&&EXTRAS[id].note;if(note)html+=`<div class="note">📝 ${esc(note)}</div>`;
-  const im=IMAGES[id],n=im?getSigs(im).length:0;
-  if(n)html+=`<span class="chip ok">🖼 صور مرجعية معالجة: ${n}</span>`;
+  if(IMAGES[id]&&IMAGES[id].imgs.length)html+=`<span class="chip ok">🖼 ${IMAGES[id].imgs.length} صورة مرجعية معالجة</span>`;
   $('vDetails').innerHTML=html;
   $('maintSec').hidden=true;$('viewModal').hidden=false;
   $('noteInput').value=note||'';
-  if(im){$('imgPrev').src=getSigs(im)[getSigs(im).length-1].thumb;$('imgPrev').hidden=false;$('delImg').hidden=false;}
-  else{$('imgPrev').hidden=true;$('delImg').hidden=true;}
+  renderMaintImages();
 }
 $('btnMaint').onclick=()=>{$('maintSec').hidden=!$('maintSec').hidden;};
 $('saveNote').onclick=async()=>{const n=$('noteInput').value.trim();EXTRAS[currentId]={id:currentId,note:n};
   await dbPut('extras',currentId,EXTRAS[currentId]);toast('تم حفظ التفاصيل ✔');openView(currentId);$('maintSec').hidden=false;};
-$('delImg').onclick=async()=>{delete IMAGES[currentId];await dbDel('images',currentId);$('imgPrev').hidden=true;$('delImg').hidden=true;toast('حُذفت الصور 🗑');};
-
-/* ---------- الكاميرا المعزولة ---------- */
-function openCam(mode){camMode=mode;$('camModal').hidden=false;startCam($('videoCam'));}
-async function startCam(v){stopCams();try{camStream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'environment'},audio:false});v.srcObject=camStream;await v.play();}catch(e){toast('تعذر فتح الكاميرا: '+e.message,'err');}}
-function stopCams(){if(camStream){camStream.getTracks().forEach(t=>t.stop());camStream=null;}}
-function captureCam(){const v=$('videoCam');if(!v.videoWidth)return null;
-  const s=Math.min(1,800/v.videoWidth);const c=document.createElement('canvas');
-  c.width=Math.round(v.videoWidth*s);c.height=Math.round(v.videoHeight*s);
-  c.getContext('2d').drawImage(v,0,0,c.width,c.height);return c.toDataURL('image/jpeg',.88);}
-$('camCancel').onclick=()=>{stopCams();$('camModal').hidden=true;};
-$('camShot').onclick=()=>{const u=captureCam();stopCams();$('camModal').hidden=true;
-  if(!u)return toast('انتظر جاهزية الكاميرا','err');routeImage(u);};
-$('camFileBtn').onclick=()=>$('camFile').click();
-$('camFile').onchange=e=>{const f=e.target.files[0];stopCams();$('camModal').hidden=true;
-  if(!f)return;const r=new FileReader();r.onload=async()=>{routeImage(await scaleDataUrl(r.result,800,.88));};r.readAsDataURL(f);e.target.value='';};
-function routeImage(u){if(camMode==='attach'&&currentId)processAttach(u);else if(camMode==='scan')recognize(u);}
-$('camAttach').onclick=()=>openCam('attach');
+function renderMaintImages(){const im=IMAGES[currentId],n=im?im.imgs.length:0;
+  $('imgPrev').hidden=!n;if(n)$('imgPrev').src=im.imgs[im.imgs.length-1].thumb;
+  $('imgStrip').innerHTML=im?im.imgs.map((g,i)=>`<span class="imth"><img src="${g.thumb}" alt=""><button data-delimg="${i}" title="حذف">✕</button></span>`).join(''):'';
+  $('imgCount').textContent=n?('🖼 '+n+' صورة مرجعية — كل صورة إضافية تجعل التعرف أضمن'):'';
+  $('delAllImg').hidden=!n;
+}
+$('maintSec').addEventListener('click',async e=>{
+  const d=e.target.closest('[data-delimg]');if(!d)return;
+  const im=IMAGES[currentId];im.imgs.splice(+d.dataset.delimg,1);
+  if(!im.imgs.length){delete IMAGES[currentId];await dbDel('images',currentId);}
+  else await dbPut('images',currentId,im);
+  renderMaintImages();toast('حُذفت الصورة 🗑');
+});
+$('delAllImg').onclick=async()=>{delete IMAGES[currentId];await dbDel('images',currentId);renderMaintImages();toast('حُذفت كل الصور 🗑');};
+$('camAttach').onclick=()=>openCamModal('attach');
+$('fileAttach').onclick=()=>$('fileAttachInput').click();
+$('fileAttachInput').onchange=async e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();
+  r.onload=async()=>processAttach(await scaleDataUrl(r.result,900,.88));r.readAsDataURL(f);};
 
 /* ---------- المحركات ---------- */
-function getEmbed(url){
-  if(!modelP)modelP=(async()=>{try{await tf.setBackend('webgl');}catch(e){}await tf.ready();
-    return await mobilenet.load({version:2,alpha:0.5});})();
-  return modelP.then(async m=>{const img=await imgEl(url);const t=m.infer(img,true);const a=Array.from(await t.data());t.dispose();return a;});
-}
+async function tfReady(){if(tfOk)return;try{await tf.setBackend('webgl');}catch(e){try{await tf.setBackend('cpu');}catch(e2){}}await tf.ready();tfOk=true;}
+async function getEmbed(url){await tfReady();if(!model)model=await mobilenet.load({version:2,alpha:0.75});
+  const small=await scaleDataUrl(url,512,.9);const img=await imgEl(small);
+  const t=model.infer(img,true);const a=Array.from(await t.data());t.dispose();return a;}
 function histFrom(url){return new Promise(res=>{const i=new Image();i.onload=()=>{const S=64,c=document.createElement('canvas');c.width=S;c.height=S;const x=c.getContext('2d');x.drawImage(i,0,0,S,S);const d=x.getImageData(0,0,S,S).data,h=new Array(64).fill(0);for(let p=0;p<d.length;p+=4){h[Math.min(3,d[p]>>6)*16+Math.min(3,d[p+1]>>6)*4+Math.min(3,d[p+2]>>6)]++;}res(h.map(v=>v/(S*S)));};i.onerror=()=>res(new Array(64).fill(0));i.src=url;});}
 function ocrText(url,onP){return new Promise(async res=>{try{if(!window.Tesseract)return res('');
   const r=await Tesseract.recognize(url,'ara+eng',{logger:m=>{if(onP&&m.status==='recognizing text')onP(Math.round(m.progress*100));}});res(r.data.text||'');}catch(e){res('');}});}
-function ocrSafe(url){return new Promise(res=>{const t=setTimeout(()=>res(''),30000);
-  ocrText(url).then(x=>{clearTimeout(t);res(x||'');});});}
+async function analyze(url,onP){
+  onP&&onP('المحرك 1/3: الشبكة العصبية…',15);
+  const emb=await getEmbed(url);
+  onP&&onP('المحرك 2/3: بصمة الألوان…',45);
+  const hist=await histFrom(url);
+  onP&&onP('المحرك 3/3: قراءة النص OCR…',65);
+  const ocr=await ocrText(await scaleDataUrl(url,800,.85));
+  const thumb=await scaleDataUrl(url,300,.8);
+  return {thumb,emb:emb.map(v=>+v.toFixed(4)),hist,ocr,ts:Date.now()};
+}
+async function processAttach(url){
+  $('procProg').hidden=false;$('procBar').style.width='5%';
+  try{
+    const g=await analyze(url,(t,p)=>{$('procTxt').textContent=t;$('procBar').style.width=p+'%';});
+    if(!IMAGES[currentId])IMAGES[currentId]={id:currentId,imgs:[]};
+    IMAGES[currentId].imgs.push(g);
+    await dbPut('images',currentId,IMAGES[currentId]);
+    renderMaintImages();
+    $('procTxt').textContent='✔ تمت المعالجة والإضافة';$('procBar').style.width='100%';
+    setTimeout(()=>{$('procProg').hidden=true;},1200);
+    toast('تمت معالجة الصورة وإضافتها كمرجع ✔');
+  }catch(e){console.error(e);$('procProg').hidden=true;toast('خطأ بالمعالجة: '+e.message,'err');}
+}
+
+/* ---------- الكاميرا المنعزلة ---------- */
+function openCamModal(mode){camMode=mode;$('camModal').hidden=false;startCam();}
+async function startCam(){stopCam();try{camStream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'environment'},audio:false});$('camVideo').srcObject=camStream;await $('camVideo').play();}catch(e){toast('تعذر فتح الكاميرا: '+e.message,'err');}}
+function stopCam(){if(camStream){camStream.getTracks().forEach(t=>t.stop());camStream=null;}}
+function capture(){const v=$('camVideo');if(!v.videoWidth)return null;const s=Math.min(1,640/v.videoWidth);const c=document.createElement('canvas');c.width=Math.round(v.videoWidth*s);c.height=Math.round(v.videoHeight*s);c.getContext('2d').drawImage(v,0,0,c.width,c.height);return c.toDataURL('image/jpeg',.9);}
+$('camClose').onclick=()=>{stopCam();$('camModal').hidden=true;};
+$('camShot').onclick=async()=>{const u=capture();if(!u)return toast('انتظر جاهزية الكاميرا','err');stopCam();$('camModal').hidden=true;route(await scaleDataUrl(u,900,.88));};
+$('camUploadBtn').onclick=()=>$('camUpload').click();
+$('camUpload').onchange=async e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();
+  r.onload=async()=>{stopCam();$('camModal').hidden=true;route(await scaleDataUrl(r.result,900,.88));};r.readAsDataURL(f);};
+function route(url){if(camMode==='attach'){if(!currentId)return toast('افتح المادة أولاً','err');processAttach(url);}else recognize(url);}
+
+/* ---------- نافذة التأكيد ---------- */
+function askConfirm(msg){return new Promise(res=>{$('confirmTxt').textContent=msg;$('confirmModal').hidden=false;
+  const done=v=>{$('confirmModal').hidden=true;$('confirmYes').onclick=null;$('confirmNo').onclick=null;res(v);};
+  $('confirmYes').onclick=()=>done(true);$('confirmNo').onclick=()=>done(false);});}
+
+/* ---------- التعرف متعدد المعايير ---------- */
 function cosine(a,b){let d=0,na=0,nb=0;for(let i=0;i<Math.min(a.length,b.length);i++){d+=a[i]*b[i];na+=a[i]*a[i];nb+=b[i]*b[i];}return d/(Math.sqrt(na)*Math.sqrt(nb)+1e-9);}
 function histInter(a,b){let s=0;for(let i=0;i<a.length;i++)s+=Math.min(a[i],b[i]);return s;}
 function ocrScoreFor(text,id){const hay=norm(text);if(!hay)return 0;const r=ROWMAP[id];if(!r)return 0;
@@ -399,97 +465,96 @@ function ocrScoreFor(text,id){const hay=norm(text);if(!hay)return 0;const r=ROWM
   if(!toks.length)return 0;let hit=0;
   for(const w of toks){if(hay.includes(w)){hit++;continue;}for(const p of hay.split(' '))if(p.length>=3&&lev(p,w)<=1){hit++;break;}}
   return Math.min(1,hit/toks.length);}
-function ocrTextSim(a,b){a=norm(a);b=norm(b);if(!a||!b)return 0;
-  const ta=a.split(' ').filter(w=>w.length>=3),tb=b.split(' ').filter(w=>w.length>=3);
-  if(!ta.length||!tb.length)return 0;let hit=0;
-  for(const w of ta)if(tb.some(p=>p===w||lev(p,w)<=1))hit++;
-  return Math.min(1,hit/ta.length);}
-function setProc(t,p){$('procProg').hidden=false;$('procTxt').textContent=t;$('procBar').style.width=p+'%';}
+function ocrVsSaved(txt,im){let m=0;for(const g of im.imgs||[])if(g.ocr)m=Math.max(m,textSim(txt,g.ocr));return m;}
+
+$('btnScan').onclick=()=>{if(!Object.keys(IMAGES).length)return toast('لا توجد صور مرجعية — المادة ليست مضافاً لها صورة بعد. أضف صورة من ⚙ إعدادات المادة','err');
+  $('scanModal').hidden=false;$('scanStart').hidden=false;$('scanRes').hidden=true;$('scanProg').hidden=true;};
+$('btnCamScan').onclick=()=>openCamModal('scan');
+$('fileScanBtn').onclick=()=>$('fileScan').click();
+$('fileScan').onchange=async e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();
+  r.onload=async()=>recognize(await scaleDataUrl(r.result,900,.88));r.readAsDataURL(f);};
+$('rescan').onclick=()=>{$('scanRes').hidden=true;$('scanStart').hidden=false;};
 function setScan(t,p){$('scanProgTxt').textContent=t;$('scanBar').style.width=p+'%';}
 
-/* ---------- إرفاق صورة لمادة ---------- */
-async function processAttach(url){
-  if(busy)return;busy=true;
-  try{
-    const small=await scaleDataUrl(url,640,.88);
-    setProc('⚙ المحرك 1/3: الشبكة العصبية…',15);const emb=await getEmbed(small);
-    setProc('⚙ المحرك 2/3: بصمة الألوان…',45);const hist=await histFrom(small);
-    setProc('⚙ المحرك 3/3: قراءة النص OCR…',65);const ocr=await ocrSafe(small);
-    const sig={thumb:await scaleDataUrl(url,300,.8),emb:emb.map(v=>+v.toFixed(4)),hist,ocr,ts:Date.now()};
-    const ex=IMAGES[currentId]||{id:currentId,sigs:[],ts:Date.now()};
-    ex.sigs.push(sig);if(ex.sigs.length>6)ex.sigs.shift();
-    IMAGES[currentId]=ex;await dbPut('images',currentId,ex);
-    setProc('✔ اكتملت المعالجة بالمحركات الثلاثة',100);
-    toast('تمت معالجة الصورة وإضافتها كمرجع للمادة ✔');
-    openView(currentId);$('maintSec').hidden=false;
-    setTimeout(()=>{$('procProg').hidden=true;},1200);
-  }catch(e){console.error(e);$('procProg').hidden=true;toast('خطأ بالمعالجة: '+e.message,'err');}
-  busy=false;
-}
-
-/* ---------- التعرف ---------- */
-$('btnScan').onclick=()=>{if(!Object.keys(IMAGES).length)return toast('أرفق صورة لمادة واحدة على الأقل أولاً (من تفاصيل المادة ⚙)','err');openCam('scan');};
-$('rescan').onclick=()=>{$('scanModal').hidden=true;openCam('scan');};
-
 async function recognize(url){
-  if(busy)return;busy=true;
-  $('scanModal').hidden=false;$('scanRes').hidden=true;$('scanProg').hidden=false;setScan('المحرك 1: الشبكة العصبية…',15);
+  lastScanUrl=url;
+  $('scanStart').hidden=true;$('scanRes').hidden=true;$('scanProg').hidden=false;setScan('المعيار 1: الشكل (الشبكة العصبية)…',15);
   try{
-    const small=await scaleDataUrl(url,640,.88);
-    const emb=await getEmbed(small);setScan('المحرك 2: بصمة الألوان…',40);
-    const hist=await histFrom(small);
-    setScan('المحرك 3: قراءة النص OCR…',60);
-    const txt=await ocrSafe(small);
-    lastScanSig={thumb:await scaleDataUrl(url,300,.8),emb:emb.map(v=>+v.toFixed(4)),hist,ocr:txt,ts:Date.now()};
-    const res=[];
-    for(const im of Object.values(IMAGES)){
-      let best=0,bs=getSigs(im)[0];
-      for(const sg of getSigs(im)){
-        const v=clamp((cosine(emb,sg.emb)-0.45)/0.55,0,1);
-        const h=clamp((histInter(hist,sg.hist)-0.45)/0.55,0,1);
-        let s=.7*v+.3*h;
-        if(txt)s=.55*v+.2*h+.25*Math.max(ocrScoreFor(txt,im.id),ocrTextSim(txt,sg.ocr));
-        if(s>best){best=s;bs=sg;}
-      }
-      res.push({im,s:best,sg:bs});
-    }
+    const emb=await getEmbed(url);
+    setScan('المعيار 2: بصمة الألوان…',35);
+    const hist=await histFrom(url);
+    let res=[];
+    for(const im of Object.values(IMAGES)){if(!im||!im.imgs||!im.imgs.length)continue;
+      let b=null;
+      for(const g of im.imgs){
+        const v=clamp((cosine(emb,g.emb)-0.60)/0.35,0,1);
+        const h=clamp((histInter(hist,g.hist)-0.40)/0.50,0,1);
+        const s=.7*v+.3*h;if(!b||s>b.s)b={s,v,h,g};}
+      res.push({im,v:b.v,h:b.h,g:b.g,s:b.s,o:0});}
     res.sort((a,b)=>b.s-a.s);
-    setScan('تجهيز النتائج…',95);renderResults(url,res);
-  }catch(e){console.error(e);toast('تعذر التحليل: '+e.message,'err');$('scanModal').hidden=true;}
-  $('scanProg').hidden=true;busy=false;
+    if(res.length&&res[0].s<0.9){
+      setScan('المعيار 3+4: قراءة النص ومطابقته…',60);
+      const txt=await ocrText(await scaleDataUrl(url,800,.85),p=>setScan('OCR '+p+'%',60+Math.round(p*.3)));
+      if(txt){res=res.map(r=>{const o=Math.max(ocrScoreFor(txt,r.im.id),ocrVsSaved(txt,r.im));
+        return {...r,o,s:.5*r.v+.2*r.h+.3*o};}).sort((a,b)=>b.s-a.s);}
+    }
+    setScan('تجهيز النتائج…',95);
+    renderResults(url,res);
+  }catch(e){console.error(e);toast('تعذر التحليل: '+e.message,'err');$('scanStart').hidden=false;}
+  $('scanProg').hidden=true;
 }
 function renderResults(url,res){
   const best=res[0],bc=$('bestCard');
-  if(best){const pct=Math.round(best.s*100),cls=pct>=60?'':(pct>=35?'mid':'low'),r=ROWMAP[best.im.id];
-    bc.innerHTML=`<div class="best ${cls}" data-openbest="${best.im.id}">
-      <div class="imgs"><div><img src="${url}"><span>الصورة الملتقطة</span></div><div><img src="${best.sg.thumb}"><span>الصورة المخزّنة</span></div></div>
-      <span class="pct ${cls}">تطابق ${pct}%</span>
-      <h3 style="margin:8px 0 4px;font-size:15px">${esc(r?r.name:'')}</h3>
-      <p style="margin:0;font-size:12px;color:var(--mut)">انقر لعرض التفاصيل • ${esc(r?(r.group||NO_GROUP)+' • سعر المبيع: '+fm(r.sell):'')}</p></div>`;
-    if(pct>=60)setTimeout(()=>{toast('تعرّف مباشر ✔');$('scanModal').hidden=true;openView(best.im.id);},350);
-  }else bc.innerHTML='<p class="empty">لا صور معالجة.</p>';
-  $('candList').innerHTML=res.slice(1,11).map(x=>{const r=ROWMAP[x.im.id];
-    return `<div class="cand" data-addimg="${x.im.id}"><span class="nm">${esc(r?r.name:'')}</span><span class="add">+ صورة إضافية</span><span class="pv">${Math.round(x.s*100)}%</span></div>`;}).join('');
+  if(!best){
+    bc.innerHTML='<div class="best low"><p style="margin:0;font-weight:800">⚠ لم يتم التعرف — لا توجد صور مرجعية مضافة بعد.</p><p class="hint">افتح المادة من بطاقتها واضغط ⚙ إعدادات / صيانة لإضافة صورة مرجعية لها.</p></div>';
+  }else{
+    const pct=Math.round(best.s*100),cls=pct>=60?'':(pct>=30?'mid':'low'),r=ROWMAP[best.im.id];
+    if(pct<25){
+      bc.innerHTML=`<div class="best low"><p style="margin:0;font-weight:800">⚠ لم يتم التعرف على المادة</p>
+      <p class="hint">يبدو أن المادة المصوَّرة <b>ليست مضافاً لها صورة مرجعية بعد</b>، أو الصورة غير واضحة. اختر أقرب مرشح من الأسفل واضغط عليه ليُطلب تأكيدك وتُضاف الصورة له، أو أضف صورة من ⚙ إعدادات المادة.</p></div>`;
+    }else{
+      bc.innerHTML=`<div class="best ${cls}" data-openbest="${best.im.id}">
+        <div class="imgs"><div><img src="${url}"><span>الصورة الملتقطة</span></div><div><img src="${best.g.thumb}"><span>الصورة المخزّنة</span></div></div>
+        <span class="pct ${cls}">تطابق ${pct}%</span>
+        <span class="mini">🧠 شكل ${Math.round(best.v*100)}%</span>
+        <span class="mini">🎨 ألوان ${Math.round(best.h*100)}%</span>
+        <span class="mini">🔤 نص ${Math.round((best.o||0)*100)}%</span>
+        <h3 style="margin:8px 0 4px;font-size:15px">${esc(r?r.name:'')}</h3>
+        <p style="margin:0;font-size:12px;color:var(--mut)">${esc(r?(r.group||NO_GROUP)+' • سعر المبيع: '+fm(r.sell):'')}</p></div>`;
+      if(pct>=60)setTimeout(()=>{toast('تعرّف مباشر ✔');$('scanModal').hidden=true;openView(best.im.id);},350);
+    }
+  }
+  $('candList').innerHTML=res.slice(1,13).map(x=>{const r=ROWMAP[x.im.id];const p=Math.round(x.s*100);
+    return `<div class="cand" data-attach="${x.im.id}"><img src="${x.g.thumb}"><span class="nm">${esc(r?r.name:'')}</span><span class="pv">${p}%</span><button class="eye" data-openbest="${x.im.id}" title="عرض التفاصيل">👁</button></div>`;}).join('');
   $('scanRes').hidden=false;
 }
 $('scanRes').addEventListener('click',async e=>{
-  const a=e.target.closest('[data-addimg]');
-  if(a){const id=a.dataset.addimg;if(!lastScanSig)return;
-    const ex=IMAGES[id]||{id,sigs:[],ts:Date.now()};
-    ex.sigs.push(lastScanSig);if(ex.sigs.length>6)ex.sigs.shift();
-    IMAGES[id]=ex;await dbPut('images',id,ex);
-    $('scanModal').hidden=true;
-    toast('✔ اعتُمدت الصورة كمرجع إضافي للمادة — التعرف القادم أدق');return;}
-  const o=e.target.closest('[data-openbest]');
-  if(o){$('scanModal').hidden=true;openView(o.dataset.openbest);}
+  const eye=e.target.closest('[data-openbest]');
+  if(eye){$('scanModal').hidden=true;openView(eye.dataset.openbest);return;}
+  const att=e.target.closest('[data-attach]');
+  if(att){const id=att.dataset.attach,r=ROWMAP[id];
+    const ok=await askConfirm('هل تريد إضافة الصورة الملتقطة كصورة إضافية للمادة «'+(r?r.name:'')+'»؟');
+    if(ok)attachTo(id);}
 });
+async function attachTo(id){
+  $('scanRes').hidden=true;$('scanProg').hidden=false;setScan('معالجة الصورة وإضافتها كمرجع إضافي…',20);
+  try{
+    const g=await analyze(lastScanUrl,(t,p)=>setScan(t,20+Math.round(p*.7)));
+    if(!IMAGES[id])IMAGES[id]={id,imgs:[]};
+    IMAGES[id].imgs.push(g);
+    await dbPut('images',id,IMAGES[id]);
+    $('scanModal').hidden=true;
+    toast('✔ أُضيفت الصورة كمرجع إضافي — التعرف القادم أضمن');
+  }catch(e){console.error(e);toast('خطأ: '+e.message,'err');$('scanStart').hidden=false;}
+  $('scanProg').hidden=true;
+}
 
 /* ---------- عام ---------- */
-function closeModals(){document.querySelectorAll('.overlay').forEach(o=>o.hidden=true);stopCams();}
+function closeModals(){document.querySelectorAll('.overlay').forEach(o=>o.hidden=true);stopCam();}
 document.querySelectorAll('[data-close]').forEach(b=>b.onclick=closeModals);
-document.querySelectorAll('.overlay').forEach(o=>o.addEventListener('click',e=>{if(e.target===o)closeModals();}));
+document.querySelectorAll('.overlay').forEach(o=>o.addEventListener('click',e=>{if(e.target===o&&o.id!=='confirmModal')closeModals();}));
 document.addEventListener('keydown',e=>{
-  if(e.key==='Escape'){closeModals();return;}
+  if(e.key==='Escape'){if(!$('confirmModal').hidden){$('confirmNo').click();return;}stopCam();closeModals();return;}
   if(e.key==='Enter'&&!e.target.closest('input,textarea,button')){
     if(!$('camModal').hidden)$('camShot').click();
   }
@@ -505,7 +570,10 @@ $('filesList').addEventListener('click',async e=>{
   try{
     FILES=(await dbGetAll('files')).sort((a,b)=>b.ts-a.ts);renderFiles();
     (await dbGetAll('extras')).forEach(x=>EXTRAS[x.id]=x);
-    (await dbGetAll('images')).forEach(x=>IMAGES[x.id]=x);
+    (await dbGetAll('images')).forEach(v=>{
+      if(v&&v.imgs)IMAGES[v.id]=v;
+      else if(v)IMAGES[v.id]={id:v.id,imgs:[{thumb:v.thumb,emb:v.emb,hist:v.hist,ocr:v.ocr,ts:v.ts||Date.now()}]};
+    });
     if(FILES.length){loadDataset(FILES[0].rows,{name:FILES[0].name});toast('تم تحميل النسخة المحلية ✔');}
   }catch(e){console.error(e);}
 })();
