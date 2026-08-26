@@ -48,19 +48,44 @@ main{max-width:960px;margin:0 auto;padding:14px 12px 40px}
 .comp:active{transform:scale(.95)}
 .comp b{display:block;font-size:14px;color:var(--pri2)}
 .comp small{color:var(--mut);font-size:11px;font-weight:700}
+/* ---------- شعار FAWORI ---------- */
+.brand{display:flex;flex-direction:column;align-items:center;gap:14px;padding:26px 0 10px}
+.logo-box{position:relative;width:min(320px,74vw);aspect-ratio:1;background:#0b0b0d;border-radius:28px;box-shadow:0 20px 45px rgba(10,10,20,.35);overflow:hidden}
+.edge{position:absolute;border-radius:6px}
+.e-top{top:6%;right:9%;width:56%;height:4.5%;background:#f2662a}
+.e-right{right:6%;top:11%;height:56%;width:4.5%;background:#3faa4a}
+.e-left{left:6%;top:32%;height:56%;width:4.5%;background:#e2231f}
+.e-bottom{bottom:6%;left:10%;width:56%;height:4.5%;background:#2a8ed8}
+.lt{position:absolute;color:#fff;font-weight:800;font-family:Arial,Helvetica,sans-serif;letter-spacing:3px;font-size:clamp(46px,14vw,68px);line-height:1}
+.l1{top:11%;left:11%}
+.l2{top:39%;left:50%;transform:translateX(-50%)}
+.l3{bottom:11%;right:13%}
+.brand-t{margin:0;color:var(--mut);font-weight:800;font-size:14px;letter-spacing:1px}
+/* ---------- نوافذ متمددّة بدون قصّ ---------- */
+.overlay{position:fixed;inset:0;background:rgba(20,25,50,.45);backdrop-filter:blur(3px);z-index:50;display:flex;padding:12px;overflow:auto}
+#groupModal{z-index:55}
+#viewModal{z-index:60}
+#imgsModal{z-index:65}
+#camModal{z-index:70}
+#confirmModal{z-index:80}
+.modal{background:#fff;border-radius:22px;width:min(600px,96vw);max-height:calc(100vh - 24px);max-height:calc(100dvh - 24px);display:flex;flex-direction:column;padding:0;overflow:hidden;animation:up .25s;margin:auto}
+.modal.wide{width:min(780px,96vw)}
+@keyframes up{from{transform:translateY(24px);opacity:0}}
+.m-head{flex:0 0 auto;display:flex;justify-content:space-between;align-items:center;gap:10px;padding:14px 16px;background:#fff;border-bottom:1px solid #eef0f6}
+.m-head h2{margin:0;font-size:18px;font-weight:800}
+.x{border:none;background:#f1f3fa;width:38px;height:38px;border-radius:50%;cursor:pointer;font-size:15px;flex:0 0 auto}
+.m-body{overflow:auto;padding:16px;flex:1}
 .g-tools{display:flex;gap:10px;flex-wrap:wrap;margin:0 0 12px}
 .gsearch{flex:1;min-width:180px;border:2px solid #e3e7f5;border-radius:12px;padding:10px 14px;font-family:inherit;font-size:13px;outline:none;background:#fff}
 .gsearch:focus{border-color:var(--pri)}
 .vtoggle{display:flex;background:#eef1f8;border-radius:12px;padding:3px}
 .vtoggle button{border:none;background:none;border-radius:10px;padding:8px 14px;font-size:12px;font-weight:800;cursor:pointer;color:var(--mut)}
 .vtoggle button.on{background:var(--pri);color:#fff}
-/* جدول بسيط والكتابة بالوسط */
 .tbl{width:100%;border-collapse:collapse;font-size:13px}
 .tbl th{background:#f6f8fc;padding:9px 8px;text-align:center;font-size:12px;color:var(--mut)}
 .tbl td{padding:9px 8px;border-top:1px solid #eef0f6;text-align:center}
 .tbl tr{cursor:pointer}
 .tbl tr:hover{background:#eef2ff}
-/* تمييز المواد التي لها صور مرجعية */
 .tbl tr.hi-img{background:#e9f9f0}
 .tbl tr.hi-img:hover{background:#ddf5e7}
 .imgdot{font-size:11px}
@@ -73,20 +98,6 @@ main{max-width:960px;margin:0 auto;padding:14px 12px 40px}
 .trow i{font-style:normal;font-size:11px;border-radius:12px;padding:2px 8px;font-weight:700}
 .trow .q{background:#eef1f8;color:var(--pri2)}.trow .p{background:#fdf3e3;color:#a26a08}
 .empty{text-align:center;color:var(--mut);padding:26px 0;font-size:14px;font-weight:600}
-.overlay{position:fixed;inset:0;background:rgba(20,25,50,.45);backdrop-filter:blur(3px);z-index:50;display:flex;align-items:center;justify-content:center;padding:12px}
-#groupModal{z-index:55}
-#viewModal{z-index:60}
-#imgsModal{z-index:65}
-#camModal{z-index:70}
-#confirmModal{z-index:80}
-/* نافذة بترويسة ثابتة وجسم قابل للتمرير */
-.modal{background:#fff;border-radius:22px;width:min(600px,96vw);max-height:92vh;display:flex;flex-direction:column;padding:0;overflow:hidden;animation:up .25s}
-.modal.wide{width:min(780px,96vw)}
-@keyframes up{from{transform:translateY(24px);opacity:0}}
-.m-head{flex:0 0 auto;display:flex;justify-content:space-between;align-items:center;gap:10px;padding:14px 16px;background:#fff;border-bottom:1px solid #eef0f6}
-.m-head h2{margin:0;font-size:18px;font-weight:800}
-.x{border:none;background:#f1f3fa;width:36px;height:36px;border-radius:50%;cursor:pointer;font-size:15px;flex:0 0 auto}
-.m-body{overflow:auto;padding:16px}
 .vchips{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px}
 .vstats{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:0 0 12px}
 .vstat{border-radius:16px;padding:12px;text-align:center}
@@ -158,6 +169,17 @@ textarea:focus{border-color:var(--pri)}
   <section class="card" id="compSec" hidden>
     <div class="sec-h"><h2>🏢 الشركات</h2><span class="chip" id="compCount" style="background:#eef1f8;color:var(--pri2);border-radius:20px;padding:3px 12px;font-size:12px;font-weight:800"></span></div>
     <div class="comps" id="compsBar"></div>
+  </section>
+
+  <!-- شعار الشركة -->
+  <section class="brand" id="brandSec" hidden>
+    <div class="logo-box" dir="ltr">
+      <i class="edge e-top"></i><i class="edge e-right"></i><i class="edge e-left"></i><i class="edge e-bottom"></i>
+      <span class="lt l1">FA</span>
+      <span class="lt l2">WO</span>
+      <span class="lt l3">RI</span>
+    </div>
+    <p class="brand-t">FAWORI • شركة فاوري للأصباغ</p>
   </section>
 
   <p class="empty" id="emptyMsg">اضغط عنوان «نظام إدارة المواد» بالأعلى لفتح الأدوات ثم «تحديث من المستودع 🔄»، أو «رفع ملف 📂».</p>
@@ -335,6 +357,7 @@ function loadDataset(rows,meta){
   GROUPS.forEach(g=>g.rows.forEach((r,i)=>r.gseq=i+1));
   $('emptyMsg').hidden=true;
   $('compSec').hidden=false;
+  $('brandSec').hidden=false;
   $('compCount').textContent=ROWS.length+' مادة';
   $('compsBar').innerHTML=GROUPS.map(g=>`<button class="comp" data-open-group="${esc(g.name)}"><b>${esc(g.name)}</b><small>${g.rows.length} مادة</small></button>`).join('');
 }
@@ -453,7 +476,6 @@ function renderImgs(){const im=IMAGES[currentId];
   $('imgsGrid').innerHTML=(im&&im.imgs&&im.imgs.length)?im.imgs.map((g,i)=>`<div class="imbig"><img src="${g.thumb}" alt=""><button data-delimg="${i}" title="حذف">✕</button></div>`).join('')
    :'<p class="empty" style="grid-column:1/-1">لا توجد صور مرجعية بعد — أضف صورة بالكاميرا أو الرفع.</p>';
   updateImgsBtn();
-  /* تحديث تلوين الجدول خلف النافذة */
   if(currentGroup)renderGroupContent();
 }
 $('imgsGrid').addEventListener('click',async e=>{const d=e.target.closest('[data-delimg]');if(!d)return;
@@ -611,7 +633,6 @@ async function attachTo(id){
     await dbPut('images',id,IMAGES[id]);
     $('scanModal').hidden=true;
     toast('✔ أُضيفت الصورة كمرجع إضافي — التعرف القادم أضمن');
-    if(currentGroup)renderGroupContent();
   }catch(e){console.error(e);toast('خطأ: '+e.message,'err');$('scanStart').hidden=false;}
   $('scanProg').hidden=true;
 }
