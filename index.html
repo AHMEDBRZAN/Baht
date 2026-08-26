@@ -15,13 +15,12 @@
 [hidden]{display:none!important}
 body{margin:0;font-family:'Tajawal',Tahoma,sans-serif;background:linear-gradient(180deg,#f6f8fc,#eef1f8);color:var(--txt)}
 button{font-family:inherit}
+.clickable{cursor:pointer;user-select:none}
 :focus-visible{outline:3px solid rgba(79,70,229,.4);outline-offset:2px;border-radius:8px}
-/* ---------- ترويسة راقية ---------- */
 header{max-width:960px;margin:16px auto 0;padding:0 12px}
-.hcard{background:linear-gradient(135deg,#ffffff,#f2f5ff 60%,#eefaf6);border:1px solid #e8ebf7;border-radius:24px;box-shadow:var(--sh);padding:20px;transition:.25s}
-.hcard:hover{box-shadow:0 12px 30px rgba(40,50,90,.12)}
+.hcard{background:linear-gradient(135deg,#ffffff,#f2f5ff 60%,#eefaf6);border:1px solid #e8ebf7;border-radius:24px;box-shadow:var(--sh);padding:20px}
 .hrow{display:flex;gap:12px;align-items:center;justify-content:space-between}
-.hrow h1{margin:0;font-size:27px;font-weight:800;background:linear-gradient(90deg,#4f46e5,#0ea5a4);-webkit-background-clip:text;background-clip:text;color:transparent;letter-spacing:.3px}
+.hrow h1{margin:0;font-size:26px;font-weight:800;background:linear-gradient(90deg,#4f46e5,#0ea5a4);-webkit-background-clip:text;background-clip:text;color:transparent}
 .hrow p{margin:4px 0 0;color:var(--mut);font-size:13px;font-weight:600}
 .chev{border:none;background:#eef1f8;width:40px;height:40px;border-radius:14px;cursor:pointer;font-size:16px;font-weight:800;color:var(--pri2);transition:.25s;flex:0 0 auto}
 .chev:active{transform:scale(.88)}
@@ -42,7 +41,6 @@ main{max-width:960px;margin:0 auto;padding:14px 12px 60px}
 .file-item .meta{flex:1;min-width:140px}
 .file-item .meta b{font-size:14px}
 .file-item .meta small{display:block;color:var(--mut);font-weight:600}
-/* الشركات */
 .comps{display:flex;gap:8px;overflow-x:auto;padding:12px 2px 4px;scrollbar-width:none}
 .comps::-webkit-scrollbar{display:none}
 .comp{flex:0 0 auto;border:1px solid #e6e9f7;background:linear-gradient(160deg,#fff,#eef2ff);border-radius:16px;padding:10px 18px;cursor:pointer;text-align:center;transition:.2s}
@@ -56,9 +54,10 @@ main{max-width:960px;margin:0 auto;padding:14px 12px 60px}
 .vtoggle{display:flex;background:#eef1f8;border-radius:12px;padding:3px}
 .vtoggle button{border:none;background:none;border-radius:10px;padding:8px 14px;font-size:12px;font-weight:800;cursor:pointer;color:var(--mut)}
 .vtoggle button.on{background:var(--pri);color:#fff}
+/* جدول بسيط والكتابة بالوسط */
 .tbl{width:100%;border-collapse:collapse;font-size:13px}
-.tbl th{background:#f4f6fd;padding:9px 10px;text-align:right;font-size:12px;color:var(--mut)}
-.tbl td{padding:9px 10px;border-top:1px solid #f0f2fa}
+.tbl th{background:#f6f8fc;padding:9px 8px;text-align:center;font-size:12px;color:var(--mut)}
+.tbl td{padding:9px 8px;border-top:1px solid #eef0f6;text-align:center}
 .tbl tr{cursor:pointer}
 .tbl tr:hover,.tbl tr.hl{background:#eef2ff}
 .tiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
@@ -72,14 +71,16 @@ main{max-width:960px;margin:0 auto;padding:14px 12px 60px}
 .overlay{position:fixed;inset:0;background:rgba(20,25,50,.45);backdrop-filter:blur(3px);z-index:50;display:flex;align-items:center;justify-content:center;padding:12px}
 #groupModal{z-index:55}
 #viewModal{z-index:60}
+#imgsModal{z-index:65}
 #camModal{z-index:70}
 #confirmModal{z-index:80}
 .modal{background:#fff;border-radius:22px;width:min(600px,96vw);max-height:92vh;overflow:auto;padding:16px;animation:up .25s}
 .modal.wide{width:min(780px,96vw)}
 @keyframes up{from{transform:translateY(24px);opacity:0}}
-.m-head{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:10px}
+/* ترويسة لاصقة وزر الإغلاق ظاهر دائماً */
+.m-head{position:sticky;top:0;background:#fff;z-index:6;display:flex;justify-content:space-between;align-items:center;gap:10px;margin:-16px -16px 12px;padding:14px 16px;border-radius:22px 22px 0 0;box-shadow:0 2px 10px rgba(30,40,80,.08)}
 .m-head h2{margin:0;font-size:18px;font-weight:800}
-.x{border:none;background:#f1f3fa;width:34px;height:34px;border-radius:50%;cursor:pointer;font-size:14px}
+.x{border:none;background:#f1f3fa;width:36px;height:36px;border-radius:50%;cursor:pointer;font-size:15px;flex:0 0 auto}
 .vchips{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px}
 .vstats{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:0 0 12px}
 .vstat{border-radius:16px;padding:12px;text-align:center}
@@ -91,7 +92,8 @@ main{max-width:960px;margin:0 auto;padding:14px 12px 60px}
 .vdetails .ln{display:flex;gap:8px;padding:6px 0;border-bottom:1px dashed #e0e4f0}
 .vdetails .ln:last-child{border:none}
 .vdetails .ln b{color:var(--mut);min-width:95px;font-weight:800}
-.note{background:#fdf7e7;border:1px solid #f0e2b8;border-radius:12px;padding:10px;margin-top:10px;white-space:pre-wrap}
+/* تفاصيل إضافية مميزة */
+.note{background:linear-gradient(135deg,#fff6dd,#ffedc2);border:2px solid #f0c64a;border-radius:14px;padding:12px;margin-top:10px;white-space:pre-wrap;font-weight:700;font-size:14px;color:#6b4d0f}
 .row{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap}
 .row .btn{flex:1}
 label{display:block;font-size:13px;font-weight:800;margin:12px 0 6px}
@@ -102,11 +104,11 @@ textarea:focus{border-color:var(--pri)}
 .bar{height:8px;background:#e5e9f5;border-radius:8px;overflow:hidden;margin-top:10px}
 .bar i{display:block;height:100%;width:0;background:var(--pri);transition:width .3s}
 .prog-txt{text-align:center;font-size:12.5px;color:var(--mut);margin:6px 0 0;font-weight:700}
-#imgPrev{width:100%;border-radius:14px;margin-top:8px}
-.imth{position:relative;display:inline-block;margin:4px}
-.imth img{width:64px;height:64px;border-radius:12px;object-fit:cover}
-.imth button{position:absolute;top:-6px;left:-6px;width:22px;height:22px;border:none;border-radius:50%;background:var(--dng);color:#fff;cursor:pointer;font-size:11px}
-#imgStrip{margin-top:6px}
+/* نافذة الصور المرجعية */
+#imgsGrid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:8px}
+.imbig{position:relative}
+.imbig img{width:100%;height:150px;object-fit:cover;border-radius:14px}
+.imbig button{position:absolute;top:-8px;left:-8px;width:26px;height:26px;border:none;border-radius:50%;background:var(--dng);color:#fff;cursor:pointer;font-size:12px}
 .best{border:2px solid var(--grn);border-radius:16px;padding:12px;margin-bottom:12px;cursor:pointer}
 .best.mid{border-color:var(--amb)}.best.low{border-color:var(--dng);cursor:default}
 .best .imgs{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px}
@@ -131,7 +133,7 @@ footer{max-width:960px;margin:0 auto;padding:0 12px 26px;color:var(--mut);font-s
 <header>
   <div class="hcard">
     <div class="hrow">
-      <div><h1>نظام إدارة المواد</h1><p>المبرمج: أحمد برزان</p></div>
+      <div class="clickable" id="appTitle"><h1>نظام إدارة المواد</h1><p>المبرمج: أحمد برزان</p></div>
       <button class="chev" id="toolsChev" title="إظهار/إخفاء الأدوات">⌄</button>
     </div>
     <div class="hbtns" id="toolsBox" hidden>
@@ -146,7 +148,7 @@ footer{max-width:960px;margin:0 auto;padding:0 12px 26px;color:var(--mut);font-s
 
 <main>
   <section class="card" id="filesSec">
-    <div class="sec-h"><button class="chev" id="filesChev">⌄</button><h2>🗂 الملفات المحفوظة محلياً</h2></div>
+    <div class="sec-h"><h2 class="clickable" id="filesTitle">🗂 الملفات المحفوظة محلياً</h2><button class="chev" id="filesChev">⌄</button></div>
     <div id="filesList" hidden></div>
   </section>
 
@@ -155,7 +157,7 @@ footer{max-width:960px;margin:0 auto;padding:0 12px 26px;color:var(--mut);font-s
     <div class="comps" id="compsBar"></div>
   </section>
 
-  <p class="empty" id="emptyMsg">اضغط سهم الأدوات ⌄ بالأعلى ثم «تحديث من المستودع 🔄» لجلب ملف المواد، أو «رفع ملف 📂».</p>
+  <p class="empty" id="emptyMsg">اضغط عنوان «نظام إدارة المواد» بالأعلى لفتح الأدوات ثم «تحديث من المستودع 🔄»، أو «رفع ملف 📂».</p>
 </main>
 <footer>اختصارات: Esc إغلاق • Enter التقاط/فتح • ↑↓ التنقل في نتائج البحث</footer>
 
@@ -184,23 +186,26 @@ footer{max-width:960px;margin:0 auto;padding:0 12px 26px;color:var(--mut);font-s
       <div class="vstat qty"><div class="lb">📦 الكمية</div><div class="vl" id="vQty"></div></div>
     </div>
     <div class="vdetails" id="vDetails"></div>
-    <div class="row"><button class="btn ghost" id="btnMaint">⚙ إعدادات / صيانة</button></div>
+    <div class="row"><button class="btn ghost" id="btnImgs">🖼 الصور المرجعية (0)</button><button class="btn ghost" id="btnMaint">⚙ إعدادات / صيانة</button></div>
     <div id="maintSec" hidden>
       <label>إضافة تفاصيل تظهر مع المادة</label>
       <textarea id="noteInput" placeholder="اكتب أي ملاحظات إضافية…"></textarea>
       <div class="row"><button class="btn pri" id="saveNote">💾 حفظ التفاصيل</button></div>
-      <label>صور المادة المرجعية — تُعالج بالمحركات (شبكة عصبية + ألوان + OCR)</label>
-      <img id="imgPrev" hidden>
-      <div id="imgStrip"></div>
-      <p class="hint" id="imgCount"></p>
-      <div class="row">
-        <button class="btn amb" id="camAttach">📷 فتح الكاميرا</button>
-        <button class="btn ghost" id="fileAttach">🖼 رفع صورة</button>
-        <button class="btn danger" id="delAllImg" hidden style="background:var(--dng);color:#fff">🗑 حذف كل الصور</button>
-      </div>
-      <input type="file" id="fileAttachInput" accept="image/*" hidden>
-      <div id="procProg" hidden><div class="bar"><i id="procBar"></i></div><p class="prog-txt" id="procTxt"></p></div>
     </div>
+  </div>
+</div>
+
+<!-- نافذة الصور المرجعية -->
+<div class="overlay" id="imgsModal" hidden>
+  <div class="modal">
+    <div class="m-head"><h2 id="imgsTitle">🖼 الصور المرجعية</h2><button class="x" data-close>✕</button></div>
+    <div id="imgsGrid"></div>
+    <div class="row">
+      <button class="btn amb" id="camAttach2">📷 فتح الكاميرا</button>
+      <button class="btn ghost" id="fileAttach2">🖼 رفع صورة</button>
+    </div>
+    <input type="file" id="fileAttachInput" accept="image/*" hidden>
+    <div id="procProg" hidden><div class="bar"><i id="procBar"></i></div><p class="prog-txt" id="procTxt"></p></div>
   </div>
 </div>
 
@@ -222,7 +227,7 @@ footer{max-width:960px;margin:0 auto;padding:0 12px 26px;color:var(--mut);font-s
   <div class="modal">
     <div class="m-head"><h2>📷 التعرف على المادة</h2><button class="x" data-close>✕</button></div>
     <div id="scanStart">
-      <p class="hint">صوّر العلبة أو ارفع صورة — المطابقة: الشكل + الألوان + النص المطبوع + النص المخزّن. كلما أضفت صوراً مرجعية أكثر من ⚙ الصيانة صار التعرف أضمن.</p>
+      <p class="hint">صوّر العلبة أو ارفع صورة — المطابقة: الشكل + الألوان + النص المطبوع + النص المخزّن.</p>
       <div class="row">
         <button class="btn amb" id="btnCamScan">📷 فتح الكاميرا</button>
         <button class="btn ghost" id="fileScanBtn">🖼 رفع صورة</button>
@@ -255,12 +260,15 @@ footer{max-width:960px;margin:0 auto;padding:0 12px 26px;color:var(--mut);font-s
 'use strict';
 const $=id=>document.getElementById(id);
 const NO_GROUP='مواد بدون بطاقة';
-const REPO_FILE='جميع المواد.xlsx';
-const REPO_URLS=['main','master'].map(b=>'https://raw.githubusercontent.com/AHMEDBRZAN/Baht/'+b+'/'+encodeURIComponent(REPO_FILE))
- .concat(['materials.xlsx','data.xlsx'].map(f=>'https://raw.githubusercontent.com/AHMEDBRZAN/Baht/main/'+f));
+const REPO_URLS=['https://raw.githubusercontent.com/AHMEDBRZAN/Baht/main/'+encodeURIComponent('جميع المواد.xlsx'),
+ 'https://raw.githubusercontent.com/AHMEDBRZAN/Baht/main/'+encodeURIComponent('جميع المواد .xlsx'),
+ 'https://raw.githubusercontent.com/AHMEDBRZAN/Baht/master/'+encodeURIComponent('جميع المواد.xlsx'),
+ 'https://raw.githubusercontent.com/AHMEDBRZAN/Baht/master/'+encodeURIComponent('جميع المواد .xlsx'),
+ 'https://raw.githubusercontent.com/AHMEDBRZAN/Baht/main/materials.xlsx',
+ 'https://raw.githubusercontent.com/AHMEDBRZAN/Baht/main/data.xlsx'];
 
 let ROWS=[],ROWMAP={},GROUPS=[],IMAGES={},EXTRAS={},VIEWS={},FILES=[];
-let currentId=null,currentGroup=null,model=null,tfOk=false,camStream=null,camMode=null,lastScanUrl=null;
+let currentId=null,currentGroup=null,model=null,tfOk=false,camStream=null,camMode=null,lastScanUrl=null,gSearchT=null;
 
 /* ---------- أدوات ---------- */
 function toast(m,t){const e=$('toast');e.textContent=m;e.className=t||'';e.hidden=false;clearTimeout(e._h);e._h=setTimeout(()=>e.hidden=true,4000);}
@@ -298,8 +306,7 @@ function parseWorkbook(buf){
       rows.push({id:code?('c'+code):('r'+i),seq:String(r[g('#')]??'').trim(),code,name,
         unit:String(r[g('الوحدة')]??'').trim(),sell:parseNum(r[g('سعر المبيع')]),
         group:String(r[g('بطاقة مجموعة')]??'').trim(),latin:String(r[g('الاسم اللاتيني')]??'').trim(),
-        qty:parseNum(r[g('الكمية')]),buy:parseNum(r[g('سعر الشراء')]),
-        barcode:String(r[g('الباركود')]??'').replace(/;/g,'').trim()});
+        qty:parseNum(r[g('الكمية')]),barcode:String(r[g('الباركود')]??'').replace(/;/g,'').trim()});
     }
     return rows.length?rows:null;
   }catch(e){console.error(e);return null;}
@@ -310,10 +317,24 @@ function loadDataset(rows,meta){
   ROWS.forEach(r=>{const g=r.group||NO_GROUP;if(!m.has(g))m.set(g,[]);m.get(g).push(r);});
   GROUPS=[...m.entries()].map(([name,rws])=>({name,rows:rws,vis:rws,hi:-1}))
     .sort((a,b)=>((a.name===NO_GROUP)-(b.name===NO_GROUP))||a.name.localeCompare(b.name,'ar'));
+  GROUPS.forEach(g=>g.rows.forEach((r,i)=>r.gseq=i+1)); /* تسلسل مستقل لكل شركة */
   $('emptyMsg').hidden=true;
   $('compSec').hidden=false;
   $('compCount').textContent=ROWS.length+' مادة';
   $('compsBar').innerHTML=GROUPS.map(g=>`<button class="comp" data-open-group="${esc(g.name)}"><b>${esc(g.name)}</b><small>${g.rows.length} مادة</small></button>`).join('');
+}
+
+/* ---------- جلب الملف (API + احتياطي) ---------- */
+async function fetchRepoFile(){
+  try{
+    const r=await fetch('https://api.github.com/repos/AHMEDBRZAN/Baht/contents/');
+    if(r.ok){const list=await r.json();
+      const f=(Array.isArray(list)?list:[]).find(x=>x.name&&x.name.toLowerCase().endsWith('.xlsx'));
+      if(f&&f.download_url){const d=await fetch(f.download_url);if(d.ok)return await d.arrayBuffer();}}
+  }catch(e){}
+  for(const u of REPO_URLS){try{const r=await fetch(u,{cache:'no-store'});if(!r.ok)continue;
+    const buf=await r.arrayBuffer();if(buf.byteLength>1000)return buf;}catch(e){}}
+  return null;
 }
 
 /* ---------- الشركات ---------- */
@@ -332,8 +353,10 @@ function openGroupModal(name){
 function setGroupView(v){VIEWS[currentGroup]=v;$('gViewTable').classList.toggle('on',v==='table');$('gViewGrid').classList.toggle('on',v==='grid');renderGroupContent();}
 $('gViewTable').onclick=()=>setGroupView('table');
 $('gViewGrid').onclick=()=>setGroupView('grid');
-$('gSearch').addEventListener('input',e=>{const g=GROUPS.find(x=>x.name===currentGroup);if(!g)return;const q=e.target.value.trim();
-  g.vis=q?g.rows.map(r=>({r,s:searchScore(q,r)})).filter(x=>x.s>0).sort((a,b)=>b.s-a.s).map(x=>x.r):g.rows;renderGroupContent();});
+$('gSearch').addEventListener('input',e=>{clearTimeout(gSearchT);gSearchT=setTimeout(()=>{
+  const g=GROUPS.find(x=>x.name===currentGroup);if(!g)return;const q=e.target.value.trim();
+  g.vis=q?g.rows.map(r=>({r,s:searchScore(q,r)})).filter(x=>x.s>0).sort((a,b)=>b.s-a.s).map(x=>x.r):g.rows;
+  renderGroupContent();},120);});
 $('gSearch').addEventListener('keydown',e=>{const g=GROUPS.find(x=>x.name===currentGroup);if(!g)return;const items=$('gContent').querySelectorAll('[data-id]');
   if(e.key==='ArrowDown'||e.key==='ArrowUp'){e.preventDefault();if(!items.length)return;
     g.hi=Math.max(0,Math.min(items.length-1,g.hi+(e.key==='ArrowDown'?1:-1)));
@@ -347,7 +370,7 @@ function renderGroupContent(){
   if(!list.length){el.innerHTML='<p class="empty">لا توجد نتائج مطابقة</p>';return;}
   if(v==='table'){
     el.innerHTML='<table class="tbl"><thead><tr><th>ت</th><th>اسم المادة</th><th>الكمية</th><th>سعر المبيع</th></tr></thead><tbody>'
-      +list.map(r=>`<tr tabindex="0" data-id="${r.id}"><td>${esc(r.seq)}</td><td>${esc(short(r.name))}</td><td>${fm(r.qty)}</td><td>${fm(r.sell)}</td></tr>`).join('')
+      +list.map(r=>`<tr tabindex="0" data-id="${r.id}"><td>${r.gseq}</td><td>${esc(short(r.name))}</td><td>${fm(r.qty)}</td><td>${fm(r.sell)}</td></tr>`).join('')
       +'</tbody></table>';
   }else{
     el.innerHTML='<div class="tiles">'+list.map(r=>`<button class="tile" data-id="${r.id}"><b>${esc(short(r.name,70))}</b><span class="trow"><i class="q">📦 ${fm(r.qty)}</i><i class="p">💰 ${fm(r.sell)}</i></span></button>`).join('')+'</div>';
@@ -370,13 +393,18 @@ function renderFiles(){
     <button class="btn danger" style="background:var(--dng);color:#fff" data-delfile="${f.id}">🗑</button></div>`).join('')
    :'<p class="empty" style="padding:8px 0">لا توجد نسخ محلية بعد — اضغط «حفظ الملف 💾» بعد الجلب.</p>';
 }
+function toggleFiles(){const willShow=$('filesList').hidden;$('filesList').hidden=!willShow;$('filesChev').classList.toggle('open',willShow);}
+$('filesChev').onclick=toggleFiles;
+$('filesTitle').onclick=toggleFiles;
+function toggleTools(){const willShow=$('toolsBox').hidden;$('toolsBox').hidden=!willShow;$('toolsChev').classList.toggle('open',willShow);}
+$('toolsChev').onclick=toggleTools;
+$('appTitle').onclick=toggleTools;
 $('btnSave').onclick=async()=>{if(!ROWS.length)return toast('لا يوجد ملف محمّل للحفظ','err');
-  const id='f'+Date.now();FILES.unshift({id,name:REPO_FILE,ts:Date.now(),rows:ROWS});await dbPut('files',id,{id,name:REPO_FILE,ts:Date.now(),rows:ROWS});renderFiles();toast('تم حفظ النسخة محلياً 💾');};
+  const id='f'+Date.now();FILES.unshift({id,name:'جميع المواد.xlsx',ts:Date.now(),rows:ROWS});await dbPut('files',id,{id,name:'جميع المواد.xlsx',ts:Date.now(),rows:ROWS});renderFiles();toast('تم حفظ النسخة محلياً 💾');};
 $('btnRepo').onclick=async()=>{toast('جارٍ الجلب من المستودع…');
-  for(const u of REPO_URLS){try{const r=await fetch(u,{cache:'no-store'});if(!r.ok)continue;
-    const buf=await r.arrayBuffer();if(buf.byteLength<1000)continue;
-    const rows=parseWorkbook(buf);if(rows){loadDataset(rows,{name:REPO_FILE});toast('تم الجلب من المستودع ✔ '+rows.length+' مادة');return;}}catch(e){}}
-  toast('تعذر الجلب — تأكد أن الملف باسم «'+REPO_FILE+'» في جذر المستودع، أو استخدم «رفع ملف»','err');};
+  const buf=await fetchRepoFile();
+  if(buf){const rows=parseWorkbook(buf);if(rows){loadDataset(rows,{name:'جميع المواد.xlsx'});toast('تم الجلب من المستودع ✔ '+rows.length+' مادة');return;}}
+  toast('تعذر الجلب — ارفع الملف يدوياً 📂','err');};
 $('btnUpload').onclick=()=>$('filePick').click();
 $('filePick').onchange=e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();
   r.onload=()=>{const rows=parseWorkbook(r.result);rows?(loadDataset(rows,{name:f.name}),toast('تم تحميل «'+f.name+'» ✔')):toast('ملف غير مدعوم','err');};
@@ -388,34 +416,36 @@ function openView(id){const r=ROWMAP[id];if(!r)return;currentId=id;
   $('vGroup').textContent='📁 '+(r.group||NO_GROUP);
   $('vPrice').textContent=fm(r.sell)+' د.ع';
   $('vQty').textContent=fm(r.qty);
-  const lines=[['الرمز',r.code],['الوحدة',r.unit],['سعر الشراء',fm(r.buy)],['الباركود',r.barcode],['الاسم اللاتيني',r.latin]].filter(x=>x[1]);
+  const lines=[['الرمز',r.code],['الوحدة',r.unit],['الباركود',r.barcode],['الاسم اللاتيني',r.latin]].filter(x=>x[1]);
   let html=lines.map(l=>`<div class="ln"><b>${l[0]}:</b><span>${esc(l[1])}</span></div>`).join('');
-  const note=EXTRAS[id]&&EXTRAS[id].note;if(note)html+=`<div class="note">📝 ${esc(note)}</div>`;
-  if(IMAGES[id]&&IMAGES[id].imgs&&IMAGES[id].imgs.length)html+=`<span style="background:#e7f7ee;color:#177a4c;display:inline-block;margin-top:8px;border-radius:20px;padding:3px 12px;font-size:12px;font-weight:800">🖼 ${IMAGES[id].imgs.length} صورة مرجعية معالجة</span>`;
+  const note=EXTRAS[id]&&EXTRAS[id].note;
+  if(note)html+=`<div class="note"><b>📝 تفاصيل إضافية:</b><br>${esc(note)}</div>`;
   $('vDetails').innerHTML=html;
   $('maintSec').hidden=true;$('viewModal').hidden=false;
   $('noteInput').value=note||'';
-  renderMaintImages();
+  updateImgsBtn();
 }
+function updateImgsBtn(){const n=IMAGES[currentId]&&IMAGES[currentId].imgs?IMAGES[currentId].imgs.length:0;
+  $('btnImgs').textContent='🖼 الصور المرجعية ('+n+')';}
 $('btnMaint').onclick=()=>{$('maintSec').hidden=!$('maintSec').hidden;};
 $('saveNote').onclick=async()=>{const n=$('noteInput').value.trim();EXTRAS[currentId]={id:currentId,note:n};
   await dbPut('extras',currentId,EXTRAS[currentId]);toast('تم حفظ التفاصيل ✔');openView(currentId);$('maintSec').hidden=false;};
-function renderMaintImages(){const im=IMAGES[currentId],n=im&&im.imgs?im.imgs.length:0;
-  $('imgPrev').hidden=!n;if(n)$('imgPrev').src=im.imgs[im.imgs.length-1].thumb;
-  $('imgStrip').innerHTML=im&&im.imgs?im.imgs.map((g,i)=>`<span class="imth"><img src="${g.thumb}" alt=""><button data-delimg="${i}" title="حذف">✕</button></span>`).join(''):'';
-  $('imgCount').textContent=n?('🖼 '+n+' صورة مرجعية — كل صورة إضافية تجعل التعرف أضمن'):'';
-  $('delAllImg').hidden=!n;
-}
-$('maintSec').addEventListener('click',async e=>{
-  const d=e.target.closest('[data-delimg]');if(!d)return;
+
+/* ---------- نافذة الصور المرجعية ---------- */
+$('btnImgs').onclick=()=>{openImgsModal();};
+function openImgsModal(){$('imgsTitle').textContent='🖼 الصور المرجعية — '+(ROWMAP[currentId]?ROWMAP[currentId].name:'');
+  $('imgsModal').hidden=false;renderImgs();}
+function renderImgs(){const im=IMAGES[currentId];
+  $('imgsGrid').innerHTML=(im&&im.imgs&&im.imgs.length)?im.imgs.map((g,i)=>`<div class="imbig"><img src="${g.thumb}" alt=""><button data-delimg="${i}" title="حذف">✕</button></div>`).join('')
+   :'<p class="empty" style="grid-column:1/-1">لا توجد صور مرجعية بعد — أضف صورة بالكاميرا أو الرفع.</p>';
+  updateImgsBtn();}
+$('imgsGrid').addEventListener('click',async e=>{const d=e.target.closest('[data-delimg]');if(!d)return;
   const im=IMAGES[currentId];im.imgs.splice(+d.dataset.delimg,1);
   if(!im.imgs.length){delete IMAGES[currentId];await dbDel('images',currentId);}
   else await dbPut('images',currentId,im);
-  renderMaintImages();toast('حُذفت الصورة 🗑');
-});
-$('delAllImg').onclick=async()=>{delete IMAGES[currentId];await dbDel('images',currentId);renderMaintImages();toast('حُذفت كل الصور 🗑');};
-$('camAttach').onclick=()=>openCamModal('attach');
-$('fileAttach').onclick=()=>$('fileAttachInput').click();
+  renderImgs();toast('حُذفت الصورة 🗑');});
+$('camAttach2').onclick=()=>openCamModal('attach');
+$('fileAttach2').onclick=()=>$('fileAttachInput').click();
 $('fileAttachInput').onchange=async e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();
   r.onload=async()=>processAttach(await scaleDataUrl(r.result,900,.88));r.readAsDataURL(f);};
 
@@ -444,9 +474,9 @@ async function processAttach(url){
     if(!IMAGES[currentId])IMAGES[currentId]={id:currentId,imgs:[]};
     IMAGES[currentId].imgs.push(g);
     await dbPut('images',currentId,IMAGES[currentId]);
-    renderMaintImages();
     $('procTxt').textContent='✔ تمت المعالجة والإضافة';$('procBar').style.width='100%';
     setTimeout(()=>{$('procProg').hidden=true;},1200);
+    renderImgs();
     toast('تمت معالجة الصورة وإضافتها كمرجع ✔');
   }catch(e){console.error(e);$('procProg').hidden=true;toast('خطأ بالمعالجة: '+e.message,'err');}
 }
@@ -480,7 +510,7 @@ function ocrScoreFor(text,id){const hay=norm(text);if(!hay)return 0;const r=ROWM
   return Math.min(1,hit/toks.length);}
 function ocrVsSaved(txt,im){let m=0;for(const g of im.imgs||[])if(g&&g.ocr)m=Math.max(m,textSim(txt,g.ocr));return m;}
 
-$('btnScan').onclick=()=>{if(!Object.keys(IMAGES).length)return toast('لا توجد صور مرجعية — المادة ليست مضافاً لها صورة بعد. أضف صورة من ⚙ إعدادات المادة','err');
+$('btnScan').onclick=()=>{if(!Object.keys(IMAGES).length)return toast('لا توجد صور مرجعية — أضف صورة من تفاصيل المادة ⚙','err');
   $('scanModal').hidden=false;$('scanStart').hidden=false;$('scanRes').hidden=true;$('scanProg').hidden=true;};
 $('btnCamScan').onclick=()=>openCamModal('scan');
 $('fileScanBtn').onclick=()=>$('fileScan').click();
@@ -525,12 +555,12 @@ async function recognize(url){
 function renderResults(url,res){
   const best=res[0],bc=$('bestCard');
   if(!best){
-    bc.innerHTML='<div class="best low"><p style="margin:0;font-weight:800">⚠ لم يتم التعرف — لا توجد صور مرجعية مضافة بعد.</p><p class="hint">افتح المادة من بطاقتها واضغط ⚙ إعدادات / صيانة لإضافة صورة مرجعية.</p></div>';
+    bc.innerHTML='<div class="best low"><p style="margin:0;font-weight:800">⚠ لم يتم التعرف — لا توجد صور مرجعية مضافة بعد.</p><p class="hint">افتح المادة واضغط 🖼 الصور المرجعية لإضافة صورة.</p></div>';
   }else{
     const pct=Math.round(best.s*100),cls=pct>=60?'':(pct>=30?'mid':'low'),r=ROWMAP[best.im.id];
     if(pct<25){
       bc.innerHTML=`<div class="best low"><p style="margin:0;font-weight:800">⚠ لم يتم التعرف على المادة</p>
-      <p class="hint">يبدو أن المادة المصوَّرة <b>ليست مضافاً لها صورة مرجعية بعد</b>، أو الصورة غير واضحة. اختر أقرب مرشح من الأسفل واضغط عليه ليُطلب تأكيدك وتُضاف الصورة له، أو أضف صورة من ⚙ إعدادات المادة.</p></div>`;
+      <p class="hint">يبدو أن المادة المصوَّرة <b>ليست مضافاً لها صورة مرجعية بعد</b>. اختر أقرب مرشح من الأسفل ليُطلب تأكيدك وتُضاف الصورة له.</p></div>`;
     }else{
       bc.innerHTML=`<div class="best ${cls}" data-openbest="${best.im.id}">
         <div class="imgs"><div><img src="${url}"><span>الصورة الملتقطة</span></div><div><img src="${best.g.thumb}"><span>الصورة المخزّنة</span></div></div>
@@ -568,18 +598,21 @@ async function attachTo(id){
   $('scanProg').hidden=true;
 }
 
-/* ---------- عام ---------- */
-$('toolsChev').onclick=()=>{const willShow=$('toolsBox').hidden;$('toolsBox').hidden=!willShow;$('toolsChev').classList.toggle('open',willShow);};
-function closeModals(){document.querySelectorAll('.overlay').forEach(o=>o.hidden=true);stopCam();}
-document.querySelectorAll('[data-close]').forEach(b=>b.onclick=closeModals);
-document.querySelectorAll('.overlay').forEach(o=>o.addEventListener('click',e=>{if(e.target===o&&o.id!=='confirmModal')closeModals();}));
+/* ---------- إغلاق النوافذ (كل نافذة لحالها + الأعلى أولاً) ---------- */
+const MOD_ORDER=['confirmModal','camModal','imgsModal','viewModal','scanModal','groupModal'];
+function closeTop(){const id=MOD_ORDER.find(x=>!$(x).hidden);if(!id)return;$(id).hidden=true;if(id==='camModal')stopCam();}
+document.querySelectorAll('[data-close]').forEach(b=>b.onclick=()=>{const o=b.closest('.overlay');o.hidden=true;if(o.id==='camModal')stopCam();});
+document.querySelectorAll('.overlay').forEach(o=>o.addEventListener('click',e=>{
+  if(e.target!==o)return;
+  if(o.id==='confirmModal'){$('confirmNo').click();return;}
+  o.hidden=true;if(o.id==='camModal')stopCam();
+}));
 document.addEventListener('keydown',e=>{
-  if(e.key==='Escape'){if(!$('confirmModal').hidden){$('confirmNo').click();return;}stopCam();closeModals();return;}
+  if(e.key==='Escape'){closeTop();return;}
   if(e.key==='Enter'&&!e.target.closest('input,textarea,button')){
     if(!$('camModal').hidden)$('camShot').click();
   }
 });
-$('filesChev').onclick=()=>{$('filesList').hidden=!$('filesList').hidden;$('filesChev').classList.toggle('open',!$('filesList').hidden);};
 $('filesList').addEventListener('click',async e=>{
   const o=e.target.closest('[data-openfile]');if(o){const f=FILES.find(x=>x.id===o.dataset.openfile);if(f){loadDataset(f.rows,{name:f.name});toast('تم فتح «'+f.name+'» ✔');}return;}
   const d=e.target.closest('[data-delfile]');if(d){await dbDel('files',d.dataset.delfile);FILES=FILES.filter(x=>x.id!==d.dataset.delfile);renderFiles();toast('حُذف الملف 🗑');}
@@ -594,6 +627,14 @@ $('filesList').addEventListener('click',async e=>{
       if(v&&Array.isArray(v.imgs))IMAGES[v.id]=v;
       else if(v)IMAGES[v.id]={id:v.id,imgs:[{thumb:v.thumb,emb:v.emb,hist:v.hist,ocr:v.ocr,ts:v.ts||Date.now()}]};
     });
+    let removed=0;
+    for(const id of Object.keys(IMAGES)){
+      const im=IMAGES[id];
+      im.imgs=(im.imgs||[]).filter(validImg);
+      if(!im.imgs.length){delete IMAGES[id];await dbDel('images',id);removed++;}
+      else await dbPut('images',id,im);
+    }
+    if(removed)toast('تم تنظيف '+removed+' صورة تالفة — أعد إرفاقها من 🖼 الصور المرجعية','err');
     if(FILES.length){loadDataset(FILES[0].rows,{name:FILES[0].name});toast('تم تحميل النسخة المحلية ✔');}
   }catch(e){console.error(e);}
 })();
