@@ -32,7 +32,7 @@ header{max-width:960px;margin:16px auto 0;padding:0 12px}
 .btn.ghost{background:#eef1f8;color:var(--txt)}
 .btn.amb{background:linear-gradient(135deg,#f2a541,#e8960c);color:#fff;box-shadow:0 6px 16px rgba(232,150,12,.35)}
 .scanbig{width:100%;margin-top:14px;padding:16px;font-size:16px;border-radius:18px}
-main{max-width:960px;margin:0 auto;padding:14px 12px 60px}
+main{max-width:960px;margin:0 auto;padding:14px 12px 40px}
 .card{background:var(--card);border:1px solid #eceff8;border-radius:var(--rad);box-shadow:var(--sh);padding:14px;margin-bottom:14px}
 .sec-h{display:flex;gap:10px;align-items:center}
 .sec-h h2{font-size:16px;margin:0;flex:1}
@@ -48,7 +48,7 @@ main{max-width:960px;margin:0 auto;padding:14px 12px 60px}
 .comp:active{transform:scale(.95)}
 .comp b{display:block;font-size:14px;color:var(--pri2)}
 .comp small{color:var(--mut);font-size:11px;font-weight:700}
-.g-tools{display:flex;gap:10px;flex-wrap:wrap;margin:10px 0}
+.g-tools{display:flex;gap:10px;flex-wrap:wrap;margin:0 0 12px}
 .gsearch{flex:1;min-width:180px;border:2px solid #e3e7f5;border-radius:12px;padding:10px 14px;font-family:inherit;font-size:13px;outline:none;background:#fff}
 .gsearch:focus{border-color:var(--pri)}
 .vtoggle{display:flex;background:#eef1f8;border-radius:12px;padding:3px}
@@ -59,10 +59,15 @@ main{max-width:960px;margin:0 auto;padding:14px 12px 60px}
 .tbl th{background:#f6f8fc;padding:9px 8px;text-align:center;font-size:12px;color:var(--mut)}
 .tbl td{padding:9px 8px;border-top:1px solid #eef0f6;text-align:center}
 .tbl tr{cursor:pointer}
-.tbl tr:hover,.tbl tr.hl{background:#eef2ff}
+.tbl tr:hover{background:#eef2ff}
+/* تمييز المواد التي لها صور مرجعية */
+.tbl tr.hi-img{background:#e9f9f0}
+.tbl tr.hi-img:hover{background:#ddf5e7}
+.imgdot{font-size:11px}
 .tiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
 .tile{border:1px solid #e8ebf7;background:#fbfcff;border-radius:16px;padding:12px;cursor:pointer;text-align:right;display:flex;flex-direction:column;gap:8px;transition:.15s}
-.tile:hover,.tile.hl{border-color:var(--pri);background:#eef2ff;transform:translateY(-2px)}
+.tile:hover{border-color:var(--pri);background:#eef2ff;transform:translateY(-2px)}
+.tile.hi-img{border-color:var(--grn);background:#f0fbf5}
 .tile b{font-size:13px;line-height:1.5;min-height:38px}
 .trow{display:flex;gap:6px;flex-wrap:wrap}
 .trow i{font-style:normal;font-size:11px;border-radius:12px;padding:2px 8px;font-weight:700}
@@ -74,13 +79,14 @@ main{max-width:960px;margin:0 auto;padding:14px 12px 60px}
 #imgsModal{z-index:65}
 #camModal{z-index:70}
 #confirmModal{z-index:80}
-.modal{background:#fff;border-radius:22px;width:min(600px,96vw);max-height:92vh;overflow:auto;padding:16px;animation:up .25s}
+/* نافذة بترويسة ثابتة وجسم قابل للتمرير */
+.modal{background:#fff;border-radius:22px;width:min(600px,96vw);max-height:92vh;display:flex;flex-direction:column;padding:0;overflow:hidden;animation:up .25s}
 .modal.wide{width:min(780px,96vw)}
 @keyframes up{from{transform:translateY(24px);opacity:0}}
-/* ترويسة لاصقة وزر الإغلاق ظاهر دائماً */
-.m-head{position:sticky;top:0;background:#fff;z-index:6;display:flex;justify-content:space-between;align-items:center;gap:10px;margin:-16px -16px 12px;padding:14px 16px;border-radius:22px 22px 0 0;box-shadow:0 2px 10px rgba(30,40,80,.08)}
+.m-head{flex:0 0 auto;display:flex;justify-content:space-between;align-items:center;gap:10px;padding:14px 16px;background:#fff;border-bottom:1px solid #eef0f6}
 .m-head h2{margin:0;font-size:18px;font-weight:800}
 .x{border:none;background:#f1f3fa;width:36px;height:36px;border-radius:50%;cursor:pointer;font-size:15px;flex:0 0 auto}
+.m-body{overflow:auto;padding:16px}
 .vchips{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px}
 .vstats{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:0 0 12px}
 .vstat{border-radius:16px;padding:12px;text-align:center}
@@ -92,7 +98,6 @@ main{max-width:960px;margin:0 auto;padding:14px 12px 60px}
 .vdetails .ln{display:flex;gap:8px;padding:6px 0;border-bottom:1px dashed #e0e4f0}
 .vdetails .ln:last-child{border:none}
 .vdetails .ln b{color:var(--mut);min-width:95px;font-weight:800}
-/* تفاصيل إضافية مميزة */
 .note{background:linear-gradient(135deg,#fff6dd,#ffedc2);border:2px solid #f0c64a;border-radius:14px;padding:12px;margin-top:10px;white-space:pre-wrap;font-weight:700;font-size:14px;color:#6b4d0f}
 .row{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap}
 .row .btn{flex:1}
@@ -100,12 +105,11 @@ label{display:block;font-size:13px;font-weight:800;margin:12px 0 6px}
 textarea{width:100%;border:2px solid #e3e7f5;border-radius:12px;padding:10px;font-family:inherit;font-size:13px;min-height:70px;resize:vertical;outline:none}
 textarea:focus{border-color:var(--pri)}
 #maintSec{background:#f6f8ff;border:1px solid #e3e7f5;border-radius:16px;padding:12px;margin-top:12px}
-.cam-video{width:100%;max-height:320px;object-fit:cover;border-radius:16px;background:#000;margin-top:10px}
+.cam-video{width:100%;max-height:320px;object-fit:cover;border-radius:16px;background:#000;margin-top:4px}
 .bar{height:8px;background:#e5e9f5;border-radius:8px;overflow:hidden;margin-top:10px}
 .bar i{display:block;height:100%;width:0;background:var(--pri);transition:width .3s}
 .prog-txt{text-align:center;font-size:12.5px;color:var(--mut);margin:6px 0 0;font-weight:700}
-/* نافذة الصور المرجعية */
-#imgsGrid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:8px}
+#imgsGrid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:4px}
 .imbig{position:relative}
 .imbig img{width:100%;height:150px;object-fit:cover;border-radius:14px}
 .imbig button{position:absolute;top:-8px;left:-8px;width:26px;height:26px;border:none;border-radius:50%;background:var(--dng);color:#fff;cursor:pointer;font-size:12px}
@@ -117,14 +121,13 @@ textarea:focus{border-color:var(--pri)}
 .best h3,.best p{color:#2a3245}
 .pct{display:inline-block;background:var(--grn);color:#fff;border-radius:20px;padding:3px 14px;font-weight:800}
 .pct.mid{background:var(--amb)}.pct.low{background:var(--dng)}
-.mini{display:inline-block;background:#eef1f8;color:var(--pri2);border-radius:14px;padding:2px 10px;font-size:11px;font-weight:800;margin-right:4px}
+.mini{display:inline-block;background:#eef1f8;color:var(--pri2);border-radius:14px;padding:2px 10px;font-size:11px;font-weight:800;margin-left:4px}
 .cand{display:flex;align-items:center;gap:10px;background:#f7f8ff;border-radius:12px;padding:8px 10px;margin-bottom:8px;cursor:pointer}
 .cand img{width:46px;height:46px;border-radius:10px;object-fit:cover}
 .cand .nm{flex:1;font-size:14px;font-weight:800;color:#17203a}
 .cand .pv{font-size:13px;font-weight:800;color:var(--pri2)}
 .eye{border:none;background:#eef1f8;border-radius:10px;width:36px;height:36px;cursor:pointer;font-size:16px}
 .hint{font-size:12.5px;color:#4a5468;margin:4px 0 10px;font-weight:600;line-height:1.9}
-footer{max-width:960px;margin:0 auto;padding:0 12px 26px;color:var(--mut);font-size:12px;text-align:center;font-weight:600}
 #toast{position:fixed;bottom:18px;right:50%;transform:translateX(50%);background:#22333b;color:#fff;border-radius:12px;padding:11px 20px;font-size:13px;z-index:99;max-width:90vw;text-align:center}
 #toast.err{background:var(--dng)}
 </style>
@@ -159,20 +162,21 @@ footer{max-width:960px;margin:0 auto;padding:0 12px 26px;color:var(--mut);font-s
 
   <p class="empty" id="emptyMsg">اضغط عنوان «نظام إدارة المواد» بالأعلى لفتح الأدوات ثم «تحديث من المستودع 🔄»، أو «رفع ملف 📂».</p>
 </main>
-<footer>اختصارات: Esc إغلاق • Enter التقاط/فتح • ↑↓ التنقل في نتائج البحث</footer>
 
 <!-- نافذة بطاقة المجموعة -->
 <div class="overlay" id="groupModal" hidden>
   <div class="modal wide">
     <div class="m-head"><h2 id="gTitle"></h2><button class="x" data-close>✕</button></div>
-    <div class="g-tools">
-      <input class="gsearch" id="gSearch" placeholder="🔍 بحث ذكي في البطاقة…">
-      <div class="vtoggle">
-        <button id="gViewTable" class="on">📋 جدول</button>
-        <button id="gViewGrid">🧱 شبكة</button>
+    <div class="m-body">
+      <div class="g-tools">
+        <input class="gsearch" id="gSearch" placeholder="🔍 بحث ذكي في البطاقة…">
+        <div class="vtoggle">
+          <button id="gViewTable" class="on">📋 جدول</button>
+          <button id="gViewGrid">🧱 شبكة</button>
+        </div>
       </div>
+      <div id="gContent"></div>
     </div>
-    <div id="gContent"></div>
   </div>
 </div>
 
@@ -180,17 +184,19 @@ footer{max-width:960px;margin:0 auto;padding:0 12px 26px;color:var(--mut);font-s
 <div class="overlay" id="viewModal" hidden>
   <div class="modal">
     <div class="m-head"><h2 id="vName"></h2><button class="x" data-close>✕</button></div>
-    <div class="vchips"><span class="chip" id="vGroup" style="background:#eef1f8;color:var(--pri2);border-radius:20px;padding:3px 12px;font-size:12px;font-weight:800"></span></div>
-    <div class="vstats">
-      <div class="vstat price"><div class="lb">💰 سعر المبيع</div><div class="vl" id="vPrice"></div></div>
-      <div class="vstat qty"><div class="lb">📦 الكمية</div><div class="vl" id="vQty"></div></div>
-    </div>
-    <div class="vdetails" id="vDetails"></div>
-    <div class="row"><button class="btn ghost" id="btnImgs">🖼 الصور المرجعية (0)</button><button class="btn ghost" id="btnMaint">⚙ إعدادات / صيانة</button></div>
-    <div id="maintSec" hidden>
-      <label>إضافة تفاصيل تظهر مع المادة</label>
-      <textarea id="noteInput" placeholder="اكتب أي ملاحظات إضافية…"></textarea>
-      <div class="row"><button class="btn pri" id="saveNote">💾 حفظ التفاصيل</button></div>
+    <div class="m-body">
+      <div class="vchips"><span class="chip" id="vGroup" style="background:#eef1f8;color:var(--pri2);border-radius:20px;padding:3px 12px;font-size:12px;font-weight:800"></span></div>
+      <div class="vstats">
+        <div class="vstat price"><div class="lb">💰 سعر المبيع</div><div class="vl" id="vPrice"></div></div>
+        <div class="vstat qty"><div class="lb">📦 الكمية</div><div class="vl" id="vQty"></div></div>
+      </div>
+      <div class="vdetails" id="vDetails"></div>
+      <div class="row"><button class="btn ghost" id="btnImgs">🖼 الصور المرجعية (0)</button><button class="btn ghost" id="btnMaint">⚙ إعدادات / صيانة</button></div>
+      <div id="maintSec" hidden>
+        <label>إضافة تفاصيل تظهر مع المادة</label>
+        <textarea id="noteInput" placeholder="اكتب أي ملاحظات إضافية…"></textarea>
+        <div class="row"><button class="btn pri" id="saveNote">💾 حفظ التفاصيل</button></div>
+      </div>
     </div>
   </div>
 </div>
@@ -199,13 +205,15 @@ footer{max-width:960px;margin:0 auto;padding:0 12px 26px;color:var(--mut);font-s
 <div class="overlay" id="imgsModal" hidden>
   <div class="modal">
     <div class="m-head"><h2 id="imgsTitle">🖼 الصور المرجعية</h2><button class="x" data-close>✕</button></div>
-    <div id="imgsGrid"></div>
-    <div class="row">
-      <button class="btn amb" id="camAttach2">📷 فتح الكاميرا</button>
-      <button class="btn ghost" id="fileAttach2">🖼 رفع صورة</button>
+    <div class="m-body">
+      <div id="imgsGrid"></div>
+      <div class="row">
+        <button class="btn amb" id="camAttach2">📷 فتح الكاميرا</button>
+        <button class="btn ghost" id="fileAttach2">🖼 رفع صورة</button>
+      </div>
+      <input type="file" id="fileAttachInput" accept="image/*" hidden>
+      <div id="procProg" hidden><div class="bar"><i id="procBar"></i></div><p class="prog-txt" id="procTxt"></p></div>
     </div>
-    <input type="file" id="fileAttachInput" accept="image/*" hidden>
-    <div id="procProg" hidden><div class="bar"><i id="procBar"></i></div><p class="prog-txt" id="procTxt"></p></div>
   </div>
 </div>
 
@@ -213,12 +221,14 @@ footer{max-width:960px;margin:0 auto;padding:0 12px 26px;color:var(--mut);font-s
 <div class="overlay" id="camModal" hidden>
   <div class="modal">
     <div class="m-head"><h2>📷 الكاميرا</h2><button class="x" id="camClose">✕</button></div>
-    <video id="camVideo" class="cam-video" playsinline muted autoplay></video>
-    <div class="row">
-      <button class="btn danger" id="camShot" style="background:var(--dng);color:#fff">⬤ التقاط (Enter)</button>
-      <button class="btn ghost" id="camUploadBtn">🖼 رفع صورة</button>
+    <div class="m-body">
+      <video id="camVideo" class="cam-video" playsinline muted autoplay></video>
+      <div class="row">
+        <button class="btn danger" id="camShot" style="background:var(--dng);color:#fff">⬤ التقاط (Enter)</button>
+        <button class="btn ghost" id="camUploadBtn">🖼 رفع صورة</button>
+      </div>
+      <input type="file" id="camUpload" accept="image/*" hidden>
     </div>
-    <input type="file" id="camUpload" accept="image/*" hidden>
   </div>
 </div>
 
@@ -226,21 +236,23 @@ footer{max-width:960px;margin:0 auto;padding:0 12px 26px;color:var(--mut);font-s
 <div class="overlay" id="scanModal" hidden>
   <div class="modal">
     <div class="m-head"><h2>📷 التعرف على المادة</h2><button class="x" data-close>✕</button></div>
-    <div id="scanStart">
-      <p class="hint">صوّر العلبة أو ارفع صورة — المطابقة: الشكل + الألوان + النص المطبوع + النص المخزّن.</p>
-      <div class="row">
-        <button class="btn amb" id="btnCamScan">📷 فتح الكاميرا</button>
-        <button class="btn ghost" id="fileScanBtn">🖼 رفع صورة</button>
+    <div class="m-body">
+      <div id="scanStart">
+        <p class="hint">صوّر العلبة أو ارفع صورة — المطابقة: الشكل + الألوان + النص المطبوع + النص المخزّن.</p>
+        <div class="row">
+          <button class="btn amb" id="btnCamScan">📷 فتح الكاميرا</button>
+          <button class="btn ghost" id="fileScanBtn">🖼 رفع صورة</button>
+        </div>
+        <input type="file" id="fileScan" accept="image/*" hidden>
       </div>
-      <input type="file" id="fileScan" accept="image/*" hidden>
-    </div>
-    <div id="scanProg" hidden><div class="bar"><i id="scanBar"></i></div><p class="prog-txt" id="scanProgTxt"></p></div>
-    <div id="scanRes" hidden>
-      <div id="bestCard"></div>
-      <h3 style="font-size:15px;margin:8px 0;font-weight:800">بقية المرشحات (12 الأكثر تشابهاً):</h3>
-      <p class="hint">اضغط على أي مرشح ⇐ يُطلب تأكيدك ⇐ تُضاف الصورة الملتقطة كمرجع إضافي وتُغلق النافذة. زر 👁 للتفاصيل بدون إرفاق.</p>
-      <div id="candList"></div>
-      <div class="row"><button class="btn pri" id="rescan">🔁 تصوير مادة أخرى</button></div>
+      <div id="scanProg" hidden><div class="bar"><i id="scanBar"></i></div><p class="prog-txt" id="scanProgTxt"></p></div>
+      <div id="scanRes" hidden>
+        <div id="bestCard"></div>
+        <h3 style="font-size:15px;margin:8px 0;font-weight:800">بقية المرشحات (12 الأكثر تشابهاً):</h3>
+        <p class="hint">اضغط على أي مرشح ⇐ يُطلب تأكيدك ⇐ تُضاف الصورة الملتقطة كمرجع إضافي وتُغلق النافذة. زر 👁 للتفاصيل بدون إرفاق.</p>
+        <div id="candList"></div>
+        <div class="row"><button class="btn pri" id="rescan">🔁 تصوير مادة أخرى</button></div>
+      </div>
     </div>
   </div>
 </div>
@@ -249,8 +261,10 @@ footer{max-width:960px;margin:0 auto;padding:0 12px 26px;color:var(--mut);font-s
 <div class="overlay" id="confirmModal" hidden>
   <div class="modal" style="width:min(430px,94vw)">
     <div class="m-head"><h2>تأكيد الإضافة</h2></div>
-    <p id="confirmTxt" style="font-size:14.5px;line-height:1.9;margin:0;font-weight:700"></p>
-    <div class="row"><button class="btn pri" id="confirmYes">✔ نعم، أضف الصورة</button><button class="btn ghost" id="confirmNo">✕ إلغاء</button></div>
+    <div class="m-body">
+      <p id="confirmTxt" style="font-size:14.5px;line-height:1.9;margin:0;font-weight:700"></p>
+      <div class="row"><button class="btn pri" id="confirmYes">✔ نعم، أضف الصورة</button><button class="btn ghost" id="confirmNo">✕ إلغاء</button></div>
+    </div>
   </div>
 </div>
 
@@ -274,11 +288,12 @@ let currentId=null,currentGroup=null,model=null,tfOk=false,camStream=null,camMod
 function toast(m,t){const e=$('toast');e.textContent=m;e.className=t||'';e.hidden=false;clearTimeout(e._h);e._h=setTimeout(()=>e.hidden=true,4000);}
 function esc(s){return (s??'').toString().replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
 function short(s,n){n=n||42;s=s??'';return s.length>n?s.slice(0,n)+'…':s;}
-function parseNum(v){if(typeof v==='number')return isFinite(v)?v:0;if(v==null)return 0;let s=String(v).replace(/[٠-٩]/g,d=>'٠١٢٣٤٥٦٧٨٩'.indexOf(d)).replace(/[,،\s]/g,'');const n=parseFloat(s);return isFinite(n)?n:0;}
+function parseNum(v){if(typeof v==='number')return isFinite(v)?v:0;if(v==null)return 0;let s=String(v).replace(/[٠-٩]/g,d=>'٠١٣٤٥٧٨٩'.indexOf(d)).replace(/[,،\s]/g,'');const n=parseFloat(s);return isFinite(n)?n:0;}
 function fm(n){n=parseNum(n);return n?n.toLocaleString('en-US',{maximumFractionDigits:2}):'0';}
 function norm(s){return (s||'').toLowerCase().replace(/[\u064B-\u0652\u0640]/g,'').replace(/[أإآ]/g,'ا').replace(/ة/g,'ه').replace(/ى/g,'ي').replace(/[^\p{L}\p{N}]+/gu,' ').trim();}
 function lev(a,b){a=a||'';b=b||'';if(a===b)return 0;const m=a.length,n=b.length;if(!m||!n)return m||n;let p=Array.from({length:n+1},(_,i)=>i);for(let i=1;i<=m;i++){const c=[i];for(let j=1;j<=n;j++)c[j]=Math.min(p[j]+1,c[j-1]+1,p[j-1]+(a[i-1]===b[j-1]?0:1));p=c;}return p[n];}
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+function hasImg(id){return !!(IMAGES[id]&&IMAGES[id].imgs&&IMAGES[id].imgs.length);}
 function scaleDataUrl(url,maxW,q){return new Promise(res=>{const i=new Image();i.onload=()=>{const s=Math.min(1,maxW/i.width);const c=document.createElement('canvas');c.width=Math.round(i.width*s);c.height=Math.round(i.height*s);c.getContext('2d').drawImage(i,0,0,c.width,c.height);res(c.toDataURL('image/jpeg',q||.85));};i.onerror=()=>res(url);i.src=url;});}
 function imgEl(url){return new Promise((res,rej)=>{const i=new Image();i.onload=()=>res(i);i.onerror=rej;i.src=url;});}
 function textSim(a,b){const A=norm(a).split(' ').filter(w=>w.length>=3),B=norm(b).split(' ').filter(w=>w.length>=3);if(!A.length||!B.length)return 0;let hit=0;for(const w of A){for(const p of B){if(p===w||(w.length>=4&&lev(w,p)<=1)){hit++;break;}}}return hit/A.length;}
@@ -317,7 +332,7 @@ function loadDataset(rows,meta){
   ROWS.forEach(r=>{const g=r.group||NO_GROUP;if(!m.has(g))m.set(g,[]);m.get(g).push(r);});
   GROUPS=[...m.entries()].map(([name,rws])=>({name,rows:rws,vis:rws,hi:-1}))
     .sort((a,b)=>((a.name===NO_GROUP)-(b.name===NO_GROUP))||a.name.localeCompare(b.name,'ar'));
-  GROUPS.forEach(g=>g.rows.forEach((r,i)=>r.gseq=i+1)); /* تسلسل مستقل لكل شركة */
+  GROUPS.forEach(g=>g.rows.forEach((r,i)=>r.gseq=i+1));
   $('emptyMsg').hidden=true;
   $('compSec').hidden=false;
   $('compCount').textContent=ROWS.length+' مادة';
@@ -370,10 +385,10 @@ function renderGroupContent(){
   if(!list.length){el.innerHTML='<p class="empty">لا توجد نتائج مطابقة</p>';return;}
   if(v==='table'){
     el.innerHTML='<table class="tbl"><thead><tr><th>ت</th><th>اسم المادة</th><th>الكمية</th><th>سعر المبيع</th></tr></thead><tbody>'
-      +list.map(r=>`<tr tabindex="0" data-id="${r.id}"><td>${r.gseq}</td><td>${esc(short(r.name))}</td><td>${fm(r.qty)}</td><td>${fm(r.sell)}</td></tr>`).join('')
+      +list.map(r=>`<tr tabindex="0" data-id="${r.id}" class="${hasImg(r.id)?'hi-img':''}"><td>${r.gseq}</td><td>${hasImg(r.id)?'<span class="imgdot">🖼</span> ':''}${esc(short(r.name))}</td><td>${fm(r.qty)}</td><td>${fm(r.sell)}</td></tr>`).join('')
       +'</tbody></table>';
   }else{
-    el.innerHTML='<div class="tiles">'+list.map(r=>`<button class="tile" data-id="${r.id}"><b>${esc(short(r.name,70))}</b><span class="trow"><i class="q">📦 ${fm(r.qty)}</i><i class="p">💰 ${fm(r.sell)}</i></span></button>`).join('')+'</div>';
+    el.innerHTML='<div class="tiles">'+list.map(r=>`<button class="tile ${hasImg(r.id)?'hi-img':''}" data-id="${r.id}"><b>${hasImg(r.id)?'🖼 ':''}${esc(short(r.name,70))}</b><span class="trow"><i class="q">📦 ${fm(r.qty)}</i><i class="p">💰 ${fm(r.sell)}</i></span></button>`).join('')+'</div>';
   }
   g.hi=-1;
 }
@@ -425,20 +440,22 @@ function openView(id){const r=ROWMAP[id];if(!r)return;currentId=id;
   $('noteInput').value=note||'';
   updateImgsBtn();
 }
-function updateImgsBtn(){const n=IMAGES[currentId]&&IMAGES[currentId].imgs?IMAGES[currentId].imgs.length:0;
+function updateImgsBtn(){const n=hasImg(currentId)?IMAGES[currentId].imgs.length:0;
   $('btnImgs').textContent='🖼 الصور المرجعية ('+n+')';}
 $('btnMaint').onclick=()=>{$('maintSec').hidden=!$('maintSec').hidden;};
 $('saveNote').onclick=async()=>{const n=$('noteInput').value.trim();EXTRAS[currentId]={id:currentId,note:n};
   await dbPut('extras',currentId,EXTRAS[currentId]);toast('تم حفظ التفاصيل ✔');openView(currentId);$('maintSec').hidden=false;};
 
 /* ---------- نافذة الصور المرجعية ---------- */
-$('btnImgs').onclick=()=>{openImgsModal();};
-function openImgsModal(){$('imgsTitle').textContent='🖼 الصور المرجعية — '+(ROWMAP[currentId]?ROWMAP[currentId].name:'');
-  $('imgsModal').hidden=false;renderImgs();}
+$('btnImgs').onclick=()=>{$('imgsTitle').textContent='🖼 الصور المرجعية — '+(ROWMAP[currentId]?ROWMAP[currentId].name:'');
+  $('imgsModal').hidden=false;renderImgs();};
 function renderImgs(){const im=IMAGES[currentId];
   $('imgsGrid').innerHTML=(im&&im.imgs&&im.imgs.length)?im.imgs.map((g,i)=>`<div class="imbig"><img src="${g.thumb}" alt=""><button data-delimg="${i}" title="حذف">✕</button></div>`).join('')
    :'<p class="empty" style="grid-column:1/-1">لا توجد صور مرجعية بعد — أضف صورة بالكاميرا أو الرفع.</p>';
-  updateImgsBtn();}
+  updateImgsBtn();
+  /* تحديث تلوين الجدول خلف النافذة */
+  if(currentGroup)renderGroupContent();
+}
 $('imgsGrid').addEventListener('click',async e=>{const d=e.target.closest('[data-delimg]');if(!d)return;
   const im=IMAGES[currentId];im.imgs.splice(+d.dataset.delimg,1);
   if(!im.imgs.length){delete IMAGES[currentId];await dbDel('images',currentId);}
@@ -594,11 +611,12 @@ async function attachTo(id){
     await dbPut('images',id,IMAGES[id]);
     $('scanModal').hidden=true;
     toast('✔ أُضيفت الصورة كمرجع إضافي — التعرف القادم أضمن');
+    if(currentGroup)renderGroupContent();
   }catch(e){console.error(e);toast('خطأ: '+e.message,'err');$('scanStart').hidden=false;}
   $('scanProg').hidden=true;
 }
 
-/* ---------- إغلاق النوافذ (كل نافذة لحالها + الأعلى أولاً) ---------- */
+/* ---------- إغلاق النوافذ ---------- */
 const MOD_ORDER=['confirmModal','camModal','imgsModal','viewModal','scanModal','groupModal'];
 function closeTop(){const id=MOD_ORDER.find(x=>!$(x).hidden);if(!id)return;$(id).hidden=true;if(id==='camModal')stopCam();}
 document.querySelectorAll('[data-close]').forEach(b=>b.onclick=()=>{const o=b.closest('.overlay');o.hidden=true;if(o.id==='camModal')stopCam();});
