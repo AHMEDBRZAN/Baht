@@ -14,6 +14,7 @@
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 [hidden]{display:none!important}
 body{margin:0;font-family:'Tajawal',Tahoma,sans-serif;background:linear-gradient(180deg,#f6f8fc,#eef1f8);color:var(--txt)}
+body.lock{overflow:hidden}
 button{font-family:inherit}
 .clickable{cursor:pointer;user-select:none}
 :focus-visible{outline:3px solid rgba(79,70,229,.4);outline-offset:2px;border-radius:8px}
@@ -48,7 +49,7 @@ main{max-width:960px;margin:0 auto;padding:14px 12px 30px}
 .comp:active{transform:scale(.95)}
 .comp b{display:block;font-size:14px;color:var(--pri2)}
 .comp small{color:var(--mut);font-size:11px;font-weight:700}
-/* ---------- شعار مضغوط وأنيق ---------- */
+/* شعار مضغوط وأنيق */
 .brand{display:flex;align-items:center;justify-content:center;gap:14px;padding:18px 10px 6px}
 .brand-mark{position:relative;width:56px;height:56px;background:#0c0d10;border-radius:16px;flex:0 0 auto;box-shadow:0 10px 22px rgba(5,5,15,.28);display:grid;place-items:center}
 .brand-mark span{color:#fff;font-family:Arial,Helvetica,sans-serif;font-weight:800;font-size:26px}
@@ -59,8 +60,8 @@ main{max-width:960px;margin:0 auto;padding:14px 12px 30px}
 .brand-txt b{font-family:Arial,Helvetica,sans-serif;font-size:22px;letter-spacing:6px;color:#10131a;margin-right:-6px}
 .brand-line{width:130px;height:4px;border-radius:4px;background:linear-gradient(90deg,#f2662a 0 25%,#3faa4a 0 50%,#e2231f 0 75%,#2a8ed8 0 100%)}
 .brand-txt span{color:var(--mut);font-size:12px;font-weight:700}
-/* ---------- نوافذ ---------- */
-.overlay{position:fixed;inset:0;background:rgba(20,25,50,.45);backdrop-filter:blur(3px);z-index:50;display:flex;padding:12px;overflow:auto}
+/* نوافذ */
+.overlay{position:fixed;inset:0;background:rgba(20,25,50,.45);backdrop-filter:blur(3px);z-index:50;display:flex;padding:12px;overflow:auto;overscroll-behavior:contain}
 #groupModal{z-index:55}
 #viewModal{z-index:60}
 #imgsModal{z-index:65}
@@ -72,7 +73,8 @@ main{max-width:960px;margin:0 auto;padding:14px 12px 30px}
 .m-head{flex:0 0 auto;display:flex;justify-content:space-between;align-items:center;gap:10px;padding:14px 16px;background:#fff;border-bottom:1px solid #eef0f6}
 .m-head h2{margin:0;font-size:18px;font-weight:800}
 .x{border:none;background:#f1f3fa;width:38px;height:38px;border-radius:50%;cursor:pointer;font-size:15px;flex:0 0 auto}
-.m-body{overflow:auto;padding:16px;flex:1}
+.m-body{overflow:auto;padding:16px;flex:1;overscroll-behavior:contain;will-change:transform}
+.m-body.spring{transition:transform .4s cubic-bezier(.22,.9,.32,1.15)}
 .g-tools{display:flex;gap:10px;flex-wrap:wrap;margin:0 0 12px}
 .gsearch{flex:1;min-width:180px;border:2px solid #e3e7f5;border-radius:12px;padding:10px 14px;font-family:inherit;font-size:13px;outline:none;background:#fff}
 .gsearch:focus{border-color:var(--pri)}
@@ -169,7 +171,6 @@ textarea:focus{border-color:var(--pri)}
     <div class="comps" id="compsBar"></div>
   </section>
 
-  <!-- شعار مضغوط وأنيق -->
   <section class="brand" id="brandSec" hidden>
     <div class="brand-mark" dir="ltr"><span>F</span><i class="tk t1"></i><i class="tk t2"></i></div>
     <div class="brand-txt" dir="ltr">
@@ -303,11 +304,48 @@ const REPO_URLS=['https://raw.githubusercontent.com/AHMEDBRZAN/Baht/main/'+encod
 let ROWS=[],ROWMAP={},GROUPS=[],IMAGES={},EXTRAS={},VIEWS={},FILES=[];
 let currentId=null,currentGroup=null,model=null,tfOk=false,camStream=null,camMode=null,lastScanUrl=null,gSearchT=null;
 
+/* ---------- قفل الخلفية + منع لمس ما خلف النوافذ ---------- */
+function anyModalOpen(){return !!document.querySelector('.overlay:not([hidden])');}
+const lockObs=new MutationObserver(()=>{document.body.classList.toggle('lock',anyModalOpen());});
+document.querySelectorAll('.overlay').forEach(o=>lockObs.observe(o,{attributes:true,attributeFilter:['hidden']}));
+document.addEventListener('touchmove',e=>{
+  if(!anyModalOpen())return;
+  const sc=e.target.closest&&e.target.closest('.m-body');
+  if(!sc)e.preventDefault();
+},{passive:false});
+
+/* ---------- تأثير المطاط عند نهاية القائمة (كل النوافذ) ---------- */
+function rubberize(el){
+  let startY=0,dragging=false,atTop=false,atBottom=false;
+  el.addEventListener('touchstart',e=>{
+    if(e.touches.length!==1)return;
+    startY=e.touches[0].clientY;dragging=true;
+    atTop=el.scrollTop<=0;
+    atBottom=el.scrollTop+el.clientHeight>=el.scrollHeight-1;
+    el.classList.remove('spring');el.style.transform='';
+  },{passive:true});
+  el.addEventListener('touchmove',e=>{
+    if(!dragging)return;
+    const dy=e.touches[0].clientY-startY;
+    const scrollable=el.scrollHeight>el.clientHeight+1;
+    const over=(!scrollable&&Math.abs(dy)>4)||(atTop&&dy>6)||(atBottom&&dy<-6);
+    if(over){
+      e.preventDefault();
+      const pull=Math.max(-90,Math.min(90,dy/3));
+      el.style.transform='translateY('+pull+'px)';
+    }
+  },{passive:false});
+  const end=()=>{if(!dragging)return;dragging=false;el.classList.add('spring');el.style.transform='';};
+  el.addEventListener('touchend',end);
+  el.addEventListener('touchcancel',end);
+}
+document.querySelectorAll('.m-body').forEach(rubberize);
+
 /* ---------- أدوات ---------- */
 function toast(m,t){const e=$('toast');e.textContent=m;e.className=t||'';e.hidden=false;clearTimeout(e._h);e._h=setTimeout(()=>e.hidden=true,4000);}
 function esc(s){return (s??'').toString().replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
 function short(s,n){n=n||42;s=s??'';return s.length>n?s.slice(0,n)+'…':s;}
-function parseNum(v){if(typeof v==='number')return isFinite(v)?v:0;if(v==null)return 0;let s=String(v).replace(/[٠-٩]/g,d=>'٠١٣٤٥٧٨٩'.indexOf(d)).replace(/[,،\s]/g,'');const n=parseFloat(s);return isFinite(n)?n:0;}
+function parseNum(v){if(typeof v==='number')return isFinite(v)?v:0;if(v==null)return 0;let s=String(v).replace(/[٠-٩]/g,d=>'٠١٣٤٥٦٧٨٩'.indexOf(d)).replace(/[,،\s]/g,'');const n=parseFloat(s);return isFinite(n)?n:0;}
 function fm(n){n=parseNum(n);return n?n.toLocaleString('en-US',{maximumFractionDigits:2}):'0';}
 function norm(s){return (s||'').toLowerCase().replace(/[\u064B-\u0652\u0640]/g,'').replace(/[أإآ]/g,'ا').replace(/ة/g,'ه').replace(/ى/g,'ي').replace(/[^\p{L}\p{N}]+/gu,' ').trim();}
 function lev(a,b){a=a||'';b=b||'';if(a===b)return 0;const m=a.length,n=b.length;if(!m||!n)return m||n;let p=Array.from({length:n+1},(_,i)=>i);for(let i=1;i<=m;i++){const c=[i];for(let j=1;j<=n;j++)c[j]=Math.min(p[j]+1,c[j-1]+1,p[j-1]+(a[i-1]===b[j-1]?0:1));p=c;}return p[n];}
@@ -594,7 +632,7 @@ function renderResults(url,res){
     const pct=Math.round(best.s*100),cls=pct>=60?'':(pct>=30?'mid':'low'),r=ROWMAP[best.im.id];
     if(pct<25){
       bc.innerHTML=`<div class="best low"><p style="margin:0;font-weight:800">⚠ لم يتم التعرف على المادة</p>
-      <p class="hint">يبدو أن المادة المصوَّرة <b>ليست مضافاً لها صورة مرجعية بعد</b>. اختر أقرب مرشح من الأسفل ليُطلب تأكيدك وتُضاف الصورة له.</p></div>`;
+      <p class="hint">يبدو أن المادة المصوَّرة <b>ليست مضافاً لها صورة مرجعية بعد</b>. اختر أقرب مرشح من الأسفل واضغط عليه ليُطلب تأكيدك وتُضاف الصورة له.</p></div>`;
     }else{
       bc.innerHTML=`<div class="best ${cls}" data-openbest="${best.im.id}">
         <div class="imgs"><div><img src="${url}"><span>الصورة الملتقطة</span></div><div><img src="${best.g.thumb}"><span>الصورة المخزّنة</span></div></div>
