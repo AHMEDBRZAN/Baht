@@ -40,15 +40,14 @@ main{max-width:960px;margin:0 auto;padding:14px 12px 60px}
 .file-item .meta b{font-size:14px}
 .file-item .meta small{display:block;color:var(--mut)}
 .statbar{background:linear-gradient(135deg,var(--pri),#2563eb);color:#fff;border-radius:16px;padding:12px 16px;font-weight:800;margin-bottom:14px;box-shadow:var(--sh)}
-.gcard{background:var(--card);border-radius:var(--rad);box-shadow:var(--sh);margin-bottom:12px;overflow:hidden}
-.g-h{display:flex;gap:10px;align-items:center;width:100%;border:none;background:none;padding:14px;cursor:pointer;text-align:right}
-.g-h h3{margin:0;flex:1;font-size:15px;font-weight:800}
-.g-ico{font-size:20px}
-.chip{background:#eef1f8;color:var(--pri2);border-radius:20px;padding:3px 12px;font-size:12px;font-weight:800;white-space:nowrap}
-.chip.price{background:#e7f7ee;color:#177a4c}
-.chip.ok{background:#e7f7ee;color:#177a4c;display:inline-block;margin-top:8px}
-.g-body{border-top:1px solid #eef0f8;padding:12px}
-.g-tools{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:10px}
+/* بطاقات المجموعات */
+.groups-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px;margin-top:12px}
+.gcard{background:linear-gradient(160deg,#ffffff,#eef2ff);border:1px solid #e6e9f7;border-radius:18px;padding:16px 10px;cursor:pointer;text-align:center;transition:.2s;display:flex;flex-direction:column;gap:6px;align-items:center}
+.gcard:hover{transform:translateY(-3px);border-color:var(--pri);box-shadow:var(--sh)}
+.gcard .gi{font-size:28px}
+.gcard b{font-size:13px;line-height:1.5}
+.gcard small{color:var(--mut);font-size:11px}
+.g-tools{display:flex;gap:10px;flex-wrap:wrap;margin:10px 0}
 .gsearch{flex:1;min-width:180px;border:2px solid #e3e7f5;border-radius:12px;padding:10px 14px;font-family:inherit;font-size:13px;outline:none;background:#fff}
 .gsearch:focus{border-color:var(--pri)}
 .vtoggle{display:flex;background:#eef1f8;border-radius:12px;padding:3px}
@@ -68,7 +67,12 @@ main{max-width:960px;margin:0 auto;padding:14px 12px 60px}
 .trow .q{background:#eef1f8;color:var(--pri2)}.trow .p{background:#fdf3e3;color:#a26a08}
 .empty{text-align:center;color:var(--mut);padding:26px 0;font-size:14px}
 .overlay{position:fixed;inset:0;background:rgba(20,25,50,.45);backdrop-filter:blur(3px);z-index:50;display:flex;align-items:center;justify-content:center;padding:12px}
+#groupModal{z-index:55}
+#viewModal{z-index:60}
+#camModal{z-index:70}
+#confirmModal{z-index:80}
 .modal{background:#fff;border-radius:22px;width:min(600px,96vw);max-height:92vh;overflow:auto;padding:16px;animation:up .25s}
+.modal.wide{width:min(780px,96vw)}
 @keyframes up{from{transform:translateY(24px);opacity:0}}
 .m-head{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:10px}
 .m-head h2{margin:0;font-size:17px}
@@ -136,10 +140,28 @@ footer{max-width:960px;margin:0 auto;padding:0 12px 26px;color:var(--mut);font-s
     <div id="filesList"></div>
   </section>
   <div class="statbar" id="statbar" hidden></div>
-  <section id="groups"></section>
+  <section class="card" id="groupsSec" hidden>
+    <div class="sec-h"><button class="chev open" id="groupsChev">⌄</button><h2>📁 بطاقات المجموعات</h2><span class="chip" id="groupsCount"></span></div>
+    <div class="groups-grid" id="groupsGrid"></div>
+  </section>
   <p class="empty" id="emptyMsg">اضغط «تحديث من المستودع 🔄» لجلب ملف المواد، أو «رفع ملف 📂».</p>
 </main>
-<footer>اختصارات: Esc إغلاق • Enter التقاط/فتح • ↑↓ التنقل في نتائج البحث داخل البطاقة</footer>
+<footer>اختصارات: Esc إغلاق • Enter التقاط/فتح • ↑↓ التنقل في نتائج البحث</footer>
+
+<!-- نافذة بطاقة المجموعة -->
+<div class="overlay" id="groupModal" hidden>
+  <div class="modal wide">
+    <div class="m-head"><h2 id="gTitle"></h2><button class="x" data-close>✕</button></div>
+    <div class="g-tools">
+      <input class="gsearch" id="gSearch" placeholder="🔍 بحث ذكي في البطاقة…">
+      <div class="vtoggle">
+        <button id="gViewTable" class="on">📋 جدول</button>
+        <button id="gViewGrid">🧱 شبكة</button>
+      </div>
+    </div>
+    <div id="gContent"></div>
+  </div>
+</div>
 
 <!-- تفاصيل مادة + صيانة -->
 <div class="overlay" id="viewModal" hidden>
@@ -167,7 +189,7 @@ footer{max-width:960px;margin:0 auto;padding:0 12px 26px;color:var(--mut);font-s
   </div>
 </div>
 
-<!-- الكاميرا المنعزلة -->
+<!-- الكاميرا (فوق كل النوافذ) -->
 <div class="overlay" id="camModal" hidden>
   <div class="modal">
     <div class="m-head"><h2>📷 الكاميرا</h2><button class="x" id="camClose">✕</button></div>
@@ -185,7 +207,7 @@ footer{max-width:960px;margin:0 auto;padding:0 12px 26px;color:var(--mut);font-s
   <div class="modal">
     <div class="m-head"><h2>📷 التعرف على المادة</h2><button class="x" data-close>✕</button></div>
     <div id="scanStart">
-      <p class="hint">صوّر العلبة أو ارفع صورة — المطابقة تتم على: الشكل + الألوان + النص المطبوع + النص المخزّن. كلما أضفت صوراً مرجعية أكثر من ⚙ الصيانة صار التعرف أضمن.</p>
+      <p class="hint">صوّر العلبة أو ارفع صورة — المطابقة: الشكل + الألوان + النص المطبوع + النص المخزّن. كلما أضفت صوراً مرجعية أكثر من ⚙ الصيانة صار التعرف أضمن.</p>
       <div class="row">
         <button class="btn amb" id="btnCamScan">📷 فتح الكاميرا</button>
         <button class="btn ghost" id="fileScanBtn">🖼 رفع صورة</button>
@@ -196,7 +218,7 @@ footer{max-width:960px;margin:0 auto;padding:0 12px 26px;color:var(--mut);font-s
     <div id="scanRes" hidden>
       <div id="bestCard"></div>
       <h3 style="font-size:14px;margin:8px 0">بقية المرشحات (12 الأكثر تشابهاً):</h3>
-      <p class="hint">اضغط على أي مرشح ⇐ سيُطلب تأكيدك ⇐ تُضاف الصورة الملتقطة كصورة مرجعية إضافية له وتُغلق النافذة. زر 👁 لفتح التفاصيل بدون إرفاق.</p>
+      <p class="hint">اضغط على أي مرشح ⇐ يُطلب تأكيدك ⇐ تُضاف الصورة الملتقطة كمرجع إضافي وتُغلق النافذة. زر 👁 للتفاصيل بدون إرفاق.</p>
       <div id="candList"></div>
       <div class="row"><button class="btn pri" id="rescan">🔁 تصوير مادة أخرى</button></div>
     </div>
@@ -222,14 +244,14 @@ const REPO_FILE='جميع المواد.xlsx';
 const REPO_URLS=['main','master'].map(b=>'https://raw.githubusercontent.com/AHMEDBRZAN/Baht/'+b+'/'+encodeURIComponent(REPO_FILE))
  .concat(['materials.xlsx','data.xlsx'].map(f=>'https://raw.githubusercontent.com/AHMEDBRZAN/Baht/main/'+f));
 
-let ROWS=[],ROWMAP={},GROUPS=[],IMAGES={},EXTRAS={},VIEWS={},EXP={},FILES=[];
-let currentId=null,model=null,tfOk=false,camStream=null,camMode=null,lastScanUrl=null;
+let ROWS=[],ROWMAP={},GROUPS=[],IMAGES={},EXTRAS={},VIEWS={},FILES=[];
+let currentId=null,currentGroup=null,model=null,tfOk=false,camStream=null,camMode=null,lastScanUrl=null,autoT=null;
 
 /* ---------- أدوات ---------- */
 function toast(m,t){const e=$('toast');e.textContent=m;e.className=t||'';e.hidden=false;clearTimeout(e._h);e._h=setTimeout(()=>e.hidden=true,3500);}
 function esc(s){return (s??'').toString().replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
 function short(s,n){n=n||42;s=s??'';return s.length>n?s.slice(0,n)+'…':s;}
-function parseNum(v){if(typeof v==='number')return isFinite(v)?v:0;if(v==null)return 0;let s=String(v).replace(/[٠-٩]/g,d=>'٠١٢٤٥٦٧٨٩'.indexOf(d)).replace(/[,،\s]/g,'');const n=parseFloat(s);return isFinite(n)?n:0;}
+function parseNum(v){if(typeof v==='number')return isFinite(v)?v:0;if(v==null)return 0;let s=String(v).replace(/[٠-٩]/g,d=>'٠١٢٣٤٥٦٧٨٩'.indexOf(d)).replace(/[,،\s]/g,'');const n=parseFloat(s);return isFinite(n)?n:0;}
 function fm(n){n=parseNum(n);return n?n.toLocaleString('en-US',{maximumFractionDigits:2}):'0';}
 function norm(s){return (s||'').toLowerCase().replace(/[\u064B-\u0652\u0640]/g,'').replace(/[أإآ]/g,'ا').replace(/ة/g,'ه').replace(/ى/g,'ي').replace(/[^\p{L}\p{N}]+/gu,' ').trim();}
 function lev(a,b){if(a===b)return 0;const m=a.length,n=b.length;if(!m||!n)return m||n;let p=Array.from({length:n+1},(_,i)=>i);for(let i=1;i<=m;i++){const c=[i];for(let j=1;j<=n;j++)c[j]=Math.min(p[j]+1,c[j-1]+1,p[j-1]+(a[i-1]===b[j-1]?0:1));p=c;}return p[n];}
@@ -273,38 +295,50 @@ function loadDataset(rows,meta){
   ROWS.forEach(r=>{const g=r.group||NO_GROUP;if(!m.has(g))m.set(g,[]);m.get(g).push(r);});
   GROUPS=[...m.entries()].map(([name,rws])=>({name,rows:rws,vis:rws,hi:-1}))
     .sort((a,b)=>((a.name===NO_GROUP)-(b.name===NO_GROUP))||a.name.localeCompare(b.name,'ar'));
-  GROUPS.forEach(g=>{EXP[g.name]=false;if(!VIEWS[g.name])VIEWS[g.name]='table';}); /* البطاقات مغلقة افتراضياً */
   $('statbar').hidden=false;
   $('statbar').textContent='📊 '+ROWS.length+' مادة موزعة على '+GROUPS.length+' بطاقة مجموعة'+(meta?' — المصدر: '+meta.name:'');
   $('emptyMsg').hidden=true;
-  renderGroups();
+  $('groupsSec').hidden=false;
+  renderGroupsGrid();
+  $('groupsGrid').hidden=false;$('groupsChev').classList.add('open');
+  clearTimeout(autoT);
+  autoT=setTimeout(()=>{$('groupsGrid').hidden=true;$('groupsChev').classList.remove('open');},3000); /* تنطوي بعد 3 ثوانٍ */
 }
-function groupEl(name){return [...document.querySelectorAll('.gcard')].find(c=>c.dataset.g===name);}
-function renderGroups(){
-  $('groups').innerHTML=GROUPS.map(g=>{
-    const open=EXP[g.name],v=VIEWS[g.name];
-    return `<div class="gcard" data-g="${esc(g.name)}">
-      <button class="g-h" data-toggle="${esc(g.name)}" aria-expanded="${open}">
-        <span class="chev ${open?'open':''}">⌄</span><span class="g-ico">📁</span>
-        <h3>${esc(g.name)}</h3><span class="chip">${g.rows.length} مادة</span>
-      </button>
-      <div class="g-body" ${open?'':'hidden'}>
-        <div class="g-tools">
-          <input class="gsearch" data-search="${esc(g.name)}" placeholder="🔍 بحث ذكي في «${esc(g.name)}»…">
-          <div class="vtoggle">
-            <button data-view="table" class="${v==='table'?'on':''}">📋 جدول</button>
-            <button data-view="grid" class="${v==='grid'?'on':''}">🧱 شبكة</button>
-          </div>
-        </div>
-        <div class="g-content"></div>
-      </div>
-    </div>`;
-  }).join('');
-  GROUPS.forEach(g=>{if(EXP[g.name])renderGroupContent(g.name);});
+
+/* ---------- بطاقات المجموعات ---------- */
+function renderGroupsGrid(){
+  $('groupsCount').textContent=GROUPS.length+' بطاقة';
+  $('groupsGrid').innerHTML=GROUPS.map(g=>`<button class="gcard" data-open-group="${esc(g.name)}">
+    <span class="gi">${g.name===NO_GROUP?'📦':'📁'}</span><b>${esc(g.name)}</b><small>${g.rows.length} مادة</small></button>`).join('');
 }
-function renderGroupContent(name){
-  const g=GROUPS.find(x=>x.name===name),card=groupEl(name);if(!g||!card)return;
-  const el=card.querySelector('.g-content'),v=VIEWS[name],list=g.vis;
+$('groupsChev').onclick=()=>{clearTimeout(autoT);const willShow=$('groupsGrid').hidden;$('groupsGrid').hidden=!willShow;$('groupsChev').classList.toggle('open',willShow);};
+$('groupsGrid').addEventListener('click',e=>{const c=e.target.closest('[data-open-group]');if(c)openGroupModal(c.dataset.openGroup);});
+
+/* ---------- نافذة بطاقة المجموعة ---------- */
+function openGroupModal(name){
+  currentGroup=name;const g=GROUPS.find(x=>x.name===name);if(!g)return;
+  $('gTitle').textContent='📁 '+name+' — '+g.rows.length+' مادة';
+  $('gSearch').value='';g.vis=g.rows;g.hi=-1;
+  const v=VIEWS[name]||'table';
+  $('gViewTable').classList.toggle('on',v==='table');$('gViewGrid').classList.toggle('on',v==='grid');
+  $('groupModal').hidden=false;renderGroupContent();
+  setTimeout(()=>$('gSearch').focus(),150);
+}
+function setGroupView(v){VIEWS[currentGroup]=v;$('gViewTable').classList.toggle('on',v==='table');$('gViewGrid').classList.toggle('on',v==='grid');renderGroupContent();}
+$('gViewTable').onclick=()=>setGroupView('table');
+$('gViewGrid').onclick=()=>setGroupView('grid');
+$('gSearch').addEventListener('input',e=>{const g=GROUPS.find(x=>x.name===currentGroup);if(!g)return;const q=e.target.value.trim();
+  g.vis=q?g.rows.map(r=>({r,s:searchScore(q,r)})).filter(x=>x.s>0).sort((a,b)=>b.s-a.s).map(x=>x.r):g.rows;renderGroupContent();});
+$('gSearch').addEventListener('keydown',e=>{const g=GROUPS.find(x=>x.name===currentGroup);if(!g)return;const items=$('gContent').querySelectorAll('[data-id]');
+  if(e.key==='ArrowDown'||e.key==='ArrowUp'){e.preventDefault();if(!items.length)return;
+    g.hi=Math.max(0,Math.min(items.length-1,g.hi+(e.key==='ArrowDown'?1:-1)));
+    items.forEach((el,i)=>el.classList.toggle('hl',i===g.hi));items[g.hi].scrollIntoView({block:'nearest'});}
+  else if(e.key==='Enter'&&g.hi>=0&&items[g.hi])openView(items[g.hi].dataset.id);});
+$('gContent').addEventListener('click',e=>{const it=e.target.closest('[data-id]');if(it)openView(it.dataset.id);});
+$('gContent').addEventListener('keydown',e=>{if(e.key==='Enter'&&e.target.dataset&&e.target.dataset.id)openView(e.target.dataset.id);});
+function renderGroupContent(){
+  const g=GROUPS.find(x=>x.name===currentGroup);if(!g)return;
+  const el=$('gContent'),list=g.vis||g.rows,v=VIEWS[currentGroup]||'table';
   if(!list.length){el.innerHTML='<p class="empty">لا توجد نتائج مطابقة</p>';return;}
   if(v==='table'){
     el.innerHTML='<table class="tbl"><thead><tr><th>ت</th><th>اسم المادة</th><th>الكمية</th><th>سعر المبيع</th></tr></thead><tbody>'
@@ -342,35 +376,6 @@ $('btnUpload').onclick=()=>$('filePick').click();
 $('filePick').onchange=e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();
   r.onload=()=>{const rows=parseWorkbook(r.result);rows?(loadDataset(rows,{name:f.name}),toast('تم تحميل «'+f.name+'» ✔')):toast('ملف غير مدعوم','err');};
   r.readAsArrayBuffer(f);};
-
-/* ---------- تفاعل البطاقات ---------- */
-$('groups').addEventListener('click',e=>{
-  const t=e.target;
-  const h=t.closest('[data-toggle]');
-  if(h){const n=h.dataset.toggle;EXP[n]=!EXP[n];const card=groupEl(n);
-    card.querySelector('.g-body').hidden=!EXP[n];h.querySelector('.chev').classList.toggle('open',EXP[n]);
-    if(EXP[n])renderGroupContent(n);return;}
-  const v=t.closest('[data-view]');
-  if(v){const card=v.closest('.gcard'),n=card.dataset.g;VIEWS[n]=v.dataset.view;
-    card.querySelectorAll('.vtoggle button').forEach(b=>b.classList.toggle('on',b===v));renderGroupContent(n);return;}
-  const item=t.closest('[data-id]');if(item)openView(item.dataset.id);
-});
-$('groups').addEventListener('input',e=>{
-  const s=e.target.closest('[data-search]');if(!s)return;
-  const n=s.dataset.search,g=GROUPS.find(x=>x.name===n),q=s.value.trim();
-  g.vis=q?g.rows.map(r=>({r,s:searchScore(q,r)})).filter(x=>x.s>0).sort((a,b)=>b.s-a.s).map(x=>x.r):g.rows;
-  renderGroupContent(n);
-});
-$('groups').addEventListener('keydown',e=>{
-  const s=e.target.closest('[data-search]');
-  if(s){const n=s.dataset.search,g=GROUPS.find(x=>x.name===n),card=groupEl(n),items=card.querySelectorAll('[data-id]');
-    if(e.key==='ArrowDown'||e.key==='ArrowUp'){e.preventDefault();if(!items.length)return;
-      g.hi=Math.max(0,Math.min(items.length-1,g.hi+(e.key==='ArrowDown'?1:-1)));
-      items.forEach((el,i)=>el.classList.toggle('hl',i===g.hi));items[g.hi].scrollIntoView({block:'nearest'});}
-    else if(e.key==='Enter'&&g.hi>=0&&items[g.hi]){openView(items[g.hi].dataset.id);}
-    return;}
-  if(e.key==='Enter'&&e.target.dataset&&e.target.dataset.id)openView(e.target.dataset.id);
-});
 
 /* ---------- تفاصيل المادة ---------- */
 function openView(id){const r=ROWMAP[id];if(!r)return;currentId=id;
@@ -439,7 +444,7 @@ async function processAttach(url){
   }catch(e){console.error(e);$('procProg').hidden=true;toast('خطأ بالمعالجة: '+e.message,'err');}
 }
 
-/* ---------- الكاميرا المنعزلة ---------- */
+/* ---------- الكاميرا المنعزلة (فوق الكل) ---------- */
 function openCamModal(mode){camMode=mode;$('camModal').hidden=false;startCam();}
 async function startCam(){stopCam();try{camStream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'environment'},audio:false});$('camVideo').srcObject=camStream;await $('camVideo').play();}catch(e){toast('تعذر فتح الكاميرا: '+e.message,'err');}}
 function stopCam(){if(camStream){camStream.getTracks().forEach(t=>t.stop());camStream=null;}}
@@ -451,12 +456,12 @@ $('camUpload').onchange=async e=>{const f=e.target.files[0];if(!f)return;const r
   r.onload=async()=>{stopCam();$('camModal').hidden=true;route(await scaleDataUrl(r.result,900,.88));};r.readAsDataURL(f);};
 function route(url){if(camMode==='attach'){if(!currentId)return toast('افتح المادة أولاً','err');processAttach(url);}else recognize(url);}
 
-/* ---------- نافذة التأكيد ---------- */
+/* ---------- تأكيد ---------- */
 function askConfirm(msg){return new Promise(res=>{$('confirmTxt').textContent=msg;$('confirmModal').hidden=false;
   const done=v=>{$('confirmModal').hidden=true;$('confirmYes').onclick=null;$('confirmNo').onclick=null;res(v);};
   $('confirmYes').onclick=()=>done(true);$('confirmNo').onclick=()=>done(false);});}
 
-/* ---------- التعرف متعدد المعايير ---------- */
+/* ---------- التعرف ---------- */
 function cosine(a,b){let d=0,na=0,nb=0;for(let i=0;i<Math.min(a.length,b.length);i++){d+=a[i]*b[i];na+=a[i]*a[i];nb+=b[i]*b[i];}return d/(Math.sqrt(na)*Math.sqrt(nb)+1e-9);}
 function histInter(a,b){let s=0;for(let i=0;i<a.length;i++)s+=Math.min(a[i],b[i]);return s;}
 function ocrScoreFor(text,id){const hay=norm(text);if(!hay)return 0;const r=ROWMAP[id];if(!r)return 0;
@@ -506,7 +511,7 @@ async function recognize(url){
 function renderResults(url,res){
   const best=res[0],bc=$('bestCard');
   if(!best){
-    bc.innerHTML='<div class="best low"><p style="margin:0;font-weight:800">⚠ لم يتم التعرف — لا توجد صور مرجعية مضافة بعد.</p><p class="hint">افتح المادة من بطاقتها واضغط ⚙ إعدادات / صيانة لإضافة صورة مرجعية لها.</p></div>';
+    bc.innerHTML='<div class="best low"><p style="margin:0;font-weight:800">⚠ لم يتم التعرف — لا توجد صور مرجعية مضافة بعد.</p><p class="hint">افتح المادة من بطاقتها واضغط ⚙ إعدادات / صيانة لإضافة صورة مرجعية.</p></div>';
   }else{
     const pct=Math.round(best.s*100),cls=pct>=60?'':(pct>=30?'mid':'low'),r=ROWMAP[best.im.id];
     if(pct<25){
