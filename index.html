@@ -27,6 +27,7 @@ input,textarea{-webkit-user-select:text;user-select:text}
 body.lock{overflow:hidden}
 button{font-family:inherit}
 .clickable{cursor:pointer;user-select:none}
+#adminLoginTap{cursor:pointer;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;touch-action:manipulation}
 :focus-visible{outline:3px solid rgba(79,70,229,.4);outline-offset:2px;border-radius:8px}
 header{max-width:960px;margin:16px auto 0;padding:0 12px}
 .hcard{background:linear-gradient(135deg,#ffffff,#f2f5ff 60%,#eefaf6);border:1px solid #e8ebf7;border-radius:24px;box-shadow:var(--sh);padding:20px}
@@ -71,6 +72,7 @@ main{max-width:960px;margin:0 auto;padding:14px 12px 60px}
 #viewModal{z-index:60}
 #imgsModal{z-index:65}
 #camModal{z-index:70}
+#loginModal{z-index:75}
 #confirmModal{z-index:80}
 .modal{background:#fff;border-radius:22px;width:min(600px,96vw);max-height:calc(100vh - 24px);max-height:calc(100dvh - 24px);display:flex;flex-direction:column;padding:0;overflow:hidden;animation:up .25s;margin:auto}
 .modal.wide{width:min(780px,96vw)}
@@ -80,6 +82,7 @@ main{max-width:960px;margin:0 auto;padding:14px 12px 60px}
 .x{border:none;background:#f1f3fa;width:38px;height:38px;border-radius:50%;cursor:pointer;font-size:15px;flex:0 0 auto}
 .m-body{overflow:auto;padding:0 0 16px;flex:1;overscroll-behavior:contain;will-change:transform}
 .m-body.spring{transition:transform .4s cubic-bezier(.22,.9,.32,1.15)}
+.modal input[type=text],.modal input[type=password]{width:calc(100% - 32px);margin:0 16px;border:2px solid #e3e7f5;border-radius:12px;padding:11px 12px;font-family:inherit;font-size:14px;outline:none;background:#fff}
 .g-tools{position:sticky;top:0;z-index:5;display:flex;gap:10px;flex-wrap:wrap;padding:12px 16px;background:#fff;border-bottom:1px solid #eef0f6}
 .gsearch{flex:1;min-width:180px;border:2px solid #e3e7f5;border-radius:12px;padding:10px 14px;font-family:inherit;font-size:13px;outline:none;background:#fff}
 .gsearch:focus{border-color:var(--pri)}
@@ -149,12 +152,12 @@ textarea{width:calc(100% - 32px);margin:0 16px;border:2px solid #e3e7f5;border-r
 <header>
   <div class="hcard">
     <div class="hrow">
-      <div class="clickable" id="appTitle"><h1>نظام إدارة <span id="adminTap">المواد</span></h1><p>المبرمج: أحمد برزان</p></div>
+      <div class="clickable" id="appTitle"><h1>نظام إدارة المواد</h1><p id="adminLoginTap" title="اضغط مطولاً لدخول المدير">المبرمج: أحمد برزان</p></div>
       <button class="chev" id="toolsChev" title="إظهار/إخفاء الأدوات">⌄</button>
     </div>
     <div class="hbtns" id="toolsBox" hidden>
       <button class="btn pri" id="btnRepo">🔄 تحديث من المستودع</button>
-      <button class="btn ghost" id="btnUpload" data-admin>📂 رفع ملف (ونشره للجميع)</button>
+      <button class="btn ghost" id="btnUpload" data-admin>📂 رفع ملف (ونشره)</button>
       <button class="btn grn" id="btnSync" data-admin>☁️ مزامنة الصور</button>
       <button class="btn dngr" id="btnLogout" data-admin>🚪 خروج المدير</button>
     </div>
@@ -187,12 +190,17 @@ textarea{width:calc(100% - 32px);margin:0 16px;border:2px solid #e3e7f5;border-r
   <p class="empty" id="emptyMsg">جارٍ تحميل المواد من المستودع…</p>
 </main>
 
-<!-- البحث عن أي مادة -->
-<div class="overlay" id="searchModal" hidden>
-  <div class="modal wide">
-    <div class="m-head"><h2>🔍 البحث عن أي مادة</h2><button class="x" data-close>✕</button></div>
-    <div class="g-tools"><input type="text" class="gsearch" id="sSearch" style="margin:0;width:auto;flex:1" placeholder="اكتب اسم المادة أو الرمز أو الباركود…"></div>
-    <div class="m-body"><div id="sContent" style="padding:12px 16px 0"><p class="empty">✅ للمطابقة التامة • الأصفر للمتشابه — اكتب للبحث…</p></div></div>
+<!-- دخول المدير -->
+<div class="overlay" id="loginModal" hidden>
+  <div class="modal" style="width:min(380px,94vw)">
+    <div class="m-head"><h2>🔐 دخول المدير</h2><button class="x" data-close>✕</button></div>
+    <div class="m-body">
+      <label>اسم المستخدم</label>
+      <input type="text" id="loginUser" autocomplete="off">
+      <label>كلمة السر</label>
+      <input type="password" id="loginPass">
+      <div class="row"><button class="btn pri" id="loginBtn">دخول</button></div>
+    </div>
   </div>
 </div>
 
@@ -231,9 +239,9 @@ textarea{width:calc(100% - 32px);margin:0 16px;border:2px solid #e3e7f5;border-r
           <button class="btn amb" id="camAttach2">📷 فتح الكاميرا</button>
           <button class="btn ghost" id="fileAttach2">🖼 رفع صورة</button>
         </div>
-        <div class="row" data-admin><button class="btn grn" id="btnPublish">☁️ مزامنة الصور للمستودع</button></div>
+        <div class="row" data-admin><button class="btn grn" id="btnPublish">☁️ مزامنة الصور للمستودع (استبدال)</button></div>
         <p class="hint" data-admin>المدير هو المسؤول عن التعديلات والرفع — المستخدمون يجلبون النتائج تلقائياً.</p>
-        <input type="file" id="fileAttachInput3" accept="image/*" hidden>
+        <input type="file" id="fileAttachInput" accept="image/*" hidden>
         <div id="procProg" hidden><div class="bar"><i id="procBar"></i></div><p class="prog-txt" id="procTxt"></p></div>
       </div>
     </div>
@@ -251,8 +259,8 @@ textarea{width:calc(100% - 32px);margin:0 16px;border:2px solid #e3e7f5;border-r
           <button class="btn amb" id="camAttach3">📷 فتح الكاميرا</button>
           <button class="btn ghost" id="fileAttach3">🖼 رفع صورة</button>
         </div>
-        <div class="row" data-admin style="padding:0"><button class="btn grn" id="btnPublish2">☁️ مزامنة الصور للمستودع</button></div>
-        <input type="file" id="fileAttachInput" accept="image/*" hidden>
+        <div class="row" data-admin style="padding:0"><button class="btn grn" id="btnPublish2">☁️ مزامنة الصور للمستودع (استبدال)</button></div>
+        <input type="file" id="fileAttachInput3" accept="image/*" hidden>
         <div id="procProg3" hidden><div class="bar"><i id="procBar3"></i></div><p class="prog-txt" id="procTxt3"></p></div>
       </div>
     </div>
@@ -304,7 +312,7 @@ textarea{width:calc(100% - 32px);margin:0 16px;border:2px solid #e3e7f5;border-r
 <!-- تأكيد -->
 <div class="overlay" id="confirmModal" hidden>
   <div class="modal" style="width:min(430px,94vw)">
-    <div class="m-head"><h2 id="confirmTitle">تأكيد</h2></div>
+    <div class="m-head"><h2>تأكيد</h2></div>
     <div class="m-body">
       <p id="confirmTxt" style="font-size:14.5px;line-height:1.9;margin:0 16px;font-weight:700"></p>
       <div class="row"><button class="btn pri" id="confirmYes">✔ نعم</button><button class="btn ghost" id="confirmNo">✕ إلغاء</button></div>
@@ -328,7 +336,7 @@ const REPO_URLS=['https://raw.githubusercontent.com/'+REPO+'/main/'+encodeURICom
 const SHARED_URL='https://raw.githubusercontent.com/'+REPO+'/main/data/images.json';
 
 let ROWS=[],ROWMAP={},GROUPS=[],IMAGES={},EXTRAS={},VIEWS={},FILES=[];
-let currentId=null,currentGroup=null,model=null,tfOk=false,camStream=null,camMode=null,lastScanUrl=null,lastRes=[],gSearchT=null,sSearchT=null;
+let currentId=null,currentGroup=null,model=null,tfOk=false,camStream=null,camMode=null,lastScanUrl=null,lastRes=[],gSearchT=null;
 let isAdmin=sessionStorage.getItem('isAdmin')==='1';
 
 /* ---------- أدوات ---------- */
@@ -343,8 +351,8 @@ const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
 function scaleDataUrl(url,maxW,q){return new Promise(res=>{const i=new Image();i.onload=()=>{const s=Math.min(1,maxW/i.width);const c=document.createElement('canvas');c.width=Math.round(i.width*s);c.height=Math.round(i.height*s);c.getContext('2d').drawImage(i,0,0,c.width,c.height);res(c.toDataURL('image/jpeg',q||.85));};i.onerror=()=>res('');i.src=url;});}
 function imgEl(url){return new Promise((res,rej)=>{const i=new Image();i.onload=()=>res(i);i.onerror=rej;i.src=url;});}
 function textSim(a,b){const A=norm(a).split(' ').filter(w=>w.length>=3),B=norm(b).split(' ').filter(w=>w.length>=3);if(!A.length||!B.length)return 0;let hit=0;for(const w of A){for(const p of B){if(p===w||(w.length>=4&&lev(w,p)<=1)){hit++;break;}}}return hit/A.length;}
-function b64encode(str){const bytes=new TextEncoder().encode(str);let bin='';for(let i=0;i<bytes.length;i+=0x8000){bin+=String.fromCharCode.apply(null,bytes.subarray(i,i+0x8000));}return btoa(bin);}
-function bufToB64(buf){const bytes=new Uint8Array(buf);let bin='';const CH=0x8000;for(let i=0;i<bytes.length;i+=CH){bin+=String.fromCharCode.apply(null,bytes.subarray(i,i+CH));}return btoa(bin);}
+function b64encode(str){const bytes=new TextEncoder().encode(str);let bin='';for(let i=0;i<bytes.length;i+=0x8000){bin+=String.fromCharCode.apply(null,bytes.subarray(i,i+CHUNK));}return btoa(bin);}
+const CHUNK=0x8000;
 
 /* ---------- قاعدة البيانات ---------- */
 let dbP=null;
@@ -397,18 +405,31 @@ async function fetchRepoFile(){
   }catch(e){}
   return null;
 }
-/* رفع ملف الإكسل إلى المستودع (للمدير) ليصل للجميع */
-async function pushXlsxToRepo(buf){
-  const token=await ensureToken();
-  if(!token)throw new Error('أدخل التوكن أولاً');
-  const api='https://api.github.com/repos/'+REPO+'/contents/'+encodeURIComponent(XLSX_NAME);
-  let sha;
-  const g=await fetch(api,{headers:{Authorization:'token '+token,Accept:'application/vnd.github+json'}});
-  if(g.ok){const gj=await g.json();sha=gj.sha;}
-  const put=await fetch(api,{method:'PUT',headers:{Authorization:'token '+token,Accept:'application/vnd.github+json','Content-Type':'application/json'},
-    body:JSON.stringify({message:'update materials from app',content:bufToB64(buf),...(sha?{sha}:{})})});
-  if(!put.ok){const er=await put.json().catch(()=>null);throw new Error((er&&er.message)||('HTTP '+put.status));}
+
+/* ---------- دخول المدير: ضغط مستمر على اسم المبرمج ---------- */
+function openLogin(){
+  $('loginModal').hidden=false;
+  setTimeout(()=>{$('loginUser').value='';$('loginPass').value='';$('loginUser').focus();},150);
 }
+(function(){
+  const el=$('adminLoginTap');let t=null;
+  el.addEventListener('pointerdown',()=>{t=setTimeout(()=>{t=null;if(!isAdmin){openLogin();if(navigator.vibrate)navigator.vibrate(60);}},800);});
+  ['pointerup','pointerleave','pointercancel'].forEach(ev=>el.addEventListener(ev,()=>{if(t){clearTimeout(t);t=null;}}));
+  el.addEventListener('click',e=>e.stopPropagation());
+  el.addEventListener('contextmenu',e=>e.preventDefault());
+})();
+function doLogin(){
+  const u=$('loginUser').value.trim(),p=$('loginPass').value;
+  if(u==='مدير'&&p==='11'){
+    isAdmin=true;sessionStorage.setItem('isAdmin','1');
+    $('loginModal').hidden=true;
+    applyAdminUI();toast('✔ تم تفعيل وضع المدير — أهلاً بك');
+  }else toast('بيانات الدخول غير صحيحة','err');
+}
+$('loginBtn').onclick=doLogin;
+$('loginPass').addEventListener('keydown',e=>{if(e.key==='Enter')doLogin();});
+$('btnLogout').onclick=()=>{isAdmin=false;sessionStorage.removeItem('isAdmin');applyAdminUI();toast('تم الخروج من وضع المدير 🚪');};
+function applyAdminUI(){document.querySelectorAll('[data-admin]').forEach(el=>el.hidden=!isAdmin);}
 
 /* ---------- الشركات ---------- */
 $('compsBar').addEventListener('click',e=>{const c=e.target.closest('[data-open-group]');if(c)openGroupModal(c.dataset.openGroup);});
@@ -493,11 +514,11 @@ $('imgsGrid').addEventListener('click',async e=>{const d=e.target.closest('[data
   renderImgs();toast('حُذفت الصورة 🗑');});
 $('camAttach2').onclick=()=>openCamModal('attach');
 $('camAttach3').onclick=()=>openCamModal('attach');
-$('fileAttach2').onclick=()=>$('fileAttachInput3').click();
-$('fileAttach3').onclick=()=>$('fileAttachInput').click();
-$('fileAttachInput3').onchange=async e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();
-  r.onload=async()=>processAttach(await scaleDataUrl(r.result,900,.88),'main');r.readAsDataURL(f);};
+$('fileAttach2').onclick=()=>$('fileAttachInput').click();
+$('fileAttach3').onclick=()=>$('fileAttachInput3').click();
 $('fileAttachInput').onchange=async e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();
+  r.onload=async()=>processAttach(await scaleDataUrl(r.result,900,.88),'main');r.readAsDataURL(f);};
+$('fileAttachInput3').onchange=async e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();
   r.onload=async()=>processAttach(await scaleDataUrl(r.result,900,.88),'imgs');r.readAsDataURL(f);};
 $('btnPublish').onclick=()=>publishImages(false);
 $('btnPublish2').onclick=()=>publishImages(false);
@@ -643,6 +664,7 @@ async function recognize(url){
         return {...r,o,s:.5*r.v+.2*r.h+.3*o};}).sort((a,b)=>b.s-a.s);}
     }
     setScan('تجهيز النتائج…',95);
+    lastRes=res;
     renderResults(url,res);
   }catch(e){console.error(e);toast('تعذر التحليل: '+e.message,'err');$('scanStart').hidden=false;}
   $('scanProg').hidden=true;
@@ -701,7 +723,7 @@ async function attachTo(id){
   $('scanProg').hidden=true;
 }
 
-/* ---------- المزامنة ---------- */
+/* ---------- التوكن + النشر إلى المستودع (استبدال الملف الموجود) ---------- */
 async function ensureToken(){
   let t=(localStorage.getItem('ghToken')||'').trim();
   if(t)return t;
@@ -709,6 +731,21 @@ async function ensureToken(){
   if(!t)return null;
   localStorage.setItem('ghToken',t);
   return t;
+}
+async function putFile(path,bufOrJson,isJson,token){
+  const api='https://api.github.com/repos/'+REPO+'/contents/'+encodeURIComponent(path);
+  let sha;
+  const g=await fetch(api,{headers:{Authorization:'token '+token,Accept:'application/vnd.github+json'}});
+  if(g.ok){const gj=await g.json();sha=gj.sha;} /* إن وُجد ملف بنفس الاسم/المسار → نستبدله */
+  const content=isJson?b64encode(JSON.stringify(bufOrJson)):bufOrJson;
+  const put=await fetch(api,{method:'PUT',headers:{Authorization:'token '+token,Accept:'application/vnd.github+json','Content-Type':'application/json'},
+    body:JSON.stringify({message:'update '+path,content:content,...(sha?{sha}:{})})});
+  if(!put.ok){const er=await put.json().catch(()=>null);throw new Error((er&&er.message)||('HTTP '+put.status));}
+}
+async function pushXlsxToRepo(buf,fileName){
+  const token=await ensureToken();
+  if(!token)throw new Error('أدخل التوكن أولاً');
+  await putFile(fileName||XLSX_NAME,bufToB64(buf),false,token);
 }
 async function publishImages(silent){
   if(!isAdmin)return toast('المزامنة للمدير فقط 🔐','err');
@@ -733,35 +770,27 @@ async function publishImages(silent){
     added+=smallOnes.length;
   }
   if(!added){if(!silent)toast('✔ لا جديد — جميع الصور موجودة مسبقاً ('+skipped+' مادة)');return;}
-  const json=JSON.stringify(merged);
-  if(json.length>950000){if(!silent)toast('حجم البيانات كبير ('+Math.round(json.length/1024)+'KB) — قلّل الصور','err');return;}
   try{
-    const api='https://api.github.com/repos/'+REPO+'/contents/data/images.json';
-    let sha;
-    const g=await fetch(api,{headers:{Authorization:'token '+token,Accept:'application/vnd.github+json'}});
-    if(g.ok){const gj=await g.json();sha=gj.sha;}
-    const put=await fetch(api,{method:'PUT',headers:{Authorization:'token '+token,Accept:'application/vnd.github+json','Content-Type':'application/json'},
-      body:JSON.stringify({message:'sync images (merge new)',content:b64encode(json),...(sha?{sha}:{})})});
-    if(!put.ok){const er=await put.json().catch(()=>null);throw new Error((er&&er.message)||('HTTP '+put.status));}
+    await putFile('data/images.json',merged,true,token); /* يستبدل الملف الموجود */
     if(!silent)toast('✔ تمت المزامنة: رُفعت '+added+' صورة جديدة وتُجاهلت '+skipped+' مادة موجودة');
   }catch(e){console.error(e);if(!silent)toast('فشل الرفع: '+e.message,'err');}
 }
 
-/* ---------- رفع ملف الإكسل (للمدير: تحميل + نشر للجميع) ---------- */
+/* ---------- رفع ملف الإكسل (تحميل محلي + نشر واستبدال بالمستودع) ---------- */
 $('btnUpload').onclick=()=>$('filePick').click();
 $('filePick').onchange=async e=>{
   const f=e.target.files[0];if(!f)return;
   let buf;try{buf=await f.arrayBuffer();}catch(err){return toast('تعذر قراءة الملف','err');}
   const rows=parseWorkbook(buf);
-  if(!rows)return toast('ملف غير مدعوم — صدّر من سراج بصيغة xlsx','err');
+  if(!rows)return toast('ملف غير مدعوم — تأكد أنه xlsx صادر من سراج','err');
   loadDataset(rows);
   try{localStorage.setItem('rowsCache',JSON.stringify(rows));}catch(err){}
   toast('تم تحميل «'+f.name+'» ✔ ('+rows.length+' مادة)');
   if(isAdmin){
-    const ok=await askConfirm('هل تريد نشر هذا الملف إلى المستودع ليصل لجميع المستخدمين فوراً؟');
+    const ok=await askConfirm('هل تريد نشر هذا الملف إلى المستودع واستبدال الملف الموجود بنفس الاسم؟');
     if(ok){
       toast('جارٍ رفع الملف إلى المستودع…');
-      try{await pushXlsxToRepo(buf);toast('✔ رُفع الملف إلى المستودع — وصل لجميع المستخدمين');}
+      try{await pushXlsxToRepo(buf,f.name);toast('✔ تم استبدال الملف في المستودع — وصل للجميع');}
       catch(err){console.error(err);toast('فشل رفع الملف: '+err.message,'err');}
     }
   }
@@ -772,7 +801,7 @@ $('btnRepo').onclick=async()=>{toast('جارٍ الجلب من المستودع�
   toast('تعذر الجلب — حاول لاحقاً','err');};
 
 /* ---------- إغلاق النوافذ ---------- */
-const MOD_ORDER=['confirmModal','camModal','imgsModal','viewModal','scanModal','searchModal','groupModal'];
+const MOD_ORDER=['confirmModal','loginModal','camModal','imgsModal','viewModal','scanModal','searchModal','groupModal'];
 function closeTop(){const id=MOD_ORDER.find(x=>{const el=$(x);return el&&!el.hidden;});if(!id)return;$(id).hidden=true;if(id==='camModal')stopCam();}
 document.querySelectorAll('[data-close]').forEach(b=>b.onclick=()=>{const o=b.closest('.overlay');if(o){o.hidden=true;if(o.id==='camModal')stopCam();}});
 document.querySelectorAll('.overlay').forEach(o=>o.addEventListener('click',e=>{
@@ -786,41 +815,6 @@ document.addEventListener('keydown',e=>{
     if(!$('camModal').hidden)$('camShot').click();
   }
 });
-
-/* ---------- المدير ---------- */
-function applyAdminUI(){document.querySelectorAll('[data-admin]').forEach(el=>el.hidden=!isAdmin);}
-let tapCount=0,tapTimer=null;
-$('adminTap').addEventListener('click',e=>{
-  e.stopPropagation();
-  if(isAdmin){toast('وضع المدير مفعّل بالفعل 👤');return;}
-  tapCount++;clearTimeout(tapTimer);tapTimer=setTimeout(()=>tapCount=0,2500);
-  if(tapCount>=5){tapCount=0;openLogin();}
-});
-function openLogin(){
-  let lm=$('loginModalDyn');
-  if(!lm){
-    lm=document.createElement('div');lm.id='loginModalDyn';lm.className='overlay';lm.style.zIndex=85;
-    lm.innerHTML='<div class="modal" style="width:min(380px,94vw)"><div class="m-head"><h2>🔐 دخول المدير</h2><button class="x" data-close>✕</button></div><div class="m-body"><label>اسم المستخدم</label><input type="text" id="loginUser" autocomplete="off"><label>كلمة السر</label><input type="password" id="loginPass"><div class="row"><button class="btn pri" id="loginBtn">دخول</button></div></div></div>';
-    document.body.appendChild(lm);
-    lm.querySelector('[data-close]').onclick=()=>lm.hidden=true;
-    lm.addEventListener('click',e=>{if(e.target===lm)lm.hidden=true;});
-    lm.querySelector('#loginBtn').onclick=doLogin;
-    lm.querySelector('#loginPass').addEventListener('keydown',e=>{if(e.key==='Enter')doLogin();});
-  }
-  lm.hidden=false;setTimeout(()=>lm.querySelector('#loginUser').focus(),150);
-}
-function doLogin(){
-  const u=$('loginUser').value.trim(),p=$('loginPass').value;
-  if(u==='مدير'&&p==='11'){
-    isAdmin=true;sessionStorage.setItem('isAdmin','1');
-    $('loginModalDyn').hidden=true;$('loginUser').value='';$('loginPass').value='';
-    applyAdminUI();toast('✔ تم تفعيل وضع المدير — أهلاً بك');
-  }else toast('بيانات الدخول غير صحيحة','err');
-}
-$('btnLogout').onclick=()=>{isAdmin=false;sessionStorage.removeItem('isAdmin');applyAdminUI();toast('تم الخروج من وضع المدير 🚪');};
-function toggleTools(){const willShow=$('toolsBox').hidden;$('toolsBox').hidden=!willShow;$('toolsChev').classList.toggle('open',willShow);}
-$('toolsChev').onclick=toggleTools;
-$('appTitle').addEventListener('click',toggleTools);
 
 /* ---------- بدء ---------- */
 (async()=>{
