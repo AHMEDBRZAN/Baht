@@ -243,10 +243,10 @@ textarea{width:calc(100% - 32px);margin:0 16px;border:2px solid #e3e7f5;border-r
           <button class="btn amb" id="camAttach2">📷 فتح الكاميرا</button>
           <button class="btn ghost" id="fileAttach2">🖼 رفع صورة</button>
         </div>
-        <div class="row" data-admin><button class="btn grn" id="btnPublish2">☁️ مزامنة الصور للمستودع (هذه المادة)</button></div>
-        <p class="hint" data-admin>زر المزامنة هنا يرفع صور هذه المادة فقط. زر «مزامنة الصور» في الأعلى يرفع كل الصور لجميع المواد.</p>
+        <div class="row" data-admin><button class="btn grn" id="btnPublish">☁️ مزامنة الصور للمستودع (هذه المادة)</button></div>
+        <p class="hint" data-admin>المدير هو المسؤول عن التعديلات والرفع — المستخدمون يجلبون النتائج تلقائياً.</p>
         <input type="file" id="fileAttachInput3" accept="image/*" hidden>
-        <div id="procProg3" hidden><div class="bar"><i id="procBar3"></i></div><p class="prog-txt" id="procTxt3"></p></div>
+        <div id="procProg" hidden><div class="bar"><i id="procBar"></i></div><p class="prog-txt" id="procTxt"></p></div>
       </div>
     </div>
   </div>
@@ -263,9 +263,9 @@ textarea{width:calc(100% - 32px);margin:0 16px;border:2px solid #e3e7f5;border-r
           <button class="btn amb" id="camAttach3">📷 فتح الكاميرا</button>
           <button class="btn ghost" id="fileAttach3">🖼 رفع صورة</button>
         </div>
-        <div class="row" data-admin style="padding:0"><button class="btn grn" id="btnPublishCur">☁️ مزامنة الصور للمستودع (هذه المادة)</button></div>
+        <div class="row" data-admin style="padding:0"><button class="btn grn" id="btnPublish2">☁️ مزامنة الصور للمستودع (هذه المادة)</button></div>
         <input type="file" id="fileAttachInput" accept="image/*" hidden>
-        <div id="procProg" hidden><div class="bar"><i id="procBar"></i></div><p class="prog-txt" id="procTxt"></p></div>
+        <div id="procProg3" hidden><div class="bar"><i id="procBar3"></i></div><p class="prog-txt" id="procTxt3"></p></div>
       </div>
     </div>
   </div>
@@ -305,7 +305,7 @@ textarea{width:calc(100% - 32px);margin:0 16px;border:2px solid #e3e7f5;border-r
       <div id="scanRes" hidden>
         <div id="bestCard"></div>
         <h3 style="font-size:15px;margin:8px 16px;font-weight:800">بقية المرشحات (12 الأكثر تشابهاً):</h3>
-        <p class="hint">اضغط على أي مرشح ⇐ يُطلب تأكيدك ⇐ تُضاف الصورة الملتقطة كمرجع إضافي وتُغلق النافذة. 👁 للتفاصيل. ❌ غير متطابق لتعليم النظام.</p>
+        <p class="hint">اضغط على أي مرشح ⇐ يُطلب تأكيدك ⇐ تُضاف الصورة الملتقطة كمرجع إضافي وتُغلق النافذة. 👁 للتفاصيل.</p>
         <div id="candList"></div>
         <div class="row"><button class="btn pri" id="rescan">🔁 تصوير مادة أخرى</button></div>
       </div>
@@ -319,7 +319,7 @@ textarea{width:calc(100% - 32px);margin:0 16px;border:2px solid #e3e7f5;border-r
     <div class="m-head"><h2>تأكيد الإضافة</h2></div>
     <div class="m-body">
       <p id="confirmTxt" style="font-size:14.5px;line-height:1.9;margin:0 16px;font-weight:700"></p>
-      <div class="row"><button class="btn pri" id="confirmYes">✔ نعم</button><button class="btn ghost" id="confirmNo">✕ إلغاء</button></div>
+      <div class="row"><button class="btn pri" id="confirmYes">✔ نعم، أضف الصورة</button><button class="btn ghost" id="confirmNo">✕ إلغاء</button></div>
     </div>
   </div>
 </div>
@@ -331,6 +331,7 @@ textarea{width:calc(100% - 32px);margin:0 16px;border:2px solid #e3e7f5;border-r
 const $=id=>document.getElementById(id);
 const NO_GROUP='مواد بدون بطاقة';
 const REPO='AHMEDBRZAN/Baht';
+/* روابط raw أولاً (أسرع وبدون حدود API) ثم API احتياطاً */
 const REPO_URLS=['https://raw.githubusercontent.com/'+REPO+'/main/'+encodeURIComponent('جميع المواد.xlsx'),
  'https://raw.githubusercontent.com/'+REPO+'/main/'+encodeURIComponent('جميع المواد .xlsx'),
  'https://raw.githubusercontent.com/'+REPO+'/master/'+encodeURIComponent('جميع المواد.xlsx'),
@@ -338,9 +339,8 @@ const REPO_URLS=['https://raw.githubusercontent.com/'+REPO+'/main/'+encodeURICom
  'https://raw.githubusercontent.com/'+REPO+'/main/materials.xlsx',
  'https://raw.githubusercontent.com/'+REPO+'/main/data.xlsx'];
 const SHARED_URL='https://raw.githubusercontent.com/'+REPO+'/main/data/images.json';
-const NEG_URL='https://raw.githubusercontent.com/'+REPO+'/main/data/negatives.json';
 
-let ROWS=[],ROWMAP={},GROUPS=[],IMAGES={},EXTRAS={},VIEWS={},NEG=[];
+let ROWS=[],ROWMAP={},GROUPS=[],IMAGES={},EXTRAS={},VIEWS={},FILES=[];
 let currentId=null,currentGroup=null,model=null,tfOk=false,camStream=null,camMode=null,camSession=0;
 let lastScanUrl=null,lastScanEmb=null,lastScanHist=null,lastRes=[],gSearchT=null,sSearchT=null;
 let isAdmin=sessionStorage.getItem('isAdmin')==='1';
@@ -354,15 +354,14 @@ function fm(n){n=parseNum(n);return n?n.toLocaleString('en-US',{maximumFractionD
 function norm(s){return (s||'').toLowerCase().replace(/[\u064B-\u0652\u0640]/g,'').replace(/[أإآ]/g,'ا').replace(/ة/g,'ه').replace(/ى/g,'ي').replace(/[^\p{L}\p{N}]+/gu,' ').trim();}
 function lev(a,b){a=a||'';b=b||'';if(a===b)return 0;const m=a.length,n=b.length;if(!m||!n)return m||n;let p=Array.from({length:n+1},(_,i)=>i);for(let i=1;i<=m;i++){const c=[i];for(let j=1;j<=n;j++)c[j]=Math.min(p[j]+1,c[j-1]+1,p[j-1]+(a[i-1]===b[j-1]?0:1));p=c;}return p[n];}
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
-function hasImg(id){return !!(IMAGES[id]&&IMAGES[id].imgs&&IMAGES[id].imgs.length);}
 function scaleDataUrl(url,maxW,q){return new Promise(res=>{const i=new Image();i.onload=()=>{const s=Math.min(1,maxW/i.width);const c=document.createElement('canvas');c.width=Math.round(i.width*s);c.height=Math.round(i.height*s);c.getContext('2d').drawImage(i,0,0,c.width,c.height);res(c.toDataURL('image/jpeg',q||.85));};i.onerror=()=>res('');i.src=url;});}
 function imgEl(url){return new Promise((res,rej)=>{const i=new Image();i.onload=()=>res(i);i.onerror=rej;i.src=url;});}
 function textSim(a,b){const A=norm(a).split(' ').filter(w=>w.length>=3),B=norm(b).split(' ').filter(w=>w.length>=3);if(!A.length||!B.length)return 0;let hit=0;for(const w of A){for(const p of B){if(p===w||(w.length>=4&&lev(w,p)<=1)){hit++;break;}}}return hit/A.length;}
 function b64encode(str){const bytes=new TextEncoder().encode(str);let bin='';for(let i=0;i<bytes.length;i+=0x8000){bin+=String.fromCharCode.apply(null,bytes.subarray(i,i+0x8000));}return btoa(bin);}
 
-/* ---------- قاعدة البيانات ---------- */
+/* ---------- قاعدة البيانات (كل عملية مستقلة وغير قاتلة) ---------- */
 let dbP=null;
-function db(){if(!dbP)dbP=new Promise((res,rej)=>{const r=indexedDB.open('matSysDB',1);r.onupgradeneeded=()=>{const d=r.result;['extras','images','negatives'].forEach(s=>{if(!d.objectStoreNames.contains(s))d.createObjectStore(s);});};r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error);});return dbP;}
+function db(){if(!dbP)dbP=new Promise((res,rej)=>{const r=indexedDB.open('matSysDB',1);r.onupgradeneeded=()=>{const d=r.result;['files','extras','images'].forEach(s=>{if(!d.objectStoreNames.contains(s))d.createObjectStore(s);});};r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error);});return dbP;}
 async function dbGetAll(s){const d=await db();return new Promise(res=>{const q=d.transaction(s).objectStore(s).getAll();q.onsuccess=()=>res(q.result||[]);q.onerror=()=>res([]);});}
 async function dbPut(s,k,v){const d=await db();return new Promise(res=>{const t=d.transaction(s,'readwrite');t.objectStore(s).put(v,k);t.oncomplete=res;});}
 async function dbDel(s,k){const d=await db();return new Promise(res=>{const t=d.transaction(s,'readwrite');t.objectStore(s).delete(k);t.oncomplete=res;});}
@@ -401,16 +400,33 @@ function loadDataset(rows){
   $('compCount').textContent=ROWS.length+' مادة';
   $('compsBar').innerHTML=GROUPS.map(g=>`<button class="comp" data-open-group="${esc(g.name)}"><b>${esc(g.name)}</b><small>${g.rows.length} مادة</small></button>`).join('');
 }
+
+/* ---------- الجلب من المستودع: raw أولاً ثم API، مع محاولات ---------- */
 async function fetchRepoFile(){
+  for(const u of REPO_URLS){
+    try{const r=await fetch(u,{cache:'no-store'});if(r.ok){const buf=await r.arrayBuffer();if(buf.byteLength>1000)return buf;}}catch(e){}
+  }
   try{
     const r=await fetch('https://api.github.com/repos/'+REPO+'/contents/');
     if(r.ok){const list=await r.json();
       const f=(Array.isArray(list)?list:[]).find(x=>x.name&&x.name.toLowerCase().endsWith('.xlsx'));
       if(f&&f.download_url){const d=await fetch(f.download_url);if(d.ok)return await d.arrayBuffer();}}
   }catch(e){}
-  for(const u of REPO_URLS){try{const r=await fetch(u,{cache:'no-store'});if(!r.ok)continue;
-    const buf=await r.arrayBuffer();if(buf.byteLength>1000)return buf;}catch(e){}}
   return null;
+}
+async function refreshFromRepo(silent){
+  for(let attempt=0;attempt<3;attempt++){
+    try{
+      const buf=await fetchRepoFile();
+      if(buf){const rows=parseWorkbook(buf);
+        if(rows){loadDataset(rows);try{localStorage.setItem('rowsCache',JSON.stringify(rows));}catch(e){}
+          if(!silent)toast('✔ تم تحديث المواد من المستودع ('+rows.length+' مادة)');
+          return true;}}
+    }catch(e){}
+    if(attempt<2)await new Promise(r=>setTimeout(r,900));
+  }
+  if(!silent)toast('تعذر الجلب — تحقق من الاتصال ثم حاول مجدداً','err');
+  return false;
 }
 
 /* ---------- الشركات ---------- */
@@ -488,6 +504,7 @@ function renderSearchResults(q){
 }
 
 /* ---------- تفاصيل المادة ---------- */
+function hasImg(id){return !!(IMAGES[id]&&IMAGES[id].imgs&&IMAGES[id].imgs.length);}
 function openView(id){const r=ROWMAP[id];if(!r)return;currentId=id;
   $('vName').textContent=r.name;
   $('vGroup').textContent='📁 '+(r.group||NO_GROUP);
@@ -497,6 +514,7 @@ function openView(id){const r=ROWMAP[id];if(!r)return;currentId=id;
   let html=lines.map(l=>`<div class="ln"><b>${l[0]}:</b><span>${esc(l[1])}</span></div>`).join('');
   const note=EXTRAS[id]&&EXTRAS[id].note;
   if(note)html+=`<div class="note"><b>📝 تفاصيل إضافية:</b><br>${esc(note)}</div>`;
+  if(hasImg(id))html+=`<div style="margin-top:8px"><span class="chip" style="background:#e7f7ee;color:#177a4c;border-radius:20px;padding:3px 12px;font-size:12px;font-weight:800">🖼 ${IMAGES[id].imgs.length} صورة مرجعية</span></div>`;
   $('vDetails').innerHTML=html;
   $('maintSec').hidden=true;$('viewModal').hidden=false;
   $('noteInput').value=note||'';
@@ -527,11 +545,11 @@ $('camAttach3').onclick=()=>openCamModal('attach');
 $('fileAttach2').onclick=()=>$('fileAttachInput3').click();
 $('fileAttach3').onclick=()=>$('fileAttachInput').click();
 $('fileAttachInput3').onchange=async e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();
-  r.onload=async()=>processAttach(await scaleDataUrl(r.result,900,.88),'imgs');r.readAsDataURL(f);};
-$('fileAttachInput').onchange=async e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();
   r.onload=async()=>processAttach(await scaleDataUrl(r.result,900,.88),'main');r.readAsDataURL(f);};
+$('fileAttachInput').onchange=async e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();
+  r.onload=async()=>processAttach(await scaleDataUrl(r.result,900,.88),'imgs');r.readAsDataURL(f);};
+$('btnPublish').onclick=()=>publishImages('current');
 $('btnPublish2').onclick=()=>publishImages('current');
-$('btnPublishCur').onclick=()=>publishImages('current');
 
 /* ---------- المحركات ---------- */
 async function tfReady(){if(tfOk)return;try{await tf.setBackend('webgl');}catch(e){try{await tf.setBackend('cpu');}catch(e2){}}await tf.ready();tfOk=true;}
@@ -633,6 +651,38 @@ document.addEventListener('gestureend',e=>e.preventDefault());
 document.addEventListener('dblclick',e=>e.preventDefault());
 document.addEventListener('wheel',e=>{if(e.ctrlKey)e.preventDefault();},{passive:false});
 
+/* ---------- المدير ---------- */
+function applyAdminUI(){document.querySelectorAll('[data-admin]').forEach(el=>el.hidden=!isAdmin);}
+let tapCount=0,tapTimer=null;
+$('adminTap').addEventListener('click',e=>{
+  e.stopPropagation();
+  if(isAdmin){toast('وضع المدير مفعّل بالفعل 👤');return;}
+  tapCount++;clearTimeout(tapTimer);tapTimer=setTimeout(()=>tapCount=0,2500);
+  if(tapCount>=5){tapCount=0;openLogin();}
+});
+function openLogin(){
+  let lm=$('loginModalDyn');
+  if(!lm){
+    lm=document.createElement('div');lm.id='loginModalDyn';lm.className='overlay';lm.style.zIndex=85;
+    lm.innerHTML='<div class="modal" style="width:min(380px,94vw)"><div class="m-head"><h2>🔐 دخول المدير</h2><button class="x" data-close>✕</button></div><div class="m-body"><label>اسم المستخدم</label><input type="text" id="loginUser" autocomplete="off"><label>كلمة السر</label><input type="password" id="loginPass"><div class="row"><button class="btn pri" id="loginBtn">دخول</button></div></div></div>';
+    document.body.appendChild(lm);
+    lm.querySelector('[data-close]').onclick=()=>lm.hidden=true;
+    lm.addEventListener('click',e=>{if(e.target===lm)lm.hidden=true;});
+    lm.querySelector('#loginBtn').onclick=doLogin;
+    lm.querySelector('#loginPass').addEventListener('keydown',e=>{if(e.key==='Enter')doLogin();});
+  }
+  lm.hidden=false;setTimeout(()=>lm.querySelector('#loginUser').focus(),150);
+}
+function doLogin(){
+  const u=$('loginUser').value.trim(),p=$('loginPass').value;
+  if(u==='مدير'&&p==='11'){
+    isAdmin=true;sessionStorage.setItem('isAdmin','1');
+    $('loginModalDyn').hidden=true;$('loginUser').value='';$('loginPass').value='';
+    applyAdminUI();toast('✔ تم تفعيل وضع المدير — أهلاً بك');
+  }else toast('بيانات الدخول غير صحيحة','err');
+}
+$('btnLogout').onclick=()=>{isAdmin=false;sessionStorage.removeItem('isAdmin');applyAdminUI();toast('تم الخروج من وضع المدير 🚪');};
+
 /* ---------- تأكيد ---------- */
 function askConfirm(msg){return new Promise(res=>{$('confirmTxt').textContent=msg;$('confirmModal').hidden=false;
   const done=v=>{$('confirmModal').hidden=true;$('confirmYes').onclick=null;$('confirmNo').onclick=null;res(v);};
@@ -680,7 +730,7 @@ async function recognize(url){
           const s=.7*v+.3*h;if(!b||s>b.s)b={s,v,h,g};
         }
         if(b)res.push({im,v:b.v,h:b.h,g:b.g,s:b.s,o:0});
-      }catch(e){console.error(e);}
+      }catch(e){}
     }
     res.sort((a,b)=>b.s-a.s);
     if(res.length&&res[0].s<0.9){
@@ -703,7 +753,7 @@ function renderResults(url,res){
     const pct=Math.round(best.s*100),cls=pct>=80?'':(pct>=40?'mid':'low'),r=ROWMAP[best.im.id];
     if(pct<25){
       bc.innerHTML=`<div class="best low"><p style="margin:0;font-weight:800">⚠ لم يتم التعرف على المادة</p>
-      <p class="hint" style="margin:6px 0 0">يبدو أن المادة المصوَّرة ليست مضافاً لها صورة مرجعية بعد. اختر أقرب مرشح من الأسفل لفتح تفاصيله أو علّمه «غير متطابق».</p></div>`;
+      <p class="hint" style="margin:6px 0 0">يبدو أن المادة المصوَّرة ليست مضافاً لها صورة مرجعية بعد. اختر أقرب مرشح من الأسفل واضغط عليه ليُطلب تأكيدك وتُضاف الصورة له.</p></div>`;
     }else{
       bc.innerHTML=`<div class="best ${cls}" data-openbest="${best.im.id}">
         <div class="imgs"><div><img src="${url}"><span>الصورة الملتقطة</span></div><div><img src="${best.g.thumb}"><span>الصورة المخزّنة</span></div></div>
@@ -719,11 +769,8 @@ function renderResults(url,res){
           </div>
         </div>
         <span class="best-group">📁 ${esc(r?(r.group||NO_GROUP):'')}</span>
-        <div class="row" style="padding:0;margin-top:10px">
-          <button class="btn ghost" data-openbest="${best.im.id}">👁 التفاصيل</button>
-          <button class="btn dngr" data-notmatch="${best.im.id}">❌ غير متطابق</button>
-        </div>
       </div>`;
+      if(pct>=80)setTimeout(()=>{toast('✔ تعرّف مباشر '+pct+'%');$('scanModal').hidden=true;openView(best.im.id);},300);
     }
   }
   $('candList').innerHTML=res.slice(1,13).map(x=>{const r=ROWMAP[x.im.id];const p=Math.round(x.s*100);
@@ -733,18 +780,6 @@ function renderResults(url,res){
 $('scanRes').addEventListener('click',async e=>{
   const eye=e.target.closest('[data-openbest]');
   if(eye){$('scanModal').hidden=true;openView(eye.dataset.openbest);return;}
-  const nm=e.target.closest('[data-notmatch]');
-  if(nm){
-    const id=nm.dataset.notmatch,r=ROWMAP[id];
-    const ok=await askConfirm('هل أنت متأكد أن «'+(r?r.name:'')+'» غير متطابقة مع الصورة الملتقطة؟ سيتعلّم النظام ألّا يعرضها لهذه الصورة مستقبلاً.');
-    if(ok&&lastScanEmb){
-      const rec={emb:lastScanEmb,hist:lastScanHist,matId:id,ts:Date.now()};
-      NEG.push(rec);await dbPut('negatives',rec.ts,rec);
-      toast('🧠 تم التسجيل — لن تُعرض هذه المادة لهذه الصورة مستقبلاً');
-      if(lastRes){lastRes=lastRes.filter(x=>x.im.id!==id);renderResults(lastScanUrl,lastRes);}
-    }
-    return;
-  }
   const att=e.target.closest('[data-attach]');
   if(att&&isAdmin){const id=att.dataset.attach,r=ROWMAP[id];
     const ok=await askConfirm('هل تريد إضافة الصورة الملتقطة كصورة إضافية للمادة «'+(r?r.name:'')+'»؟');
@@ -764,7 +799,7 @@ async function attachTo(id){
   $('scanProg').hidden=true;
 }
 
-/* ---------- المزامنة: نطاقان (كل المواد / المادة الحالية) ---------- */
+/* ---------- المزامنة (توكن محفوظ على جهاز المدير فقط) ---------- */
 async function ensureToken(){
   let t=(localStorage.getItem('ghToken')||'').trim();
   if(t)return t;
@@ -773,17 +808,25 @@ async function ensureToken(){
   localStorage.setItem('ghToken',t);
   return t;
 }
+async function putJSON(path,obj,token){
+  const api='https://api.github.com/repos/'+REPO+'/contents/'+path;
+  let sha;
+  const g=await fetch(api,{headers:{Authorization:'token '+token,Accept:'application/vnd.github+json'}});
+  if(g.ok){const gj=await g.json();sha=gj.sha;}
+  const put=await fetch(api,{method:'PUT',headers:{Authorization:'token '+token,Accept:'application/vnd.github+json','Content-Type':'application/json'},
+    body:JSON.stringify({message:'sync '+path,content:b64encode(JSON.stringify(obj)),...(sha?{sha}:{})})});
+  if(!put.ok){const er=await put.json().catch(()=>null);throw new Error((er&&er.message)||('HTTP '+put.status));}
+}
 async function publishImages(scope){
   if(!isAdmin)return toast('المزامنة للمدير فقط 🔐','err');
   const ids=scope==='current'?(currentId&&hasImg(currentId)?[currentId]:[]):Object.keys(IMAGES).filter(id=>hasImg(id));
   if(!ids.length)return toast(scope==='current'?'لا توجد صور لهذه المادة':'لا توجد صور محلية للنشر','err');
-  const btns=[$('btnSync'),$('btnPublish2'),$('btnPublishCur')];
+  const btns=[$('btnSync'),$('btnPublish'),$('btnPublish2')];
   btns.forEach(b=>{if(b)b.disabled=true;});
   try{
     const token=await ensureToken();
     if(!token){toast('أُلغي النشر — أدخل التوكن للمحاولة','err');return;}
-    toast(scope==='current'?'جارٍ مزامنة صور المادة المفتوحة…':'جارٍ مزامنة كل الصور (تجاهل الموجود ورفع الجديد)…');
-    /* جلب الموجود على الخادم */
+    toast('جارٍ تجهيز الصور للنشر…');
     let merged={};
     try{const r=await fetch(SHARED_URL,{cache:'no-store'});if(r.ok){const d=await r.json();if(d&&typeof d==='object')merged=d;}}catch(e){}
     let added=0,skipped=0;
@@ -793,23 +836,14 @@ async function publishImages(scope){
       const haveTs=new Set(have.map(g=>g.ts));
       const newOnes=local.filter(g=>!haveTs.has(g.ts));
       if(!newOnes.length){skipped++;continue;}
-      const smallOnes=await Promise.all(newOnes.map(async g=>{
-        const small=await scaleDataUrl(g.thumb,110,.55);
-        return {thumb:small,emb:g.emb.map(v=>+v.toFixed(3)),hist:g.hist,ocr:g.ocr||'',ts:g.ts||Date.now()};
-      }));
+      const smallOnes=[];
+      for(const g of newOnes){const small=await scaleDataUrl(g.thumb,110,.55);
+        smallOnes.push({thumb:small,emb:g.emb.map(v=>+v.toFixed(3)),hist:g.hist,ocr:g.ocr||'',ts:g.ts||Date.now()});}
       merged[id]={imgs:have.concat(smallOnes)};
       added+=smallOnes.length;
     }
     if(!added){toast('✔ لا جديد — جميع الصور موجودة مسبقاً ('+skipped+' مادة متجاهلة)');return;}
-    const json=JSON.stringify(merged);
-    if(json.length>950000){toast('حجم البيانات كبير ('+Math.round(json.length/1024)+'KB) — استخدم مزامنة المادة المفتوحة فقط','err');return;}
-    const api='https://api.github.com/repos/'+REPO+'/contents/data/images.json';
-    let sha;
-    const g=await fetch(api,{headers:{Authorization:'token '+token,Accept:'application/vnd.github+json'}});
-    if(g.ok){const gj=await g.json();sha=gj.sha;}
-    const put=await fetch(api,{method:'PUT',headers:{Authorization:'token '+token,Accept:'application/vnd.github+json','Content-Type':'application/json'},
-      body:JSON.stringify({message:'sync images ('+(scope==='current'?'current material':'all')+')',content:b64encode(json),...(sha?{sha}:{})})});
-    if(!put.ok){const er=await put.json().catch(()=>null);throw new Error((er&&er.message)||('HTTP '+put.status));}
+    await putJSON('data/images.json',merged,token);
     toast('✔ تمت المزامنة: رُفعت '+added+' صورة جديدة وتُجاهلت '+skipped+' مادة موجودة مسبقاً');
   }catch(e){console.error(e);toast('فشل الرفع: '+e.message,'err');}
   finally{btns.forEach(b=>{if(b)b.disabled=false;});}
@@ -820,19 +854,14 @@ $('btnSync').onclick=()=>publishImages('all');
 function toggleTools(){const willShow=$('toolsBox').hidden;$('toolsBox').hidden=!willShow;$('toolsChev').classList.toggle('open',willShow);}
 $('toolsChev').onclick=toggleTools;
 $('appTitle').addEventListener('click',toggleTools);
-$('btnRepo').onclick=async()=>{toast('جارٍ الجلب من المستودع…');
-  const buf=await fetchRepoFile();
-  if(buf){const rows=parseWorkbook(buf);if(rows){loadDataset(rows);try{localStorage.setItem('rowsCache',JSON.stringify(rows));}catch(e){}toast('تم تحديث المواد ✔ '+rows.length+' مادة');return;}}
-  toast('تعذر الجلب — حاول لاحقاً','err');};
+$('btnRepo').onclick=()=>refreshFromRepo(false);
 $('btnUpload').onclick=()=>$('filePick').click();
 $('filePick').onchange=e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();
   r.onload=()=>{const rows=parseWorkbook(r.result);if(rows){loadDataset(rows);try{localStorage.setItem('rowsCache',JSON.stringify(rows));}catch(e2){}toast('تم تحميل «'+f.name+'» ✔');}else toast('ملف غير مدعوم','err');};
   r.readAsArrayBuffer(f);};
-$('btnLogout').onclick=()=>{isAdmin=false;sessionStorage.removeItem('isAdmin');applyAdminUI();toast('تم الخروج من وضع المدير 🚪');};
-function applyAdminUI(){document.querySelectorAll('[data-admin]').forEach(el=>el.hidden=!isAdmin);}
 
 /* ---------- إغلاق النوافذ ---------- */
-const MOD_ORDER=['confirmModal','camModal','imgsModal','viewModal','scanModal','searchModal','groupModal'];
+const MOD_ORDER=['confirmModal','loginModalDyn','camModal','imgsModal','viewModal','scanModal','searchModal','groupModal'];
 function closeTop(){const id=MOD_ORDER.find(x=>{const el=$(x);return el&&!el.hidden;});if(!id)return;$(id).hidden=true;if(id==='camModal')stopCam();}
 document.querySelectorAll('[data-close]').forEach(b=>b.onclick=()=>{const o=b.closest('.overlay');if(o){o.hidden=true;if(o.id==='camModal')stopCam();}});
 document.querySelectorAll('.overlay').forEach(o=>o.addEventListener('click',e=>{
@@ -847,16 +876,17 @@ document.addEventListener('keydown',e=>{
   }
 });
 
-/* ---------- بدء ---------- */
+/* ---------- بدء: كل خطوة مستقلة، والجلب التلقائي يعمل دائماً ---------- */
 (async()=>{
+  /* 1) وضع المدير */
+  try{applyAdminUI();}catch(e){}
+  /* 2) البيانات المحلية (غير قاتلة إن فشلت) */
   try{
-    applyAdminUI();
     (await dbGetAll('extras')).forEach(x=>EXTRAS[x.id]=x);
     (await dbGetAll('images')).forEach(v=>{
       if(v&&Array.isArray(v.imgs))IMAGES[v.id]=v;
       else if(v)IMAGES[v.id]={id:v.id,imgs:[{thumb:v.thumb,emb:v.emb,hist:v.hist,ocr:v.ocr,ts:v.ts||Date.now()}]};
     });
-    (await dbGetAll('negatives')).forEach(n=>{if(n&&n.emb&&n.matId)NEG.push(n);});
     let removed=0;
     for(const id of Object.keys(IMAGES)){
       const im=IMAGES[id];
@@ -865,35 +895,33 @@ document.addEventListener('keydown',e=>{
       else dbPut('images',id,im);
     }
     if(removed)toast('تم تنظيف '+removed+' صورة تالفة','err');
+  }catch(e){}
+  /* 3) الكاش الفوري */
+  try{
     const cache=localStorage.getItem('rowsCache');
-    if(cache){try{const rows=JSON.parse(cache);if(rows&&rows.length)loadDataset(rows);}catch(e){}}
-    (async()=>{
-      const buf=await fetchRepoFile();
-      if(buf){const rows=parseWorkbook(buf);
-        if(rows){loadDataset(rows);try{localStorage.setItem('rowsCache',JSON.stringify(rows));}catch(e){}toast('تم تحديث المواد من المستودع ✔');}}
-      else if(!ROWS.length)$('emptyMsg').textContent='تعذر جلب المواد — افتح الأدوات ⌄ واضغط «تحديث من المستودع»';
-    })();
-    (async()=>{try{
-      const r=await fetch(SHARED_URL,{cache:'no-store'});
-      if(!r.ok)return;
-      const data=await r.json();
-      if(!data||typeof data!=='object')return;
-      let added=0;
-      for(const id of Object.keys(data)){
-        const entry=data[id];if(!entry||!Array.isArray(entry.imgs))continue;
-        const valid=entry.imgs.filter(validImg);
-        if(!valid.length)continue;
-        if(!IMAGES[id]){IMAGES[id]={id,imgs:valid};added++;}
-        else{const have=new Set(IMAGES[id].imgs.map(g=>g.ts));valid.forEach(g=>{if(!have.has(g.ts))IMAGES[id].imgs.push(g);});}
-      }
-      if(added)toast('🌐 تم تحميل '+added+' مادة مصوَّرة من المستودع');
-    }catch(e){}})();
-    (async()=>{try{
-      const r2=await fetch(NEG_URL,{cache:'no-store'});
-      if(r2.ok){const d2=await r2.json();const list=(d2&&d2.list)||[];
-        list.forEach(n=>{if(n&&n.emb&&n.matId&&!NEG.some(x=>x.ts===n.ts))NEG.push(n);});}
-    }catch(e){}})();
-  }catch(e){console.error(e);}
+    if(cache){const rows=JSON.parse(cache);if(rows&&rows.length)loadDataset(rows);}
+  }catch(e){}
+  /* 4) الجلب التلقائي من المستودع — مستقل تماماً مع 3 محاولات */
+  (async()=>{
+    const ok=await refreshFromRepo(true);
+    if(!ok&&!ROWS.length)$('emptyMsg').textContent='تعذر الجلب تلقائياً — افتح الأدوات ⌄ واضغط «تحديث من المستودع»';
+  })();
+  /* 5) الصور المشتركة */
+  (async()=>{try{
+    const r=await fetch(SHARED_URL,{cache:'no-store'});
+    if(!r.ok)return;
+    const data=await r.json();
+    if(!data||typeof data!=='object')return;
+    let added=0;
+    for(const id of Object.keys(data)){
+      const entry=data[id];if(!entry||!Array.isArray(entry.imgs))continue;
+      const valid=entry.imgs.filter(validImg);
+      if(!valid.length)continue;
+      if(!IMAGES[id]){IMAGES[id]={id,imgs:valid};added++;}
+      else{const have=new Set(IMAGES[id].imgs.map(g=>g.ts));valid.forEach(g=>{if(!have.has(g.ts))IMAGES[id].imgs.push(g);});}
+    }
+    if(added)toast('🌐 تم تحميل '+added+' مادة مصوَّرة من المستودع');
+  }catch(e){}})();
 })();
 </script>
 </body>
