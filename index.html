@@ -27,13 +27,13 @@ input,textarea{-webkit-user-select:text;user-select:text}
 body.lock{overflow:hidden}
 button{font-family:inherit}
 .clickable{cursor:pointer;user-select:none}
+#adminLoginTap{cursor:pointer;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;touch-action:manipulation}
 :focus-visible{outline:3px solid rgba(79,70,229,.4);outline-offset:2px;border-radius:8px}
 header{max-width:960px;margin:16px auto 0;padding:0 12px}
 .hcard{background:linear-gradient(135deg,#ffffff,#f2f5ff 60%,#eefaf6);border:1px solid #e8ebf7;border-radius:24px;box-shadow:var(--sh);padding:20px}
 .hrow{display:flex;gap:12px;align-items:center;justify-content:space-between}
 .hrow h1{margin:0;font-size:26px;font-weight:800;background:linear-gradient(90deg,#4f46e5,#0ea5a4);-webkit-background-clip:text;background-clip:text;color:transparent}
 .hrow p{margin:4px 0 0;color:var(--mut);font-size:13px;font-weight:600}
-#adminTap{cursor:pointer}
 .hbtns{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-top:16px}
 .btn{border:none;border-radius:14px;padding:13px 14px;font-size:14px;font-weight:800;cursor:pointer;transition:.15s;display:inline-flex;gap:8px;align-items:center;justify-content:center}
 .btn:active{transform:scale(.96)}
@@ -41,19 +41,15 @@ header{max-width:960px;margin:16px auto 0;padding:0 12px}
 .btn.ghost{background:#eef1f8;color:var(--txt)}
 .btn.amb{background:linear-gradient(135deg,#f2a541,#e8960c);color:#fff;box-shadow:0 6px 16px rgba(232,150,12,.35)}
 .btn.dngr{background:var(--dng);color:#fff}
-.scanbig{width:100%;margin-top:14px;padding:16px;font-size:16px;border-radius:18px}
+.scanbig,.searchbig{width:100%;margin-top:14px;padding:16px;font-size:16px;border-radius:18px}
+.searchbig{margin:0;background:linear-gradient(135deg,#4f46e5,#2563eb);color:#fff;box-shadow:0 6px 16px rgba(79,70,229,.3)}
+.chev{border:none;background:#eef1f8;width:40px;height:40px;border-radius:14px;cursor:pointer;font-size:16px;font-weight:800;color:var(--pri2);transition:.25s;flex:0 0 auto}
+.chev:active{transform:scale(.88)}
+.chev.open{transform:rotate(180deg);background:var(--pri);color:#fff}
 main{max-width:960px;margin:0 auto;padding:14px 12px 60px}
 .card{background:var(--card);border:1px solid #eceff8;border-radius:var(--rad);box-shadow:var(--sh);padding:14px;margin-bottom:14px}
 .sec-h{display:flex;gap:10px;align-items:center}
 .sec-h h2{font-size:16px;margin:0;flex:1}
-.chev{border:none;background:#eef1f8;width:40px;height:40px;border-radius:12px;cursor:pointer;font-size:16px;font-weight:800;color:var(--pri2);transition:.25s;flex:0 0 auto}
-.chev:active{transform:scale(.88)}
-.chev.open{transform:rotate(180deg);background:var(--pri);color:#fff}
-.file-item{display:flex;gap:10px;align-items:center;background:#f8f9ff;border:1px solid #e6e9f7;border-radius:16px;padding:10px;margin-top:10px;flex-wrap:wrap}
-.file-item .fi{width:44px;height:44px;border-radius:12px;background:#e7f7ee;color:#177a4c;display:grid;place-items:center;font-size:20px}
-.file-item .meta{flex:1;min-width:140px}
-.file-item .meta b{font-size:14px}
-.file-item .meta small{display:block;color:var(--mut)}
 .comps{display:flex;gap:8px;overflow-x:auto;padding:12px 2px 4px;scrollbar-width:none}
 .comps::-webkit-scrollbar{display:none}
 .comp{flex:0 0 auto;border:1px solid #e6e9f7;background:linear-gradient(160deg,#fff,#eef2ff);border-radius:16px;padding:10px 18px;cursor:pointer;text-align:center;transition:.2s}
@@ -77,7 +73,6 @@ main{max-width:960px;margin:0 auto;padding:14px 12px 60px}
 #imgsModal{z-index:65}
 #camModal{z-index:70}
 #codeModal{z-index:72}
-#loginModal{z-index:75}
 #confirmModal{z-index:80}
 .modal{background:#fff;border-radius:22px;width:min(600px,96vw);max-height:calc(100vh - 24px);max-height:calc(100dvh - 24px);display:flex;flex-direction:column;padding:0;overflow:hidden;animation:up .25s;margin:auto}
 .modal.wide{width:min(780px,96vw)}
@@ -86,6 +81,7 @@ main{max-width:960px;margin:0 auto;padding:14px 12px 60px}
 .m-head h2{margin:0;font-size:18px;font-weight:800}
 .x{border:none;background:#f1f3fa;width:38px;height:38px;border-radius:50%;cursor:pointer;font-size:15px;flex:0 0 auto}
 .m-body{overflow:auto;padding:0 0 16px;flex:1;overscroll-behavior:contain;will-change:transform}
+.m-body.spring{transition:transform .4s cubic-bezier(.22,.9,.32,1.15)}
 .modal input[type=text],.modal input[type=password]{width:calc(100% - 32px);margin:0 16px;border:2px solid #e3e7f5;border-radius:12px;padding:11px 12px;font-family:inherit;font-size:14px;outline:none;background:#fff}
 textarea.code{width:calc(100% - 32px);margin:0 16px;font-family:'Courier New',monospace;font-size:11px;min-height:320px;direction:ltr;text-align:left;white-space:pre;border:2px solid #e3e7f5;border-radius:12px;padding:10px;outline:none;background:#0f1220;color:#d7e0ff}
 .g-tools{position:sticky;top:0;z-index:5;display:flex;gap:10px;flex-wrap:wrap;padding:12px 16px;background:#fff;border-bottom:1px solid #eef0f6}
@@ -149,7 +145,7 @@ textarea{width:calc(100% - 32px);margin:0 16px;border:2px solid #e3e7f5;border-r
 .cand .pv{font-size:13px;font-weight:800;color:var(--pri2)}
 .eye{border:none;background:#eef1f8;border-radius:10px;width:36px;height:36px;cursor:pointer;font-size:16px}
 .hint{font-size:12.5px;color:#4a5468;margin:4px 16px 10px;font-weight:600;line-height:1.9}
-#toast{position:fixed;bottom:18px;right:50%;transform:translateX(50%);background:#22333b;color:#fff;border-radius:12px;padding:11px 20px;font-size:13px;z-index:99;max-width:90vw;text-align:center}
+#toast{position:fixed;bottom:calc(18px + env(safe-area-inset-bottom));right:50%;transform:translateX(50%);background:#22333b;color:#fff;border-radius:12px;padding:11px 20px;font-size:13px;z-index:99;max-width:90vw;text-align:center}
 #toast.err{background:var(--dng)}
 </style>
 </head>
@@ -157,14 +153,13 @@ textarea{width:calc(100% - 32px);margin:0 16px;border:2px solid #e3e7f5;border-r
 <header>
   <div class="hcard">
     <div class="hrow">
-      <div class="clickable" id="appTitle"><h1>نظام إدارة <span id="adminTap">المواد</span></h1><p>المبرمج: أحمد برزان</p></div>
+      <div class="clickable" id="appTitle"><h1>نظام إدارة المواد</h1><p id="adminLoginTap" title="اضغط مطولاً لدخول المدير">المبرمج: أحمد برزان</p></div>
       <button class="chev" id="toolsChev" title="إظهار/إخفاء الأدوات">⌄</button>
     </div>
     <div class="hbtns" id="toolsBox" hidden>
       <button class="btn pri" id="btnRepo">🔄 تحديث من المستودع</button>
-      <button class="btn grn" id="btnSave">💾 حفظ الملف</button>
-      <button class="btn ghost" id="btnUpload" data-admin>📂 رفع ملف</button>
-      <button class="btn ghost" id="btnSync" data-admin>☁️ مزامنة الصور</button>
+      <button class="btn ghost" id="btnUpload" data-admin>📂 رفع ملف (ونشره)</button>
+      <button class="btn grn" id="btnSync" data-admin>☁️ مزامنة الصور</button>
       <button class="btn ghost" id="btnEditCode" data-admin>📝 تغيير الكود</button>
       <button class="btn dngr" id="btnLogout" data-admin>🚪 خروج المدير</button>
     </div>
@@ -174,9 +169,8 @@ textarea{width:calc(100% - 32px);margin:0 16px;border:2px solid #e3e7f5;border-r
 <input type="file" id="filePick" accept=".xlsx,.xls" hidden>
 
 <main>
-  <section class="card" id="filesSec">
-    <div class="sec-h"><button class="chev" id="filesChev">⌄</button><h2 class="clickable" id="filesTitle">🗂 الملفات المحفوظة محلياً</h2></div>
-    <div id="filesList" hidden></div>
+  <section class="card" id="searchSec">
+    <button class="btn searchbig" id="btnSearch">🔍 البحث عن أي مادة</button>
   </section>
 
   <section class="card" id="compSec" hidden>
@@ -201,16 +195,24 @@ textarea{width:calc(100% - 32px);margin:0 16px;border:2px solid #e3e7f5;border-r
 <!-- تغيير الكود -->
 <div class="overlay" id="codeModal" hidden>
   <div class="modal wide">
-    <div class="m-head"><h2>📝 تغيير كود index.html في المستودع</h2><button class="x" data-close>✕</button></div>
+    <div class="m-head"><h2>📝 تغيير كود index.html</h2><button class="x" data-close>✕</button></div>
     <div class="m-body">
-      <p class="hint">الصق الكود الكامل الجديد ثم «🚀 نشر». سيستبدل ملف index.html الحالي في المستودع. ⚠ تأكد أن الكود صحيح قبل النشر، وحدّث الصفحة بعد النشر لرؤية التغيير.</p>
-      <textarea id="codeInput" class="code" dir="ltr" spellcheck="false" placeholder="<!DOCTYPE html> ... الصق الكود الكامل هنا"></textarea>
+      <p class="hint">الصق الكود الكامل الجديد ثم «🚀 نشر». سيستبدل ملف index.html الحالي في المستودع. ⚠ تأكد من صحة الكود قبل النشر.</p>
+      <textarea id="codeInput" class="code" spellcheck="false" placeholder="<!DOCTYPE html> ... الصق الكود الكامل هنا"></textarea>
       <div class="row">
         <button class="btn ghost" id="btnFetchCode">⬇ جلب الكود الحالي</button>
         <button class="btn pri" id="btnPublishCode">🚀 نشر إلى المستودع</button>
       </div>
-      <div id="codeProg" hidden><div class="bar"><i id="codeBar"></i></div><p class="prog-txt" id="codeTxt"></p></div>
     </div>
+  </div>
+</div>
+
+<!-- البحث عن أي مادة -->
+<div class="overlay" id="searchModal" hidden>
+  <div class="modal wide">
+    <div class="m-head"><h2>🔍 البحث عن أي مادة</h2><button class="x" data-close>✕</button></div>
+    <div class="g-tools"><input type="text" class="gsearch" id="sSearch" style="margin:0;width:auto;flex:1" placeholder="اكتب اسم المادة أو الرمز أو الباركود…"></div>
+    <div class="m-body"><div id="sContent" style="padding:12px 16px 0"><p class="empty">✅ للمطابقة التامة • الأصفر للمتشابه — اكتب للبحث…</p></div></div>
   </div>
 </div>
 
@@ -219,7 +221,7 @@ textarea{width:calc(100% - 32px);margin:0 16px;border:2px solid #e3e7f5;border-r
   <div class="modal wide">
     <div class="m-head"><h2 id="gTitle"></h2><button class="x" data-close>✕</button></div>
     <div class="g-tools">
-      <input type="text" class="gsearch" id="gSearch" placeholder="🔍 بحث ذكي في البطاقة…">
+      <input type="text" class="gsearch" id="gSearch" style="margin:0;width:auto;flex:1" placeholder="🔍 بحث ذكي في البطاقة…">
       <div class="vtoggle">
         <button id="gViewTable" class="on">📋 جدول</button>
         <button id="gViewGrid">🧱 شبكة</button>
@@ -251,7 +253,7 @@ textarea{width:calc(100% - 32px);margin:0 16px;border:2px solid #e3e7f5;border-r
         </div>
         <div class="row" data-admin><button class="btn grn" id="btnPublish">☁️ مزامنة الصور للمستودع</button></div>
         <p class="hint" data-admin>المدير هو المسؤول عن التعديلات والرفع — المستخدمون يجلبون النتائج تلقائياً.</p>
-        <input type="file" id="fileAttachInput" accept="image/*" hidden>
+        <input type="file" id="fileAttachInput3" accept="image/*" hidden>
         <div id="procProg" hidden><div class="bar"><i id="procBar"></i></div><p class="prog-txt" id="procTxt"></p></div>
       </div>
     </div>
@@ -270,7 +272,7 @@ textarea{width:calc(100% - 32px);margin:0 16px;border:2px solid #e3e7f5;border-r
           <button class="btn ghost" id="fileAttach3">🖼 رفع صورة</button>
         </div>
         <div class="row" data-admin style="padding:0"><button class="btn grn" id="btnPublish2">☁️ مزامنة الصور للمستودع</button></div>
-        <input type="file" id="fileAttachInput3" accept="image/*" hidden>
+        <input type="file" id="fileAttachInput" accept="image/*" hidden>
         <div id="procProg3" hidden><div class="bar"><i id="procBar3"></i></div><p class="prog-txt" id="procTxt3"></p></div>
       </div>
     </div>
@@ -311,7 +313,7 @@ textarea{width:calc(100% - 32px);margin:0 16px;border:2px solid #e3e7f5;border-r
       <div id="scanRes" hidden>
         <div id="bestCard"></div>
         <h3 style="font-size:15px;margin:8px 16px;font-weight:800">بقية المرشحات (12 الأكثر تشابهاً):</h3>
-        <p class="hint" id="candHint"></p>
+        <p class="hint">اضغط على أي مرشح ⇐ يُطلب تأكيدك ⇐ تُضاف الصورة الملتقطة كمرجع إضافي وتُغلق النافذة. 👁 للتفاصيل.</p>
         <div id="candList"></div>
         <div class="row"><button class="btn pri" id="rescan">🔁 تصوير مادة أخرى</button></div>
       </div>
@@ -322,7 +324,7 @@ textarea{width:calc(100% - 32px);margin:0 16px;border:2px solid #e3e7f5;border-r
 <!-- تأكيد -->
 <div class="overlay" id="confirmModal" hidden>
   <div class="modal" style="width:min(430px,94vw)">
-    <div class="m-head"><h2>تأكيد</h2></div>
+    <div class="m-head"><h2 id="confirmTitle">تأكيد</h2></div>
     <div class="m-body">
       <p id="confirmTxt" style="font-size:14.5px;line-height:1.9;margin:0 16px;font-weight:700"></p>
       <div class="row"><button class="btn pri" id="confirmYes">✔ نعم</button><button class="btn ghost" id="confirmNo">✕ إلغاء</button></div>
@@ -337,16 +339,16 @@ textarea{width:calc(100% - 32px);margin:0 16px;border:2px solid #e3e7f5;border-r
 const $=id=>document.getElementById(id);
 const NO_GROUP='مواد بدون بطاقة';
 const REPO='AHMEDBRZAN/Baht';
-const REPO_URLS=['https://raw.githubusercontent.com/'+REPO+'/main/'+encodeURIComponent('جميع المواد.xlsx'),
+const XLSX_NAME='جميع المواد.xlsx';
+const REPO_URLS=['https://raw.githubusercontent.com/'+REPO+'/main/'+encodeURIComponent(XLSX_NAME),
  'https://raw.githubusercontent.com/'+REPO+'/main/'+encodeURIComponent('جميع المواد .xlsx'),
- 'https://raw.githubusercontent.com/'+REPO+'/master/'+encodeURIComponent('جميع المواد.xlsx'),
- 'https://raw.githubusercontent.com/'+REPO+'/master/'+encodeURIComponent('جميع المواد .xlsx'),
+ 'https://raw.githubusercontent.com/'+REPO+'/master/'+encodeURIComponent(XLSX_NAME),
  'https://raw.githubusercontent.com/'+REPO+'/main/materials.xlsx',
  'https://raw.githubusercontent.com/'+REPO+'/main/data.xlsx'];
 const SHARED_URL='https://raw.githubusercontent.com/'+REPO+'/main/data/images.json';
 
 let ROWS=[],ROWMAP={},GROUPS=[],IMAGES={},EXTRAS={},VIEWS={},FILES=[];
-let currentId=null,currentGroup=null,model=null,tfOk=false,camStream=null,camMode=null,lastScanUrl=null,lastRes=[],gSearchT=null;
+let currentId=null,currentGroup=null,model=null,tfOk=false,camStream=null,camMode=null,lastScanUrl=null,lastRes=[],gSearchT=null,sSearchT=null;
 let isAdmin=sessionStorage.getItem('isAdmin')==='1';
 
 /* ---------- أدوات ---------- */
@@ -361,7 +363,9 @@ const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
 function scaleDataUrl(url,maxW,q){return new Promise(res=>{const i=new Image();i.onload=()=>{const s=Math.min(1,maxW/i.width);const c=document.createElement('canvas');c.width=Math.round(i.width*s);c.height=Math.round(i.height*s);c.getContext('2d').drawImage(i,0,0,c.width,c.height);res(c.toDataURL('image/jpeg',q||.85));};i.onerror=()=>res('');i.src=url;});}
 function imgEl(url){return new Promise((res,rej)=>{const i=new Image();i.onload=()=>res(i);i.onerror=rej;i.src=url;});}
 function textSim(a,b){const A=norm(a).split(' ').filter(w=>w.length>=3),B=norm(b).split(' ').filter(w=>w.length>=3);if(!A.length||!B.length)return 0;let hit=0;for(const w of A){for(const p of B){if(p===w||(w.length>=4&&lev(w,p)<=1)){hit++;break;}}}return hit/A.length;}
-function b64encode(str){const bytes=new TextEncoder().encode(str);let bin='';for(let i=0;i<bytes.length;i+=0x8000){bin+=String.fromCharCode.apply(null,bytes.subarray(i,i+0x8000));}return btoa(bin);}
+const CHUNK=0x8000;
+function b64encode(str){const bytes=new TextEncoder().encode(str);let bin='';for(let i=0;i<bytes.length;i+=CHUNK){bin+=String.fromCharCode.apply(null,bytes.subarray(i,i+CHUNK));}return btoa(bin);}
+function bufToB64(buf){const bytes=new Uint8Array(buf);let bin='';for(let i=0;i<bytes.length;i+=CHUNK){bin+=String.fromCharCode.apply(null,bytes.subarray(i,i+CHUNK));}return btoa(bin);}
 
 /* ---------- قاعدة البيانات ---------- */
 let dbP=null;
@@ -386,8 +390,7 @@ function parseWorkbook(buf){
       rows.push({id:code?('c'+code):('r'+i),seq:String(r[g('#')]??'').trim(),code,name,
         unit:String(r[g('الوحدة')]??'').trim(),sell:parseNum(r[g('سعر المبيع')]),
         group:String(r[g('بطاقة مجموعة')]??'').trim(),latin:String(r[g('الاسم اللاتيني')]??'').trim(),
-        qty:parseNum(r[g('الكمية')]),buy:parseNum(r[g('سعر الشراء')]),
-        barcode:String(r[g('الباركود')]??'').replace(/;/g,'').trim()});
+        qty:parseNum(r[g('الكمية')]),barcode:String(r[g('الباركود')]??'').replace(/;/g,'').trim()});
     }
     return rows.length?rows:null;
   }catch(e){console.error(e);return null;}
@@ -414,6 +417,18 @@ async function fetchRepoFile(){
       if(f&&f.download_url){const d=await fetch(f.download_url);if(d.ok)return await d.arrayBuffer();}}
   }catch(e){}
   return null;
+}
+/* رفع ملف الإكسل إلى المستودع (يستبدل الملف الموجود بنفس الاسم) */
+async function pushXlsxToRepo(buf){
+  const token=await ensureToken();
+  if(!token)throw new Error('أدخل التوكن أولاً');
+  const api='https://api.github.com/repos/'+REPO+'/contents/'+encodeURIComponent(XLSX_NAME);
+  let sha;
+  const g=await fetch(api,{headers:{Authorization:'token '+token,Accept:'application/vnd.github+json'}});
+  if(g.ok){const gj=await g.json();sha=gj.sha;}
+  const put=await fetch(api,{method:'PUT',headers:{Authorization:'token '+token,Accept:'application/vnd.github+json','Content-Type':'application/json'},
+    body:JSON.stringify({message:'update materials from app',content:bufToB64(buf),...(sha?{sha}:{})})});
+  if(!put.ok){const er=await put.json().catch(()=>null);throw new Error((er&&er.message)||('HTTP '+put.status));}
 }
 
 /* ---------- الشركات ---------- */
@@ -464,64 +479,6 @@ function searchScore(q,r){const nq=q;let s=0;
     else for(const w of r.n.split(' '))if(w.length>=3&&lev(w,t)<=1){s+=18;break;}}
   return s;}
 
-/* ---------- الملفات المحلية ---------- */
-function renderFiles(){
-  $('filesList').innerHTML=FILES.length?FILES.map(f=>`<div class="file-item">
-    <div class="fi">📗</div><div class="meta"><b>${esc(f.name)}</b><small>${new Date(f.ts).toLocaleString('ar-IQ')} • ${f.rows.length} مادة</small></div>
-    <button class="btn pri" data-openfile="${f.id}">📂 فتح</button>
-    <button class="btn dngr" data-delfile="${f.id}">🗑</button></div>`).join('')
-   :'<p class="empty" style="padding:8px 0">لا توجد نسخ محلية — سيُجلب الملف تلقائياً من المستودع.</p>';
-}
-$('filesChev').onclick=()=>{const w=$('filesList').hidden;$('filesList').hidden=!w;$('filesChev').classList.toggle('open',w);};
-$('filesTitle').onclick=()=>{const w=$('filesList').hidden;$('filesList').hidden=!w;$('filesChev').classList.toggle('open',w);};
-function toggleTools(){const w=$('toolsBox').hidden;$('toolsBox').hidden=!w;$('toolsChev').classList.toggle('open',w);}
-$('toolsChev').onclick=toggleTools;
-$('appTitle').addEventListener('click',toggleTools);
-$('btnSave').onclick=async()=>{if(!ROWS.length)return toast('لا يوجد ملف محمّل للحفظ','err');
-  const id='f'+Date.now();FILES.unshift({id,name:'جميع المواد.xlsx',ts:Date.now(),rows:ROWS});await dbPut('files',id,{id,name:'جميع المواد.xlsx',ts:Date.now(),rows:ROWS});renderFiles();toast('تم حفظ النسخة محلياً 💾');};
-$('btnRepo').onclick=async()=>{toast('جارٍ الجلب من المستودع…');
-  const buf=await fetchRepoFile();
-  if(buf){const rows=parseWorkbook(buf);if(rows){loadDataset(rows);try{localStorage.setItem('rowsCache',JSON.stringify(rows));}catch(e){}toast('تم تحديث المواد ✔ '+rows.length+' مادة');return;}}
-  toast('تعذر الجلب — حاول لاحقاً','err');};
-$('btnUpload').onclick=()=>$('filePick').click();
-$('filePick').onchange=e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();
-  r.onload=()=>{const rows=parseWorkbook(r.result);if(rows){loadDataset(rows);try{localStorage.setItem('rowsCache',JSON.stringify(rows));}catch(e2){}toast('تم تحميل «'+f.name+'» ✔');}else toast('ملف غير مدعوم','err');};
-  r.readAsArrayBuffer(f);};
-
-/* ---------- تغيير الكود (مدير فقط) ---------- */
-$('btnEditCode').onclick=()=>{$('codeModal').hidden=false;$('codeInput').value='';$('codeProg').hidden=true;};
-$('btnFetchCode').onclick=async()=>{
-  toast('جارٍ جلب الكود الحالي…');
-  try{
-    const r=await fetch('https://raw.githubusercontent.com/'+REPO+'/main/index.html',{cache:'no-store'});
-    if(!r.ok)throw new Error('HTTP '+r.status);
-    $('codeInput').value=await r.text();
-    toast('تم جلب الكود الحالي ✔');
-  }catch(e){toast('فشل الجلب: '+e.message,'err');}
-};
-$('btnPublishCode').onclick=async()=>{
-  const code=$('codeInput').value;
-  if(code.length<200)return toast('الكود قصير جداً — تأكد من لصق الكود الكامل','err');
-  if(!/<!DOCTYPE html>/i.test(code))return toast('الكود لا يبدو ملف HTML صحيحاً','err');
-  const ok=await askConfirm('سيتم استبدال index.html في المستودع بالكود الجديد. متابعة؟');
-  if(!ok)return;
-  const token=await ensureToken();
-  if(!token)return toast('أدخل التوكن أولاً','err');
-  $('codeProg').hidden=false;$('codeBar').style.width='30%';$('codeTxt').textContent='جارٍ النشر إلى المستودع…';
-  try{
-    const api='https://api.github.com/repos/'+REPO+'/contents/index.html';
-    let sha;
-    const g=await fetch(api,{headers:{Authorization:'token '+token,Accept:'application/vnd.github+json'}});
-    if(g.ok){const gj=await g.json();sha=gj.sha;}
-    const put=await fetch(api,{method:'PUT',headers:{Authorization:'token '+token,Accept:'application/vnd.github+json','Content-Type':'application/json'},
-      body:JSON.stringify({message:'update index.html from app',content:b64encode(code),...(sha?{sha}:{})})});
-    if(!put.ok){const er=await put.json().catch(()=>null);throw new Error((er&&er.message)||('HTTP '+put.status));}
-    $('codeBar').style.width='100%';$('codeTxt').textContent='✔ تم النشر';
-    toast('✔ تم نشر الكود إلى المستودع — حدّث الصفحة لرؤية التغيير');
-    setTimeout(()=>{$('codeModal').hidden=true;},800);
-  }catch(e){$('codeProg').hidden=true;toast('فشل النشر: '+e.message,'err');}
-};
-
 /* ---------- تفاصيل المادة ---------- */
 function hasImg(id){return !!(IMAGES[id]&&IMAGES[id].imgs&&IMAGES[id].imgs.length);}
 function openView(id){const r=ROWMAP[id];if(!r)return;currentId=id;
@@ -557,11 +514,11 @@ $('imgsGrid').addEventListener('click',async e=>{const d=e.target.closest('[data
   renderImgs();toast('حُذفت الصورة 🗑');});
 $('camAttach2').onclick=()=>openCamModal('attach');
 $('camAttach3').onclick=()=>openCamModal('attach');
-$('fileAttach2').onclick=()=>$('fileAttachInput').click();
-$('fileAttach3').onclick=()=>$('fileAttachInput3').click();
-$('fileAttachInput').onchange=async e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();
-  r.onload=async()=>processAttach(await scaleDataUrl(r.result,900,.88),'main');r.readAsDataURL(f);};
+$('fileAttach2').onclick=()=>$('fileAttachInput3').click();
+$('fileAttach3').onclick=()=>$('fileAttachInput').click();
 $('fileAttachInput3').onchange=async e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();
+  r.onload=async()=>processAttach(await scaleDataUrl(r.result,900,.88),'main');r.readAsDataURL(f);};
+$('fileAttachInput').onchange=async e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();
   r.onload=async()=>processAttach(await scaleDataUrl(r.result,900,.88),'imgs');r.readAsDataURL(f);};
 $('btnPublish').onclick=()=>publishImages(false);
 $('btnPublish2').onclick=()=>publishImages(false);
@@ -714,9 +671,6 @@ async function recognize(url){
 }
 function renderResults(url,res){
   const best=res[0],bc=$('bestCard');
-  $('candHint').innerHTML=isAdmin
-   ?'اضغط على أي مرشح ⇐ يُطلب تأكيدك ⇐ تُضاف الصورة الملتقطة كمرجع إضافي وتُغلق النافذة. 👁 للتفاصيل.'
-   :'اضغط على أي مرشح أو على 👁 لفتح تفاصيل المادة.';
   if(!best){
     bc.innerHTML='<div class="best low"><p style="margin:0;font-weight:800">⚠ لم يتم التعرف — لا توجد صور مرجعية بعد.</p><p class="hint" style="margin:6px 0 0">سيقوم المدير برفع الصور المرجعية قريباً لتعمل المطابقة.</p></div>';
   }else{
@@ -785,7 +739,7 @@ async function publishImages(silent){
   const token=await ensureToken();
   if(!token){if(!silent)toast('أُلغي النشر — أدخل التوكن للمحاولة','err');return;}
   if(!silent)toast('جارٍ تجهيز الصور للنشر…');
-  const out={};let added=0,skipped=0;
+  let added=0,skipped=0;
   let merged={};
   try{const r=await fetch(SHARED_URL,{cache:'no-store'});if(r.ok){const d=await r.json();if(d&&typeof d==='object')merged=d;}}catch(e){}
   for(const id of ids){
@@ -801,20 +755,79 @@ async function publishImages(silent){
     added+=smallOnes.length;
   }
   if(!added){if(!silent)toast('✔ لا جديد — جميع الصور موجودة مسبقاً ('+skipped+' مادة)');return;}
+  const json=JSON.stringify(merged);
+  if(json.length>950000){if(!silent)toast('حجم البيانات كبير ('+Math.round(json.length/1024)+'KB) — قلّل الصور','err');return;}
   try{
     const api='https://api.github.com/repos/'+REPO+'/contents/data/images.json';
     let sha;
     const g=await fetch(api,{headers:{Authorization:'token '+token,Accept:'application/vnd.github+json'}});
     if(g.ok){const gj=await g.json();sha=gj.sha;}
     const put=await fetch(api,{method:'PUT',headers:{Authorization:'token '+token,Accept:'application/vnd.github+json','Content-Type':'application/json'},
-      body:JSON.stringify({message:'sync images (merge new)',content:b64encode(JSON.stringify(merged)),...(sha?{sha}:{})})});
+      body:JSON.stringify({message:'sync images (merge new)',content:b64encode(json),...(sha?{sha}:{})})});
     if(!put.ok){const er=await put.json().catch(()=>null);throw new Error((er&&er.message)||('HTTP '+put.status));}
     if(!silent)toast('✔ تمت المزامنة: رُفعت '+added+' صورة جديدة وتُجاهلت '+skipped+' مادة موجودة');
   }catch(e){console.error(e);if(!silent)toast('فشل الرفع: '+e.message,'err');}
 }
 
+/* ---------- رفع ملف الإكسل (تحميل محلي + نشر واستبدال بالمستودع) ---------- */
+$('btnUpload').onclick=()=>$('filePick').click();
+$('filePick').onchange=async e=>{
+  const f=e.target.files[0];if(!f)return;
+  let buf;try{buf=await f.arrayBuffer();}catch(err){return toast('تعذر قراءة الملف','err');}
+  const rows=parseWorkbook(buf);
+  if(!rows)return toast('ملف غير مدعوم — تأكد أنه xlsx صادر من سراج','err');
+  loadDataset(rows);
+  try{localStorage.setItem('rowsCache',JSON.stringify(rows));}catch(err){}
+  toast('تم تحميل «'+f.name+'» ✔ ('+rows.length+' مادة)');
+  if(isAdmin){
+    const ok=await askConfirm('هل تريد نشر هذا الملف إلى المستودع واستبدال الملف الموجود بنفس الاسم؟');
+    if(ok){
+      toast('جارٍ رفع الملف إلى المستودع…');
+      try{await pushXlsxToRepo(buf);toast('✔ تم استبدال الملف في المستودع — وصل للجميع');}
+      catch(err){console.error(err);toast('فشل رفع الملف: '+err.message,'err');}
+    }
+  }
+};
+$('btnRepo').onclick=async()=>{toast('جارٍ الجلب من المستودع…');
+  const buf=await fetchRepoFile();
+  if(buf){const rows=parseWorkbook(buf);if(rows){loadDataset(rows);try{localStorage.setItem('rowsCache',JSON.stringify(rows));}catch(e){}toast('تم تحديث المواد ✔ '+rows.length+' مادة');return;}}
+  toast('تعذر الجلب — حاول لاحقاً','err');};
+
+/* ---------- تغيير الكود (مدير فقط) ---------- */
+$('btnEditCode').onclick=()=>{$('codeModal').hidden=false;$('codeInput').value='';};
+$('btnFetchCode').onclick=async()=>{
+  toast('جارٍ جلب الكود الحالي…');
+  try{
+    const r=await fetch('https://raw.githubusercontent.com/'+REPO+'/main/index.html',{cache:'no-store'});
+    if(!r.ok)throw new Error('HTTP '+r.status);
+    $('codeInput').value=await r.text();
+    toast('تم جلب الكود الحالي ✔');
+  }catch(e){toast('فشل الجلب: '+e.message,'err');}
+};
+$('btnPublishCode').onclick=async()=>{
+  const code=$('codeInput').value;
+  if(code.length<200)return toast('الكود قصير جداً — تأكد من لصق الكود الكامل','err');
+  if(!/<!DOCTYPE html>/i.test(code))return toast('الكود لا يبدو ملف HTML صحيحاً','err');
+  const ok=await askConfirm('سيتم استبدال index.html في المستودع بالكود الجديد. متابعة؟');
+  if(!ok)return;
+  const token=await ensureToken();
+  if(!token)return toast('أدخل التوكن أولاً','err');
+  toast('جارٍ النشر إلى المستودع…');
+  try{
+    const api='https://api.github.com/repos/'+REPO+'/contents/index.html';
+    let sha;
+    const g=await fetch(api,{headers:{Authorization:'token '+token,Accept:'application/vnd.github+json'}});
+    if(g.ok){const gj=await g.json();sha=gj.sha;}
+    const put=await fetch(api,{method:'PUT',headers:{Authorization:'token '+token,Accept:'application/vnd.github+json','Content-Type':'application/json'},
+      body:JSON.stringify({message:'update index.html from app',content:b64encode(code),...(sha?{sha}:{})})});
+    if(!put.ok){const er=await put.json().catch(()=>null);throw new Error((er&&er.message)||('HTTP '+put.status));}
+    toast('✔ تم نشر الكود إلى المستودع — حدّث الصفحة لرؤية التغيير');
+    setTimeout(()=>{$('codeModal').hidden=true;},800);
+  }catch(e){toast('فشل النشر: '+e.message,'err');}
+};
+
 /* ---------- إغلاق النوافذ ---------- */
-const MOD_ORDER=['confirmModal','loginModal','codeModal','camModal','imgsModal','viewModal','scanModal','searchModal','groupModal'];
+const MOD_ORDER=['confirmModal','codeModal','camModal','imgsModal','viewModal','scanModal','searchModal','groupModal'];
 function closeTop(){const id=MOD_ORDER.find(x=>{const el=$(x);return el&&!el.hidden;});if(!id)return;$(id).hidden=true;if(id==='camModal')stopCam();}
 document.querySelectorAll('[data-close]').forEach(b=>b.onclick=()=>{const o=b.closest('.overlay');if(o){o.hidden=true;if(o.id==='camModal')stopCam();}});
 document.querySelectorAll('.overlay').forEach(o=>o.addEventListener('click',e=>{
@@ -828,20 +841,16 @@ document.addEventListener('keydown',e=>{
     if(!$('camModal').hidden)$('camShot').click();
   }
 });
-$('filesList').addEventListener('click',async e=>{
-  const o=e.target.closest('[data-openfile]');if(o){const f=FILES.find(x=>x.id===o.dataset.openfile);if(f){loadDataset(f.rows,{name:f.name});toast('تم فتح «'+f.name+'» ✔');}return;}
-  const d=e.target.closest('[data-delfile]');if(d){await dbDel('files',d.dataset.delfile);FILES=FILES.filter(x=>x.id!==d.dataset.delfile);renderFiles();toast('حُذف الملف 🗑');}
-});
 
-/* ---------- دخول المدير ---------- */
+/* ---------- المدير: ضغط مستمر على اسم المبرمج ---------- */
 function applyAdminUI(){document.querySelectorAll('[data-admin]').forEach(el=>el.hidden=!isAdmin);}
-let tapCount=0,tapTimer=null;
-$('adminTap').addEventListener('click',e=>{
-  e.stopPropagation();
-  if(isAdmin){toast('وضع المدير مفعّل بالفعل 👤');return;}
-  tapCount++;clearTimeout(tapTimer);tapTimer=setTimeout(()=>tapCount=0,2500);
-  if(tapCount>=5){tapCount=0;openLogin();}
-});
+(function(){
+  const el=$('adminLoginTap');let t=null;
+  el.addEventListener('pointerdown',()=>{t=setTimeout(()=>{t=null;if(!isAdmin){openLogin();if(navigator.vibrate)navigator.vibrate(60);}},800);});
+  ['pointerup','pointerleave','pointercancel'].forEach(ev=>el.addEventListener(ev,()=>{if(t){clearTimeout(t);t=null;}}));
+  el.addEventListener('click',e=>e.stopPropagation());
+  el.addEventListener('contextmenu',e=>e.preventDefault());
+})();
 function openLogin(){
   let lm=$('loginModalDyn');
   if(!lm){
@@ -859,11 +868,14 @@ function doLogin(){
   const u=$('loginUser').value.trim(),p=$('loginPass').value;
   if(u==='مدير'&&p==='11'){
     isAdmin=true;sessionStorage.setItem('isAdmin','1');
-    $('loginModalDyn').hidden=true;
+    $('loginModalDyn').hidden=true;$('loginUser').value='';$('loginPass').value='';
     applyAdminUI();toast('✔ تم تفعيل وضع المدير — أهلاً بك');
   }else toast('بيانات الدخول غير صحيحة','err');
 }
 $('btnLogout').onclick=()=>{isAdmin=false;sessionStorage.removeItem('isAdmin');applyAdminUI();toast('تم الخروج من وضع المدير 🚪');};
+function toggleTools(){const willShow=$('toolsBox').hidden;$('toolsBox').hidden=!willShow;$('toolsChev').classList.toggle('open',willShow);}
+$('toolsChev').onclick=toggleTools;
+$('appTitle').addEventListener('click',toggleTools);
 
 /* ---------- بدء ---------- */
 (async()=>{
@@ -882,7 +894,6 @@ $('btnLogout').onclick=()=>{isAdmin=false;sessionStorage.removeItem('isAdmin');a
       else dbPut('images',id,im);
     }
     if(removed)toast('تم تنظيف '+removed+' صورة تالفة','err');
-    FILES=(await dbGetAll('files')).sort((a,b)=>b.ts-a.ts);renderFiles();
   }catch(e){}
   try{
     const cache=localStorage.getItem('rowsCache');
