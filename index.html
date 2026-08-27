@@ -32,6 +32,7 @@ header{max-width:960px;margin:16px auto 0;padding:0 12px}
 .hrow{display:flex;gap:12px;align-items:center;justify-content:space-between}
 .hrow h1{margin:0;font-size:26px;font-weight:800;background:linear-gradient(90deg,#4f46e5,#0ea5a4);-webkit-background-clip:text;background-clip:text;color:transparent}
 .hrow p{margin:4px 0 0;color:var(--mut);font-size:13px;font-weight:600}
+#adminTap{cursor:pointer}
 .chev{border:none;background:#eef1f8;width:40px;height:40px;border-radius:14px;cursor:pointer;font-size:16px;font-weight:800;color:var(--pri2);transition:.25s;flex:0 0 auto}
 .chev:active{transform:scale(.88)}
 .chev.open{transform:rotate(180deg);background:var(--pri);color:#fff}
@@ -41,6 +42,7 @@ header{max-width:960px;margin:16px auto 0;padding:0 12px}
 .btn.pri{background:var(--pri);color:#fff}.btn.grn{background:var(--grn);color:#fff}
 .btn.ghost{background:#eef1f8;color:var(--txt)}
 .btn.amb{background:linear-gradient(135deg,#f2a541,#e8960c);color:#fff;box-shadow:0 6px 16px rgba(232,150,12,.35)}
+.btn.dngr{background:var(--dng);color:#fff}
 .scanbig{width:100%;margin-top:14px;padding:16px;font-size:16px;border-radius:18px}
 main{max-width:960px;margin:0 auto;padding:14px 12px 30px}
 .card{background:var(--card);border:1px solid #eceff8;border-radius:var(--rad);box-shadow:var(--sh);padding:14px;margin-bottom:14px}
@@ -51,7 +53,7 @@ main{max-width:960px;margin:0 auto;padding:14px 12px 30px}
 .file-item .meta{flex:1;min-width:140px}
 .file-item .meta b{font-size:14px}
 .file-item .meta small{display:block;color:var(--mut)}
-.comps{display:flex;gap:8px;overflow-x:auto;padding:12px 2px 4px;scrollbar-width:none;-webkit-user-select:none}
+.comps{display:flex;gap:8px;overflow-x:auto;padding:12px 2px 4px;scrollbar-width:none}
 .comps::-webkit-scrollbar{display:none}
 .comp{flex:0 0 auto;border:1px solid #e6e9f7;background:linear-gradient(160deg,#fff,#eef2ff);border-radius:16px;padding:10px 18px;cursor:pointer;text-align:center;transition:.2s}
 .comp:active{transform:scale(.95)}
@@ -72,6 +74,7 @@ main{max-width:960px;margin:0 auto;padding:14px 12px 30px}
 #viewModal{z-index:60}
 #imgsModal{z-index:65}
 #camModal{z-index:70}
+#loginModal{z-index:75}
 #confirmModal{z-index:80}
 .modal{background:#fff;border-radius:22px;width:min(600px,96vw);max-height:calc(100vh - 24px);max-height:calc(100dvh - 24px);display:flex;flex-direction:column;padding:0;overflow:hidden;animation:up .25s;margin:auto}
 .modal.wide{width:min(780px,96vw)}
@@ -81,6 +84,8 @@ main{max-width:960px;margin:0 auto;padding:14px 12px 30px}
 .x{border:none;background:#f1f3fa;width:38px;height:38px;border-radius:50%;cursor:pointer;font-size:15px;flex:0 0 auto}
 .m-body{overflow:auto;padding:16px;flex:1;overscroll-behavior:contain;will-change:transform}
 .m-body.spring{transition:transform .4s cubic-bezier(.22,.9,.32,1.15)}
+.modal input[type=text],.modal input[type=password]{width:100%;border:2px solid #e3e7f5;border-radius:12px;padding:11px 12px;font-family:inherit;font-size:14px;outline:none;background:#fff}
+.modal input[type=text]:focus,.modal input[type=password]:focus{border-color:var(--pri)}
 .g-tools{flex:0 0 auto;display:flex;gap:10px;flex-wrap:wrap;padding:12px 16px;border-bottom:1px solid #eef0f6;background:#fff}
 .gsearch{flex:1;min-width:180px;border:2px solid #e3e7f5;border-radius:12px;padding:10px 14px;font-family:inherit;font-size:13px;outline:none;background:#fff}
 .gsearch:focus{border-color:var(--pri)}
@@ -152,14 +157,15 @@ textarea:focus{border-color:var(--pri)}
 <header>
   <div class="hcard">
     <div class="hrow">
-      <div class="clickable" id="appTitle"><h1>نظام إدارة المواد</h1><p>المبرمج: أحمد برزان</p></div>
+      <div class="clickable" id="appTitle"><h1>نظام إدارة <span id="adminTap">المواد</span></h1><p>المبرمج: أحمد برزان</p></div>
       <button class="chev" id="toolsChev" title="إظهار/إخفاء الأدوات">⌄</button>
     </div>
     <div class="hbtns" id="toolsBox" hidden>
       <button class="btn pri" id="btnRepo">🔄 تحديث من المستودع</button>
-      <button class="btn grn" id="btnSave">💾 حفظ الملف</button>
-      <button class="btn ghost" id="btnUpload">📂 رفع ملف</button>
-      <button class="btn ghost" id="btnSync">☁️ مزامنة الصور</button>
+      <button class="btn grn" id="btnSave" data-admin>💾 حفظ الملف</button>
+      <button class="btn ghost" id="btnUpload" data-admin>📂 رفع ملف</button>
+      <button class="btn ghost" id="btnSync" data-admin>☁️ مزامنة الصور</button>
+      <button class="btn dngr" id="btnLogout" data-admin>🚪 خروج المدير</button>
     </div>
     <button class="btn amb scanbig" id="btnScan">📷 التعرف على المادة</button>
   </div>
@@ -186,9 +192,24 @@ textarea:focus{border-color:var(--pri)}
     </div>
   </section>
 
-  <p class="empty" id="emptyMsg">اضغط عنوان «نظام إدارة المواد» بالأعلى لفتح الأدوات ثم «تحديث من المستودع 🔄»، أو «رفع ملف 📂».</p>
+  <p class="empty" id="emptyMsg">جارٍ تحميل المواد…</p>
 </main>
 
+<!-- دخول المدير (مخفي: 5 ضغطات على كلمة المواد) -->
+<div class="overlay" id="loginModal" hidden>
+  <div class="modal" style="width:min(380px,94vw)">
+    <div class="m-head"><h2>🔐 دخول المدير</h2><button class="x" data-close>✕</button></div>
+    <div class="m-body">
+      <label>اسم المستخدم</label>
+      <input type="text" id="loginUser" autocomplete="off">
+      <label>كلمة السر</label>
+      <input type="password" id="loginPass">
+      <div class="row"><button class="btn pri" id="loginBtn">دخول</button></div>
+    </div>
+  </div>
+</div>
+
+<!-- نافذة بطاقة المجموعة -->
 <div class="overlay" id="groupModal" hidden>
   <div class="modal wide">
     <div class="m-head"><h2 id="gTitle"></h2><button class="x" data-close>✕</button></div>
@@ -203,6 +224,7 @@ textarea:focus{border-color:var(--pri)}
   </div>
 </div>
 
+<!-- تفاصيل مادة -->
 <div class="overlay" id="viewModal" hidden>
   <div class="modal">
     <div class="m-head"><h2 id="vName"></h2><button class="x" data-close>✕</button></div>
@@ -218,35 +240,44 @@ textarea:focus{border-color:var(--pri)}
         <label>إضافة تفاصيل تظهر مع المادة</label>
         <textarea id="noteInput" placeholder="اكتب أي ملاحظات إضافية…"></textarea>
         <div class="row"><button class="btn pri" id="saveNote">💾 حفظ التفاصيل</button></div>
+        <div class="row" data-admin>
+          <button class="btn amb" id="camAttach2">📷 فتح الكاميرا</button>
+          <button class="btn ghost" id="fileAttach2">🖼 رفع صورة</button>
+        </div>
+        <div class="row" data-admin><button class="btn grn" id="btnPublish">☁️ مزامنة الصور للمستودع (لكل المستخدمين)</button></div>
+        <p class="hint" data-admin>الرفع والمزامنة للمدير فقط — المستخدمون يجلبون الصور تلقائياً بدون أي توكن.</p>
+        <input type="file" id="fileAttachInput" accept="image/*" hidden>
+        <div id="procProg" hidden><div class="bar"><i id="procBar"></i></div><p class="prog-txt" id="procTxt"></p></div>
       </div>
     </div>
   </div>
 </div>
 
+<!-- نافذة الصور المرجعية -->
 <div class="overlay" id="imgsModal" hidden>
   <div class="modal">
     <div class="m-head"><h2 id="imgsTitle">🖼 الصور المرجعية</h2><button class="x" data-close>✕</button></div>
     <div class="m-body">
       <div id="imgsGrid"></div>
-      <div class="row">
-        <button class="btn amb" id="camAttach2">📷 فتح الكاميرا</button>
-        <button class="btn ghost" id="fileAttach2">🖼 رفع صورة</button>
+      <div class="row" data-admin>
+        <button class="btn amb" id="camAttach3">📷 فتح الكاميرا</button>
+        <button class="btn ghost" id="fileAttach3">🖼 رفع صورة</button>
       </div>
-      <div class="row"><button class="btn grn" id="btnPublish">☁️ مزامنة الصور للمستودع (لكل المستخدمين)</button></div>
-      <p class="hint">التوكن يُطلب مرة واحدة فقط ويُحفظ على جهازك وحده — لا يُكتب في الكود ولا يظهر للمستودع.</p>
-      <input type="file" id="fileAttachInput" accept="image/*" hidden>
-      <div id="procProg" hidden><div class="bar"><i id="procBar"></i></div><p class="prog-txt" id="procTxt"></p></div>
+      <div class="row" data-admin><button class="btn grn" id="btnPublish2">☁️ مزامنة الصور للمستودع</button></div>
+      <input type="file" id="fileAttachInput3" accept="image/*" hidden>
+      <div id="procProg3" hidden><div class="bar"><i id="procBar3"></i></div><p class="prog-txt" id="procTxt3"></p></div>
     </div>
   </div>
 </div>
 
+<!-- الكاميرا -->
 <div class="overlay" id="camModal" hidden>
   <div class="modal">
     <div class="m-head"><h2>📷 الكاميرا</h2><button class="x" id="camClose">✕</button></div>
     <div class="m-body">
       <video id="camVideo" class="cam-video" playsinline muted autoplay></video>
       <div class="row">
-        <button class="btn danger" id="camShot" style="background:var(--dng);color:#fff">⬤ التقاط (Enter)</button>
+        <button class="btn dngr" id="camShot">⬤ التقاط (Enter)</button>
         <button class="btn ghost" id="camUploadBtn">🖼 رفع صورة</button>
       </div>
       <input type="file" id="camUpload" accept="image/*" hidden>
@@ -254,6 +285,7 @@ textarea:focus{border-color:var(--pri)}
   </div>
 </div>
 
+<!-- التعرف -->
 <div class="overlay" id="scanModal" hidden>
   <div class="modal">
     <div class="m-head"><h2>📷 التعرف على المادة</h2><button class="x" data-close>✕</button></div>
@@ -270,7 +302,7 @@ textarea:focus{border-color:var(--pri)}
       <div id="scanRes" hidden>
         <div id="bestCard"></div>
         <h3 style="font-size:15px;margin:8px 0;font-weight:800">بقية المرشحات (12 الأكثر تشابهاً):</h3>
-        <p class="hint">اضغط على أي مرشح ⇐ يُطلب تأكيدك ⇐ تُضاف الصورة الملتقطة كمرجع إضافي وتُغلق النافذة. زر 👁 للتفاصيل بدون إرفاق.</p>
+        <p class="hint" id="candHint"></p>
         <div id="candList"></div>
         <div class="row"><button class="btn pri" id="rescan">🔁 تصوير مادة أخرى</button></div>
       </div>
@@ -278,6 +310,7 @@ textarea:focus{border-color:var(--pri)}
   </div>
 </div>
 
+<!-- تأكيد -->
 <div class="overlay" id="confirmModal" hidden>
   <div class="modal" style="width:min(430px,94vw)">
     <div class="m-head"><h2>تأكيد الإضافة</h2></div>
@@ -305,21 +338,7 @@ const SHARED_URL='https://raw.githubusercontent.com/'+REPO+'/main/data/images.js
 
 let ROWS=[],ROWMAP={},GROUPS=[],IMAGES={},EXTRAS={},VIEWS={},FILES=[];
 let currentId=null,currentGroup=null,model=null,tfOk=false,camStream=null,camMode=null,lastScanUrl=null,gSearchT=null;
-
-/* ---------- تثبيت الصفحة كتطبيق: منع التكبير/التصغير ---------- */
-document.addEventListener('gesturestart',e=>e.preventDefault());
-document.addEventListener('gesturechange',e=>e.preventDefault());
-document.addEventListener('gestureend',e=>e.preventDefault());
-document.addEventListener('dblclick',e=>e.preventDefault());
-document.addEventListener('wheel',e=>{if(e.ctrlKey)e.preventDefault();},{passive:false});
-let lastTouchEnd=0;
-document.addEventListener('touchend',e=>{
-  const t=e.target;
-  if(t.closest&&t.closest('button,a,input,textarea,select,[data-id],tr,.comp,.tile,.eye')){lastTouchEnd=Date.now();return;}
-  const now=Date.now();
-  if(now-lastTouchEnd<=300)e.preventDefault();
-  lastTouchEnd=now;
-},{passive:false});
+let isAdmin=sessionStorage.getItem('isAdmin')==='1';
 
 /* ---------- أدوات ---------- */
 function toast(m,t){const e=$('toast');e.textContent=m;e.className=t||'';e.hidden=false;clearTimeout(e._h);e._h=setTimeout(()=>e.hidden=true,5000);}
@@ -330,6 +349,7 @@ function fm(n){n=parseNum(n);return n?n.toLocaleString('en-US',{maximumFractionD
 function norm(s){return (s||'').toLowerCase().replace(/[\u064B-\u0652\u0640]/g,'').replace(/[أإآ]/g,'ا').replace(/ة/g,'ه').replace(/ى/g,'ي').replace(/[^\p{L}\p{N}]+/gu,' ').trim();}
 function lev(a,b){a=a||'';b=b||'';if(a===b)return 0;const m=a.length,n=b.length;if(!m||!n)return m||n;let p=Array.from({length:n+1},(_,i)=>i);for(let i=1;i<=m;i++){const c=[i];for(let j=1;j<=n;j++)c[j]=Math.min(p[j]+1,c[j-1]+1,p[j-1]+(a[i-1]===b[j-1]?0:1));p=c;}return p[n];}
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+function hasImg(id){return !!(IMAGES[id]&&IMAGES[id].imgs&&IMAGES[id].imgs.length);}
 function scaleDataUrl(url,maxW,q){return new Promise(res=>{const i=new Image();i.onload=()=>{const s=Math.min(1,maxW/i.width);const c=document.createElement('canvas');c.width=Math.round(i.width*s);c.height=Math.round(i.height*s);c.getContext('2d').drawImage(i,0,0,c.width,c.height);res(c.toDataURL('image/jpeg',q||.85));};i.onerror=()=>res('');i.src=url;});}
 function imgEl(url){return new Promise((res,rej)=>{const i=new Image();i.onload=()=>res(i);i.onerror=rej;i.src=url;});}
 function textSim(a,b){const A=norm(a).split(' ').filter(w=>w.length>=3),B=norm(b).split(' ').filter(w=>w.length>=3);if(!A.length||!B.length)return 0;let hit=0;for(const w of A){for(const p of B){if(p===w||(w.length>=4&&lev(w,p)<=1)){hit++;break;}}}return hit/A.length;}
@@ -341,6 +361,27 @@ function db(){if(!dbP)dbP=new Promise((res,rej)=>{const r=indexedDB.open('matSys
 async function dbGetAll(s){const d=await db();return new Promise(res=>{const q=d.transaction(s).objectStore(s).getAll();q.onsuccess=()=>res(q.result||[]);q.onerror=()=>res([]);});}
 async function dbPut(s,k,v){const d=await db();return new Promise(res=>{const t=d.transaction(s,'readwrite');t.objectStore(s).put(v,k);t.oncomplete=res;});}
 async function dbDel(s,k){const d=await db();return new Promise(res=>{const t=d.transaction(s,'readwrite');t.objectStore(s).delete(k);t.oncomplete=res;});}
+
+/* ---------- المدير المخفي ---------- */
+function applyAdminUI(){document.querySelectorAll('[data-admin]').forEach(el=>el.hidden=!isAdmin);}
+let tapCount=0,tapTimer=null;
+$('adminTap').addEventListener('click',e=>{
+  e.stopPropagation();
+  if(isAdmin){toast('وضع المدير مفعّل بالفعل 👤');return;}
+  tapCount++;clearTimeout(tapTimer);tapTimer=setTimeout(()=>tapCount=0,2500);
+  if(tapCount>=5){tapCount=0;$('loginModal').hidden=false;setTimeout(()=>$('loginUser').focus(),150);}
+});
+function doLogin(){
+  const u=$('loginUser').value.trim(),p=$('loginPass').value;
+  if(u==='مدير'&&p==='11'){
+    isAdmin=true;sessionStorage.setItem('isAdmin','1');
+    $('loginModal').hidden=true;$('loginUser').value='';$('loginPass').value='';
+    applyAdminUI();toast('✔ تم تفعيل وضع المدير — أهلاً بك');
+  }else toast('بيانات الدخول غير صحيحة','err');
+}
+$('loginBtn').onclick=doLogin;
+$('loginPass').addEventListener('keydown',e=>{if(e.key==='Enter')doLogin();});
+$('btnLogout').onclick=()=>{isAdmin=false;sessionStorage.removeItem('isAdmin');applyAdminUI();toast('تم الخروج من وضع المدير');};
 
 /* ---------- قراءة الإكسل ---------- */
 function parseWorkbook(buf){
@@ -430,8 +471,8 @@ function renderFiles(){
   $('filesList').innerHTML=FILES.length?FILES.map(f=>`<div class="file-item">
     <div class="fi">📗</div><div class="meta"><b>${esc(f.name)}</b><small>${new Date(f.ts).toLocaleString('ar-IQ')} • ${f.rows.length} مادة</small></div>
     <button class="btn pri" data-openfile="${f.id}">📂 فتح</button>
-    <button class="btn danger" style="background:var(--dng);color:#fff" data-delfile="${f.id}">🗑</button></div>`).join('')
-   :'<p class="empty" style="padding:8px 0">لا توجد نسخ محلية بعد — اضغط «حفظ الملف 💾» بعد الجلب.</p>';
+    <button class="btn dngr" data-delfile="${f.id}">🗑</button></div>`).join('')
+   :'<p class="empty" style="padding:8px 0">لا توجد نسخ محلية — سيُجلب الملف تلقائياً من المستودع.</p>';
 }
 function toggleFiles(){const willShow=$('filesList').hidden;$('filesList').hidden=!willShow;$('filesChev').classList.toggle('open',willShow);}
 $('filesChev').onclick=toggleFiles;
@@ -444,7 +485,7 @@ $('btnSave').onclick=async()=>{if(!ROWS.length)return toast('لا يوجد مل�
 $('btnRepo').onclick=async()=>{toast('جارٍ الجلب من المستودع…');
   const buf=await fetchRepoFile();
   if(buf){const rows=parseWorkbook(buf);if(rows){loadDataset(rows,{name:'جميع المواد.xlsx'});toast('تم الجلب من المستودع ✔ '+rows.length+' مادة');return;}}
-  toast('تعذر الجلب — ارفع الملف يدوياً 📂','err');};
+  toast('تعذر الجلب — حاول لاحقاً','err');};
 async function fetchRepoFile(){
   try{
     const r=await fetch('https://api.github.com/repos/'+REPO+'/contents/');
@@ -483,23 +524,31 @@ $('saveNote').onclick=async()=>{const n=$('noteInput').value.trim();EXTRAS[curre
   await dbPut('extras',currentId,EXTRAS[currentId]);toast('تم حفظ التفاصيل ✔');openView(currentId);$('maintSec').hidden=false;};
 
 /* ---------- نافذة الصور المرجعية ---------- */
-$('btnImgs').onclick=()=>{$('imgsTitle').textContent='🖼 الصور المرجعية — '+(ROWMAP[currentId]?ROWMAP[currentId].name:'');
-  $('imgsModal').hidden=false;renderImgs();};
+function openImgsModal(){$('imgsTitle').textContent='🖼 الصور المرجعية — '+(ROWMAP[currentId]?ROWMAP[currentId].name:'');
+  $('imgsModal').hidden=false;renderImgs();}
+$('btnImgs').onclick=openImgsModal;
 function renderImgs(){const im=IMAGES[currentId];
-  $('imgsGrid').innerHTML=(im&&im.imgs&&im.imgs.length)?im.imgs.map((g,i)=>`<div class="imbig"><img src="${g.thumb}" alt=""><button data-delimg="${i}" title="حذف">✕</button></div>`).join('')
-   :'<p class="empty" style="grid-column:1/-1">لا توجد صور مرجعية بعد — أضف صورة بالكاميرا أو الرفع.</p>';
+  $('imgsGrid').innerHTML=(im&&im.imgs&&im.imgs.length)?im.imgs.map((g,i)=>`<div class="imbig"><img src="${g.thumb}" alt="">${isAdmin?`<button data-delimg="${i}" title="حذف">✕</button>`:''}</div>`).join('')
+   :'<p class="empty" style="grid-column:1/-1">لا توجد صور مرجعية بعد.</p>';
   updateImgsBtn();
   if(currentGroup)renderGroupContent();
 }
-$('imgsGrid').addEventListener('click',async e=>{const d=e.target.closest('[data-delimg]');if(!d)return;
+$('imgsGrid').addEventListener('click',async e=>{const d=e.target.closest('[data-delimg]');if(!d||!isAdmin)return;
   const im=IMAGES[currentId];im.imgs.splice(+d.dataset.delimg,1);
   if(!im.imgs.length){delete IMAGES[currentId];await dbDel('images',currentId);}
   else await dbPut('images',currentId,im);
   renderImgs();toast('حُذفت الصورة 🗑');});
+/* أزرار الرفع (للمدير فقط) */
 $('camAttach2').onclick=()=>openCamModal('attach');
+$('camAttach3').onclick=()=>openCamModal('attach');
 $('fileAttach2').onclick=()=>$('fileAttachInput').click();
+$('fileAttach3').onclick=()=>$('fileAttachInput3').click();
 $('fileAttachInput').onchange=async e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();
-  r.onload=async()=>processAttach(await scaleDataUrl(r.result,900,.88));r.readAsDataURL(f);};
+  r.onload=async()=>processAttach(await scaleDataUrl(r.result,900,.88),'main');r.readAsDataURL(f);};
+$('fileAttachInput3').onchange=async e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();
+  r.onload=async()=>processAttach(await scaleDataUrl(r.result,900,.88),'imgs');r.readAsDataURL(f);};
+$('btnPublish').onclick=()=>publishImages(false);
+$('btnPublish2').onclick=()=>publishImages(false);
 
 /* ---------- المحركات ---------- */
 async function tfReady(){if(tfOk)return;try{await tf.setBackend('webgl');}catch(e){try{await tf.setBackend('cpu');}catch(e2){}}await tf.ready();tfOk=true;}
@@ -519,18 +568,23 @@ async function analyze(url,onP){
   const thumb=await scaleDataUrl(url,300,.8);
   return {thumb,emb:emb.map(v=>+v.toFixed(4)),hist,ocr,ts:Date.now()};
 }
-async function processAttach(url){
-  $('procProg').hidden=false;$('procBar').style.width='5%';
+function setProc(which,t,p){
+  const bar=which==='imgs'?$('procBar3'):$('procBar'), txt=which==='imgs'?$('procTxt3'):$('procTxt'), wrap=which==='imgs'?$('procProg3'):$('procProg');
+  wrap.hidden=false;txt.textContent=t;bar.style.width=p+'%';
+}
+async function processAttach(url,which){
+  if(!isAdmin)return toast('الرفع للمدير فقط 🔐','err');
+  setProc(which,'جارٍ المعالجة…',5);
   try{
-    const g=await analyze(url,(t,p)=>{$('procTxt').textContent=t;$('procBar').style.width=p+'%';});
+    const g=await analyze(url,(t,p)=>setProc(which,t,p));
     if(!IMAGES[currentId])IMAGES[currentId]={id:currentId,imgs:[]};
     IMAGES[currentId].imgs.push(g);
     await dbPut('images',currentId,IMAGES[currentId]);
-    $('procTxt').textContent='✔ تمت المعالجة والإضافة';$('procBar').style.width='100%';
-    setTimeout(()=>{$('procProg').hidden=true;},1200);
+    setProc(which,'✔ تمت المعالجة والإضافة',100);
+    setTimeout(()=>{$('procProg').hidden=true;$('procProg3').hidden=true;},1200);
     renderImgs();
-    toast('تمت معالجة الصورة وإضافتها كمرجع ✔');
-  }catch(e){console.error(e);$('procProg').hidden=true;toast('خطأ بالمعالجة: '+e.message,'err');}
+    toast('تمت معالجة الصورة ✔ — اضغط ☁️ مزامنة لنشرها للجميع');
+  }catch(e){console.error(e);$('procProg').hidden=true;$('procProg3').hidden=true;toast('خطأ بالمعالجة: '+e.message,'err');}
 }
 
 /* ---------- الكاميرا ---------- */
@@ -543,11 +597,11 @@ $('camShot').onclick=async()=>{const u=capture();if(!u)return toast('انتظر 
 $('camUploadBtn').onclick=()=>$('camUpload').click();
 $('camUpload').onchange=async e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();
   r.onload=async()=>{stopCam();$('camModal').hidden=true;route(await scaleDataUrl(r.result,900,.88));};r.readAsDataURL(f);};
-function route(url){if(camMode==='attach'){if(!currentId)return toast('افتح المادة أولاً','err');processAttach(url);}else recognize(url);}
+function route(url){if(camMode==='attach'){if(!currentId)return toast('افتح المادة أولاً','err');processAttach(url,'main');}else recognize(url);}
 
-/* ---------- قفل الخلفية + المطاط ---------- */
+/* ---------- قفل الخلفية + المطاط + منع التكبير ---------- */
 function anyModalOpen(){return !!document.querySelector('.overlay:not([hidden])');}
-const lockObs=new MutationObserver(()=>{document.body.classList.toggle('lock',anyModalOpen());});
+const lockObs=new MutationObserver(()=>{document.body.classList.toggle('lock',anyModalOpen());applyAdminUI();});
 document.querySelectorAll('.overlay').forEach(o=>lockObs.observe(o,{attributes:true,attributeFilter:['hidden']}));
 document.addEventListener('touchmove',e=>{
   if(!anyModalOpen())return;
@@ -579,6 +633,19 @@ function rubberize(el){
   el.addEventListener('touchcancel',end);
 }
 document.querySelectorAll('.m-body').forEach(rubberize);
+document.addEventListener('gesturestart',e=>e.preventDefault());
+document.addEventListener('gesturechange',e=>e.preventDefault());
+document.addEventListener('gestureend',e=>e.preventDefault());
+document.addEventListener('dblclick',e=>e.preventDefault());
+document.addEventListener('wheel',e=>{if(e.ctrlKey)e.preventDefault();},{passive:false});
+let lastTouchEnd=0;
+document.addEventListener('touchend',e=>{
+  const t=e.target;
+  if(t.closest&&t.closest('button,a,input,textarea,select,[data-id],tr,.comp,.tile,.eye,#adminTap')){lastTouchEnd=Date.now();return;}
+  const now=Date.now();
+  if(now-lastTouchEnd<=300)e.preventDefault();
+  lastTouchEnd=now;
+},{passive:false});
 
 /* ---------- تأكيد ---------- */
 function askConfirm(msg){return new Promise(res=>{$('confirmTxt').textContent=msg;$('confirmModal').hidden=false;
@@ -589,7 +656,6 @@ function askConfirm(msg){return new Promise(res=>{$('confirmTxt').textContent=ms
 function cosine(a,b){if(!a||!b||!a.length||!b.length)return 0;let d=0,na=0,nb=0;for(let i=0;i<Math.min(a.length,b.length);i++){d+=a[i]*b[i];na+=a[i]*a[i];nb+=b[i]*b[i];}return d/(Math.sqrt(na)*Math.sqrt(nb)+1e-9);}
 function histInter(a,b){if(!a||!b||!a.length||!b.length)return 0;let s=0;for(let i=0;i<a.length;i++)s+=Math.min(a[i],b[i]);return s;}
 function validImg(g){return g&&g.thumb&&Array.isArray(g.emb)&&g.emb.length>0&&Array.isArray(g.hist)&&g.hist.length>0;}
-function hasImg(id){return !!(IMAGES[id]&&IMAGES[id].imgs&&IMAGES[id].imgs.length);}
 function ocrScoreFor(text,id){const hay=norm(text);if(!hay)return 0;const r=ROWMAP[id];if(!r)return 0;
   const digits=(text.match(/\d{5,}/g)||[]);if(r.barcode&&digits.includes(r.barcode))return 1;
   const toks=(r.n+' '+r.ln+' '+norm(EXTRAS[id]&&EXTRAS[id].note)+' '+r.code).split(' ').filter(w=>w.length>=3);
@@ -598,7 +664,7 @@ function ocrScoreFor(text,id){const hay=norm(text);if(!hay)return 0;const r=ROWM
   return Math.min(1,hit/toks.length);}
 function ocrVsSaved(txt,im){let m=0;for(const g of im.imgs||[])if(g&&g.ocr)m=Math.max(m,textSim(txt,g.ocr));return m;}
 
-$('btnScan').onclick=()=>{if(!Object.keys(IMAGES).some(hasImg))return toast('لا توجد صور مرجعية — أضف صورة من تفاصيل المادة ⚙','err');
+$('btnScan').onclick=()=>{if(!Object.keys(IMAGES).some(hasImg))return toast('لا توجد صور مرجعية بعد — سيقوم المدير برفعها قريباً','err');
   $('scanModal').hidden=false;$('scanStart').hidden=false;$('scanRes').hidden=true;$('scanProg').hidden=true;};
 $('btnCamScan').onclick=()=>openCamModal('scan');
 $('fileScanBtn').onclick=()=>$('fileScan').click();
@@ -642,13 +708,16 @@ async function recognize(url){
 }
 function renderResults(url,res){
   const best=res[0],bc=$('bestCard');
+  $('candHint').innerHTML=isAdmin
+   ?'اضغط على أي مرشح ⇐ يُطلب تأكيدك ⇐ تُضاف الصورة الملتقطة كمرجع إضافي وتُغلق النافذة. 👁 للتفاصيل.'
+   :'اضغط على أي مرشح أو على 👁 لفتح تفاصيل المادة.';
   if(!best){
-    bc.innerHTML='<div class="best low"><p style="margin:0;font-weight:800">⚠ لم يتم التعرف — لا توجد صور مرجعية مضافة بعد.</p><p class="hint">افتح المادة واضغط 🖼 الصور المرجعية لإضافة صورة.</p></div>';
+    bc.innerHTML='<div class="best low"><p style="margin:0;font-weight:800">⚠ لم يتم التعرف — لا توجد صور مرجعية بعد.</p><p class="hint">سيقوم المدير برفع الصور المرجعية قريباً لتعمل المطابقة.</p></div>';
   }else{
     const pct=Math.round(best.s*100),cls=pct>=60?'':(pct>=30?'mid':'low'),r=ROWMAP[best.im.id];
     if(pct<25){
       bc.innerHTML=`<div class="best low"><p style="margin:0;font-weight:800">⚠ لم يتم التعرف على المادة</p>
-      <p class="hint">يبدو أن المادة المصوَّرة <b>ليست مضافاً لها صورة مرجعية بعد</b>. اختر أقرب مرشح من الأسفل واضغط عليه ليُطلب تأكيدك وتُضاف الصورة له.</p></div>`;
+      <p class="hint">يبدو أن المادة المصوَّرة ليست مضافاً لها صورة مرجعية بعد. اختر أقرب مرشح من الأسفل لفتح تفاصيله.</p></div>`;
     }else{
       bc.innerHTML=`<div class="best ${cls}" data-openbest="${best.im.id}">
         <div class="imgs"><div><img src="${url}"><span>الصورة الملتقطة</span></div><div><img src="${best.g.thumb}"><span>الصورة المخزّنة</span></div></div>
@@ -670,6 +739,7 @@ $('scanRes').addEventListener('click',async e=>{
   if(eye){$('scanModal').hidden=true;openView(eye.dataset.openbest);return;}
   const att=e.target.closest('[data-attach]');
   if(att){const id=att.dataset.attach,r=ROWMAP[id];
+    if(!isAdmin){openView(id);return;}
     const ok=await askConfirm('هل تريد إضافة الصورة الملتقطة كصورة إضافية للمادة «'+(r?r.name:'')+'»؟');
     if(ok)attachTo(id);}
 });
@@ -681,25 +751,26 @@ async function attachTo(id){
     IMAGES[id].imgs.push(g);
     await dbPut('images',id,IMAGES[id]);
     $('scanModal').hidden=true;
-    toast('✔ أُضيفت الصورة كمرجع إضافي — التعرف القادم أضمن');
+    toast('✔ أُضيفت الصورة — اضغط ☁️ مزامنة لنشرها للجميع');
   }catch(e){console.error(e);toast('خطأ: '+e.message,'err');$('scanStart').hidden=false;}
   $('scanProg').hidden=true;
 }
 
-/* ---------- المزامنة ---------- */
+/* ---------- المزامنة (توكن المدير فقط) ---------- */
 async function ensureToken(){
   let t=(localStorage.getItem('ghToken')||'').trim();
   if(t)return t;
-  t=(prompt('🔑 أدخل Token شخصي من GitHub:\n\n1) Settings ← Developer settings ← Personal access tokens\n2) Generate new token (classic) ← علّم repo\n3) انسخ الرمز وألصقه هنا\n\n✅ يُحفظ على هذا الجهاز فقط.')||'').trim();
+  t=(prompt('🔑 أدخل Token شخصي من GitHub (صلاحية Contents Read and write على مستودع Baht):\n\nيُحفظ على هذا الجهاز فقط — المستخدمون لا يحتاجونه أبداً.')||'').trim();
   if(!t)return null;
   localStorage.setItem('ghToken',t);
   return t;
 }
 async function publishImages(silent){
+  if(!isAdmin)return toast('المزامنة للمدير فقط 🔐','err');
   const ids=Object.keys(IMAGES).filter(id=>hasImg(id));
-  if(!ids.length){if(!silent)toast('لا توجد صور مرجعية للنشر — أضف صوراً أولاً من ⚙','err');return;}
+  if(!ids.length){if(!silent)toast('لا توجد صور مرجعية للنشر — أضف صوراً أولاً','err');return;}
   const token=await ensureToken();
-  if(!token){if(!silent)toast('أُلغي النشر — اضغط ☁️ مجدداً وأدخل التوكن','err');return;}
+  if(!token){if(!silent)toast('أُلغي النشر — أدخل التوكن للمحاولة','err');return;}
   if(!silent)toast('جارٍ تجهيز الصور للنشر…');
   const out={};
   for(const id of ids){
@@ -719,14 +790,14 @@ async function publishImages(silent){
     if(gres.ok){const gj=await gres.json();sha=gj.sha;}
     const put=await fetch(api,{method:'PUT',headers:{Authorization:'token '+token,Accept:'application/vnd.github+json','Content-Type':'application/json'},
       body:JSON.stringify({message:'sync material images',content:b64encode(json),...(sha?{sha}:{})})});
-    if(put.ok){silent?toast('☁️ تمت المزامنة التلقائية ✔'):toast('✔ نُشرت الصور — ستظهر لجميع المستخدمين خلال دقيقة');return;}
+    if(put.ok){silent?toast('☁️ تمت المزامنة التلقائية ✔'):toast('✔ نُشرت الصور — وصلت لجميع المستخدمين');return;}
     if(put.status===401){localStorage.removeItem('ghToken');toast('⚠ التوكن مرفوض (401) — اضغط ☁️ وأدخل توكناً جديداً','err');return;}
     const er=await put.json().catch(()=>null);
     toast('فشل الرفع: '+(er&&er.message?er.message:('HTTP '+put.status)),'err');
   }catch(e){toast('فشل الرفع: '+e.message,'err');}
 }
 $('btnSync').onclick=()=>publishImages(false);
-$('btnPublish').onclick=()=>publishImages(false);
+/* جلب الصور المشتركة للجميع (قراءة عامة بدون توكن) */
 async function fetchSharedImages(){
   try{
     const r=await fetch(SHARED_URL,{cache:'no-store'});
@@ -741,12 +812,12 @@ async function fetchSharedImages(){
       if(!IMAGES[id]){IMAGES[id]={id,imgs:valid};added++;}
       else{const have=new Set(IMAGES[id].imgs.map(g=>g.ts));valid.forEach(g=>{if(!have.has(g.ts))IMAGES[id].imgs.push(g);});}
     }
-    if(added)toast('🌐 تم تحميل '+added+' مادة مصوَّرة مشتركة من المستودع');
+    if(added)toast('🌐 تم تحميل '+added+' مادة مصوَّرة من المستودع');
   }catch(e){}
 }
 
 /* ---------- إغلاق النوافذ ---------- */
-const MOD_ORDER=['confirmModal','camModal','imgsModal','viewModal','scanModal','groupModal'];
+const MOD_ORDER=['confirmModal','loginModal','camModal','imgsModal','viewModal','scanModal','groupModal'];
 function closeTop(){const id=MOD_ORDER.find(x=>!$(x).hidden);if(!id)return;$(id).hidden=true;if(id==='camModal')stopCam();}
 document.querySelectorAll('[data-close]').forEach(b=>b.onclick=()=>{const o=b.closest('.overlay');o.hidden=true;if(o.id==='camModal')stopCam();});
 document.querySelectorAll('.overlay').forEach(o=>o.addEventListener('click',e=>{
@@ -768,6 +839,7 @@ $('filesList').addEventListener('click',async e=>{
 /* ---------- بدء ---------- */
 (async()=>{
   try{
+    applyAdminUI();
     FILES=(await dbGetAll('files')).sort((a,b)=>b.ts-a.ts);renderFiles();
     (await dbGetAll('extras')).forEach(x=>EXTRAS[x.id]=x);
     (await dbGetAll('images')).forEach(v=>{
@@ -781,10 +853,15 @@ $('filesList').addEventListener('click',async e=>{
       if(!im.imgs.length){delete IMAGES[id];await dbDel('images',id);removed++;}
       else await dbPut('images',id,im);
     }
-    if(removed)toast('تم تنظيف '+removed+' صورة تالفة — أعد إرفاقها من 🖼 الصور المرجعية','err');
-    if(FILES.length){loadDataset(FILES[0].rows,{name:FILES[0].name});toast('تم تحميل النسخة المحلية ✔');}
+    if(removed)toast('تم تنظيف '+removed+' صورة تالفة','err');
+    if(FILES.length){loadDataset(FILES[0].rows,{name:FILES[0].name});}
+    else{
+      const buf=await fetchRepoFile();
+      if(buf){const rows=parseWorkbook(buf);if(rows)loadDataset(rows,{name:'جميع المواد.xlsx'});}
+    }
     await fetchSharedImages();
-    if(Object.keys(IMAGES).some(hasImg)&&localStorage.getItem('ghToken')&&!sessionStorage.getItem('autoSynced')){
+    /* مزامنة تلقائية للمدير فقط إن وُجد توكن */
+    if(isAdmin&&localStorage.getItem('ghToken')&&Object.keys(IMAGES).some(hasImg)&&!sessionStorage.getItem('autoSynced')){
       sessionStorage.setItem('autoSynced','1');
       publishImages(true);
     }
