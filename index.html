@@ -26,7 +26,6 @@ padding-top:env(safe-area-inset-top);padding-bottom:env(safe-area-inset-bottom)}
 input,textarea{-webkit-user-select:text;user-select:text}
 body.lock{overflow:hidden}
 button{font-family:inherit}
-.btn:disabled{opacity:.6;transform:none}
 .clickable{cursor:pointer;user-select:none}
 :focus-visible{outline:3px solid rgba(79,70,229,.4);outline-offset:2px;border-radius:8px}
 header{max-width:960px;margin:16px auto 0;padding:0 12px}
@@ -34,7 +33,6 @@ header{max-width:960px;margin:16px auto 0;padding:0 12px}
 .hrow{display:flex;gap:12px;align-items:center;justify-content:space-between}
 .hrow h1{margin:0;font-size:26px;font-weight:800;background:linear-gradient(90deg,#4f46e5,#0ea5a4);-webkit-background-clip:text;background-clip:text;color:transparent}
 .hrow p{margin:4px 0 0;color:var(--mut);font-size:13px;font-weight:600}
-#adminTap{cursor:pointer}
 .hbtns{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-top:16px}
 .btn{border:none;border-radius:14px;padding:13px 14px;font-size:14px;font-weight:800;cursor:pointer;transition:.15s;display:inline-flex;gap:8px;align-items:center;justify-content:center}
 .btn:active{transform:scale(.96)}
@@ -47,7 +45,7 @@ header{max-width:960px;margin:16px auto 0;padding:0 12px}
 .chev{border:none;background:#eef1f8;width:40px;height:40px;border-radius:14px;cursor:pointer;font-size:16px;font-weight:800;color:var(--pri2);transition:.25s;flex:0 0 auto}
 .chev:active{transform:scale(.88)}
 .chev.open{transform:rotate(180deg);background:var(--pri);color:#fff}
-main{max-width:960px;margin:0 auto;padding:14px 12px calc(30px + env(safe-area-inset-bottom))}
+main{max-width:960px;margin:0 auto;padding:14px 12px 60px}
 .card{background:var(--card);border:1px solid #eceff8;border-radius:var(--rad);box-shadow:var(--sh);padding:14px;margin-bottom:14px}
 .sec-h{display:flex;gap:10px;align-items:center}
 .sec-h h2{font-size:16px;margin:0;flex:1}
@@ -82,7 +80,6 @@ main{max-width:960px;margin:0 auto;padding:14px 12px calc(30px + env(safe-area-i
 .x{border:none;background:#f1f3fa;width:38px;height:38px;border-radius:50%;cursor:pointer;font-size:15px;flex:0 0 auto}
 .m-body{overflow:auto;padding:0 0 16px;flex:1;overscroll-behavior:contain;will-change:transform}
 .m-body.spring{transition:transform .4s cubic-bezier(.22,.9,.32,1.15)}
-.modal input[type=text],.modal input[type=password]{width:calc(100% - 32px);margin:0 16px;border:2px solid #e3e7f5;border-radius:12px;padding:11px 12px;font-family:inherit;font-size:14px;outline:none;background:#fff}
 .g-tools{position:sticky;top:0;z-index:5;display:flex;gap:10px;flex-wrap:wrap;padding:12px 16px;background:#fff;border-bottom:1px solid #eef0f6}
 .gsearch{flex:1;min-width:180px;border:2px solid #e3e7f5;border-radius:12px;padding:10px 14px;font-family:inherit;font-size:13px;outline:none;background:#fff}
 .gsearch:focus{border-color:var(--pri)}
@@ -95,8 +92,6 @@ main{max-width:960px;margin:0 auto;padding:14px 12px calc(30px + env(safe-area-i
 .tbl tr{cursor:pointer}
 .tbl tr:hover,.tbl tr.hl{background:#eef2ff}
 .tbl tr.hi-img{background:#e9f9f0}
-.tbl tr.s-hit{background:#e7f7ee}
-.tbl tr.s-sim{background:#fff6dd}
 .imgdot{font-size:11px}
 .tiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
 .tile{border:1px solid #e8ebf7;background:#fbfcff;border-radius:16px;padding:12px;cursor:pointer;text-align:right;display:flex;flex-direction:column;gap:8px;transition:.15s}
@@ -137,13 +132,6 @@ textarea{width:calc(100% - 32px);margin:0 16px;border:2px solid #e3e7f5;border-r
 .best .imgs{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px}
 .best .imgs img{width:100%;height:130px;object-fit:cover;border-radius:12px;pointer-events:none}
 .best .imgs span{display:block;text-align:center;font-size:11.5px;color:var(--mut);font-weight:700}
-.best-meta{display:flex;justify-content:space-between;align-items:center;gap:10px;margin:10px 0 6px;flex-wrap:wrap}
-.best-name{margin:0;font-size:19px;font-weight:800;color:#141c2e;line-height:1.4;flex:1;min-width:150px}
-.best-badges{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
-.best-price{background:linear-gradient(135deg,#157a4a,#2f9e6e);color:#fff;border-radius:14px;padding:7px 16px;font-size:17px;font-weight:800;box-shadow:0 5px 14px rgba(47,158,110,.35);white-space:nowrap}
-.best-price small{font-size:11px;font-weight:700;opacity:.9}
-.best-qty{background:#eef1f8;color:var(--pri2);border-radius:14px;padding:7px 16px;font-size:15px;font-weight:800;white-space:nowrap}
-.best-group{display:inline-block;background:#eef1f8;color:var(--pri2);border-radius:12px;padding:3px 12px;font-size:12px;font-weight:800}
 .pct{display:inline-block;background:var(--grn);color:#fff;border-radius:20px;padding:3px 14px;font-weight:800}
 .pct.mid{background:var(--amb)}.pct.low{background:var(--dng)}
 .mini{display:inline-block;background:#eef1f8;color:var(--pri2);border-radius:14px;padding:2px 10px;font-size:11px;font-weight:800;margin-left:4px}
@@ -166,7 +154,7 @@ textarea{width:calc(100% - 32px);margin:0 16px;border:2px solid #e3e7f5;border-r
     </div>
     <div class="hbtns" id="toolsBox" hidden>
       <button class="btn pri" id="btnRepo">🔄 تحديث من المستودع</button>
-      <button class="btn ghost" id="btnUpload" data-admin>📂 رفع ملف</button>
+      <button class="btn ghost" id="btnUpload" data-admin>📂 رفع ملف (ونشره للجميع)</button>
       <button class="btn grn" id="btnSync" data-admin>☁️ مزامنة الصور</button>
       <button class="btn dngr" id="btnLogout" data-admin>🚪 خروج المدير</button>
     </div>
@@ -243,7 +231,7 @@ textarea{width:calc(100% - 32px);margin:0 16px;border:2px solid #e3e7f5;border-r
           <button class="btn amb" id="camAttach2">📷 فتح الكاميرا</button>
           <button class="btn ghost" id="fileAttach2">🖼 رفع صورة</button>
         </div>
-        <div class="row" data-admin><button class="btn grn" id="btnPublish">☁️ مزامنة الصور للمستودع (هذه المادة)</button></div>
+        <div class="row" data-admin><button class="btn grn" id="btnPublish">☁️ مزامنة الصور للمستودع</button></div>
         <p class="hint" data-admin>المدير هو المسؤول عن التعديلات والرفع — المستخدمون يجلبون النتائج تلقائياً.</p>
         <input type="file" id="fileAttachInput3" accept="image/*" hidden>
         <div id="procProg" hidden><div class="bar"><i id="procBar"></i></div><p class="prog-txt" id="procTxt"></p></div>
@@ -263,7 +251,7 @@ textarea{width:calc(100% - 32px);margin:0 16px;border:2px solid #e3e7f5;border-r
           <button class="btn amb" id="camAttach3">📷 فتح الكاميرا</button>
           <button class="btn ghost" id="fileAttach3">🖼 رفع صورة</button>
         </div>
-        <div class="row" data-admin style="padding:0"><button class="btn grn" id="btnPublish2">☁️ مزامنة الصور للمستودع (هذه المادة)</button></div>
+        <div class="row" data-admin style="padding:0"><button class="btn grn" id="btnPublish2">☁️ مزامنة الصور للمستودع</button></div>
         <input type="file" id="fileAttachInput" accept="image/*" hidden>
         <div id="procProg3" hidden><div class="bar"><i id="procBar3"></i></div><p class="prog-txt" id="procTxt3"></p></div>
       </div>
@@ -316,10 +304,10 @@ textarea{width:calc(100% - 32px);margin:0 16px;border:2px solid #e3e7f5;border-r
 <!-- تأكيد -->
 <div class="overlay" id="confirmModal" hidden>
   <div class="modal" style="width:min(430px,94vw)">
-    <div class="m-head"><h2>تأكيد الإضافة</h2></div>
+    <div class="m-head"><h2 id="confirmTitle">تأكيد</h2></div>
     <div class="m-body">
       <p id="confirmTxt" style="font-size:14.5px;line-height:1.9;margin:0 16px;font-weight:700"></p>
-      <div class="row"><button class="btn pri" id="confirmYes">✔ نعم، أضف الصورة</button><button class="btn ghost" id="confirmNo">✕ إلغاء</button></div>
+      <div class="row"><button class="btn pri" id="confirmYes">✔ نعم</button><button class="btn ghost" id="confirmNo">✕ إلغاء</button></div>
     </div>
   </div>
 </div>
@@ -331,18 +319,16 @@ textarea{width:calc(100% - 32px);margin:0 16px;border:2px solid #e3e7f5;border-r
 const $=id=>document.getElementById(id);
 const NO_GROUP='مواد بدون بطاقة';
 const REPO='AHMEDBRZAN/Baht';
-/* روابط raw أولاً (أسرع وبدون حدود API) ثم API احتياطاً */
-const REPO_URLS=['https://raw.githubusercontent.com/'+REPO+'/main/'+encodeURIComponent('جميع المواد.xlsx'),
+const XLSX_NAME='جميع المواد.xlsx';
+const REPO_URLS=['https://raw.githubusercontent.com/'+REPO+'/main/'+encodeURIComponent(XLSX_NAME),
  'https://raw.githubusercontent.com/'+REPO+'/main/'+encodeURIComponent('جميع المواد .xlsx'),
- 'https://raw.githubusercontent.com/'+REPO+'/master/'+encodeURIComponent('جميع المواد.xlsx'),
- 'https://raw.githubusercontent.com/'+REPO+'/master/'+encodeURIComponent('جميع المواد .xlsx'),
+ 'https://raw.githubusercontent.com/'+REPO+'/master/'+encodeURIComponent(XLSX_NAME),
  'https://raw.githubusercontent.com/'+REPO+'/main/materials.xlsx',
  'https://raw.githubusercontent.com/'+REPO+'/main/data.xlsx'];
 const SHARED_URL='https://raw.githubusercontent.com/'+REPO+'/main/data/images.json';
 
 let ROWS=[],ROWMAP={},GROUPS=[],IMAGES={},EXTRAS={},VIEWS={},FILES=[];
-let currentId=null,currentGroup=null,model=null,tfOk=false,camStream=null,camMode=null,camSession=0;
-let lastScanUrl=null,lastScanEmb=null,lastScanHist=null,lastRes=[],gSearchT=null,sSearchT=null;
+let currentId=null,currentGroup=null,model=null,tfOk=false,camStream=null,camMode=null,lastScanUrl=null,lastRes=[],gSearchT=null,sSearchT=null;
 let isAdmin=sessionStorage.getItem('isAdmin')==='1';
 
 /* ---------- أدوات ---------- */
@@ -358,8 +344,9 @@ function scaleDataUrl(url,maxW,q){return new Promise(res=>{const i=new Image();i
 function imgEl(url){return new Promise((res,rej)=>{const i=new Image();i.onload=()=>res(i);i.onerror=rej;i.src=url;});}
 function textSim(a,b){const A=norm(a).split(' ').filter(w=>w.length>=3),B=norm(b).split(' ').filter(w=>w.length>=3);if(!A.length||!B.length)return 0;let hit=0;for(const w of A){for(const p of B){if(p===w||(w.length>=4&&lev(w,p)<=1)){hit++;break;}}}return hit/A.length;}
 function b64encode(str){const bytes=new TextEncoder().encode(str);let bin='';for(let i=0;i<bytes.length;i+=0x8000){bin+=String.fromCharCode.apply(null,bytes.subarray(i,i+0x8000));}return btoa(bin);}
+function bufToB64(buf){const bytes=new Uint8Array(buf);let bin='';const CH=0x8000;for(let i=0;i<bytes.length;i+=CH){bin+=String.fromCharCode.apply(null,bytes.subarray(i,i+CH));}return btoa(bin);}
 
-/* ---------- قاعدة البيانات (كل عملية مستقلة وغير قاتلة) ---------- */
+/* ---------- قاعدة البيانات ---------- */
 let dbP=null;
 function db(){if(!dbP)dbP=new Promise((res,rej)=>{const r=indexedDB.open('matSysDB',1);r.onupgradeneeded=()=>{const d=r.result;['files','extras','images'].forEach(s=>{if(!d.objectStoreNames.contains(s))d.createObjectStore(s);});};r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error);});return dbP;}
 async function dbGetAll(s){const d=await db();return new Promise(res=>{const q=d.transaction(s).objectStore(s).getAll();q.onsuccess=()=>res(q.result||[]);q.onerror=()=>res([]);});}
@@ -400,12 +387,8 @@ function loadDataset(rows){
   $('compCount').textContent=ROWS.length+' مادة';
   $('compsBar').innerHTML=GROUPS.map(g=>`<button class="comp" data-open-group="${esc(g.name)}"><b>${esc(g.name)}</b><small>${g.rows.length} مادة</small></button>`).join('');
 }
-
-/* ---------- الجلب من المستودع: raw أولاً ثم API، مع محاولات ---------- */
 async function fetchRepoFile(){
-  for(const u of REPO_URLS){
-    try{const r=await fetch(u,{cache:'no-store'});if(r.ok){const buf=await r.arrayBuffer();if(buf.byteLength>1000)return buf;}}catch(e){}
-  }
+  for(const u of REPO_URLS){try{const r=await fetch(u,{cache:'no-store'});if(r.ok){const buf=await r.arrayBuffer();if(buf.byteLength>1000)return buf;}}catch(e){}}
   try{
     const r=await fetch('https://api.github.com/repos/'+REPO+'/contents/');
     if(r.ok){const list=await r.json();
@@ -414,19 +397,17 @@ async function fetchRepoFile(){
   }catch(e){}
   return null;
 }
-async function refreshFromRepo(silent){
-  for(let attempt=0;attempt<3;attempt++){
-    try{
-      const buf=await fetchRepoFile();
-      if(buf){const rows=parseWorkbook(buf);
-        if(rows){loadDataset(rows);try{localStorage.setItem('rowsCache',JSON.stringify(rows));}catch(e){}
-          if(!silent)toast('✔ تم تحديث المواد من المستودع ('+rows.length+' مادة)');
-          return true;}}
-    }catch(e){}
-    if(attempt<2)await new Promise(r=>setTimeout(r,900));
-  }
-  if(!silent)toast('تعذر الجلب — تحقق من الاتصال ثم حاول مجدداً','err');
-  return false;
+/* رفع ملف الإكسل إلى المستودع (للمدير) ليصل للجميع */
+async function pushXlsxToRepo(buf){
+  const token=await ensureToken();
+  if(!token)throw new Error('أدخل التوكن أولاً');
+  const api='https://api.github.com/repos/'+REPO+'/contents/'+encodeURIComponent(XLSX_NAME);
+  let sha;
+  const g=await fetch(api,{headers:{Authorization:'token '+token,Accept:'application/vnd.github+json'}});
+  if(g.ok){const gj=await g.json();sha=gj.sha;}
+  const put=await fetch(api,{method:'PUT',headers:{Authorization:'token '+token,Accept:'application/vnd.github+json','Content-Type':'application/json'},
+    body:JSON.stringify({message:'update materials from app',content:bufToB64(buf),...(sha?{sha}:{})})});
+  if(!put.ok){const er=await put.json().catch(()=>null);throw new Error((er&&er.message)||('HTTP '+put.status));}
 }
 
 /* ---------- الشركات ---------- */
@@ -477,32 +458,6 @@ function searchScore(q,r){const nq=q;let s=0;
     else for(const w of r.n.split(' '))if(w.length>=3&&lev(w,t)<=1){s+=18;break;}}
   return s;}
 
-/* ---------- البحث العام ---------- */
-$('btnSearch').onclick=()=>{$('searchModal').hidden=false;$('sSearch').value='';renderSearchResults('');setTimeout(()=>$('sSearch').focus(),150);};
-$('sSearch').addEventListener('input',e=>{clearTimeout(sSearchT);sSearchT=setTimeout(()=>renderSearchResults(e.target.value.trim()),120);});
-$('sSearch').addEventListener('keydown',e=>{
-  if(e.key!=='ArrowDown'&&e.key!=='ArrowUp'&&e.key!=='Enter')return;
-  const items=$('sContent').querySelectorAll('[data-id]');if(!items.length)return;
-  e.preventDefault();
-  if(e.key==='Enter'){openView(items[0].dataset.id);return;}
-  const cur=$('sContent').querySelector('.hl');let idx=cur?[...items].indexOf(cur):-1;
-  idx=Math.max(0,Math.min(items.length-1,idx+(e.key==='ArrowDown'?1:-1)));
-  items.forEach((el,i)=>el.classList.toggle('hl',i===idx));items[idx].scrollIntoView({block:'nearest'});
-});
-$('sContent').addEventListener('click',e=>{const it=e.target.closest('[data-id]');if(it)openView(it.dataset.id);});
-function renderSearchResults(q){
-  const el=$('sContent'),nq=norm(q);
-  if(!nq){el.innerHTML='<p class="empty">✅ للمطابقة التامة • الأصفر للمتشابه — اكتب للبحث…</p>';return;}
-  const res=ROWS.map(r=>({r,s:searchScore(nq,r)})).filter(x=>x.s>0).sort((a,b)=>b.s-a.s).slice(0,40);
-  if(!res.length){el.innerHTML='<p class="empty">لا توجد نتائج مشابهة.</p>';return;}
-  el.innerHTML='<table class="tbl"><thead><tr><th>الرمز</th><th>اسم المادة</th><th>الكمية</th><th>سعر المبيع</th><th>الشركة</th></tr></thead><tbody>'
-   +res.map(x=>{
-     const exact=x.s>=120||(x.s>=100&&nq.length>=5);
-     const cls=exact?'s-hit':(x.s>=40?'s-sim':'');
-     return `<tr tabindex="0" data-id="${x.r.id}" class="${cls} ${hasImg(x.r.id)?'hi-img':''}"><td>${esc(x.r.code)}</td><td>${exact?'✅ ':''}${esc(x.r.name)}</td><td>${fm(x.r.qty)}</td><td>${fm(x.r.sell)}</td><td>${esc(x.r.group||NO_GROUP)}</td></tr>`;}).join('')
-   +'</tbody></table>';
-}
-
 /* ---------- تفاصيل المادة ---------- */
 function hasImg(id){return !!(IMAGES[id]&&IMAGES[id].imgs&&IMAGES[id].imgs.length);}
 function openView(id){const r=ROWMAP[id];if(!r)return;currentId=id;
@@ -525,10 +480,6 @@ function updateImgsBtn(){const n=hasImg(currentId)?IMAGES[currentId].imgs.length
 $('btnMaint').onclick=()=>{$('maintSec').hidden=!$('maintSec').hidden;};
 $('saveNote').onclick=async()=>{const n=$('noteInput').value.trim();EXTRAS[currentId]={id:currentId,note:n};
   await dbPut('extras',currentId,EXTRAS[currentId]);toast('تم حفظ التفاصيل ✔');openView(currentId);$('maintSec').hidden=false;};
-
-/* ---------- الصور المرجعية ---------- */
-$('btnImgs').onclick=()=>{$('imgsTitle').textContent='🖼 الصور المرجعية — '+(ROWMAP[currentId]?ROWMAP[currentId].name:'');
-  $('imgsModal').hidden=false;renderImgs();};
 function renderImgs(){const im=IMAGES[currentId];
   $('imgsGrid').innerHTML=(im&&im.imgs&&im.imgs.length)?im.imgs.map((g,i)=>`<div class="imbig"><img src="${g.thumb}" alt="">${isAdmin?`<button data-delimg="${i}" title="حذف">✕</button>`:''}</div>`).join('')
    :'<p class="empty">لا توجد صور مرجعية بعد.</p>';
@@ -548,8 +499,8 @@ $('fileAttachInput3').onchange=async e=>{const f=e.target.files[0];if(!f)return;
   r.onload=async()=>processAttach(await scaleDataUrl(r.result,900,.88),'main');r.readAsDataURL(f);};
 $('fileAttachInput').onchange=async e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();
   r.onload=async()=>processAttach(await scaleDataUrl(r.result,900,.88),'imgs');r.readAsDataURL(f);};
-$('btnPublish').onclick=()=>publishImages('current');
-$('btnPublish2').onclick=()=>publishImages('current');
+$('btnPublish').onclick=()=>publishImages(false);
+$('btnPublish2').onclick=()=>publishImages(false);
 
 /* ---------- المحركات ---------- */
 async function tfReady(){if(tfOk)return;try{await tf.setBackend('webgl');}catch(e){try{await tf.setBackend('cpu');}catch(e2){}}await tf.ready();tfOk=true;}
@@ -589,20 +540,10 @@ async function processAttach(url,which){
 }
 
 /* ---------- الكاميرا ---------- */
+let camSession=0;
 async function openCamModal(mode){camMode=mode;$('camModal').hidden=false;await startCam();}
-async function startCam(){
-  stopCam();
-  const my=++camSession;
-  try{
-    const st=await navigator.mediaDevices.getUserMedia({video:{facingMode:'environment'},audio:false});
-    if(my!==camSession||$('camModal').hidden){st.getTracks().forEach(t=>t.stop());return;}
-    camStream=st;$('camVideo').srcObject=st;
-    try{await $('camVideo').play();}catch(e){}
-  }catch(e){if(my===camSession)toast('تعذر فتح الكاميرا: '+e.message,'err');}
-}
+async function startCam(){stopCam();const my=++camSession;try{const st=await navigator.mediaDevices.getUserMedia({video:{facingMode:'environment'},audio:false});if(my!==camSession||$('camModal').hidden){st.getTracks().forEach(t=>t.stop());return;}camStream=st;$('camVideo').srcObject=st;await $('camVideo').play();}catch(e){if(my===camSession)toast('تعذر فتح الكاميرا: '+e.message,'err');}}
 function stopCam(){camSession++;if(camStream){camStream.getTracks().forEach(t=>t.stop());camStream=null;}const v=$('camVideo');if(v)v.srcObject=null;}
-new MutationObserver(()=>{if($('camModal').hidden)stopCam();}).observe($('camModal'),{attributes:true,attributeFilter:['hidden']});
-window.addEventListener('pagehide',stopCam);
 function capture(){const v=$('camVideo');if(!v.videoWidth)return null;const s=Math.min(1,640/v.videoWidth);const c=document.createElement('canvas');c.width=Math.round(v.videoWidth*s);c.height=Math.round(v.videoHeight*s);c.getContext('2d').drawImage(v,0,0,c.width,c.height);return c.toDataURL('image/jpeg',.9);}
 $('camClose').onclick=()=>{stopCam();$('camModal').hidden=true;};
 $('camShot').onclick=async()=>{const u=capture();if(!u)return toast('انتظر جاهزية الكاميرا','err');stopCam();$('camModal').hidden=true;route(await scaleDataUrl(u,900,.88));};
@@ -634,11 +575,7 @@ function rubberize(el){
     const dy=e.touches[0].clientY-startY;
     const scrollable=el.scrollHeight>el.clientHeight+1;
     const over=(!scrollable&&Math.abs(dy)>4)||(atTop&&dy>6)||(atBottom&&dy<-6);
-    if(over){
-      e.preventDefault();
-      const pull=Math.max(-90,Math.min(90,dy/3));
-      el.style.transform='translateY('+pull+'px)';
-    }
+    if(over){e.preventDefault();const pull=Math.max(-90,Math.min(90,dy/3));el.style.transform='translateY('+pull+'px)';}
   },{passive:false});
   const end=()=>{if(!dragging)return;dragging=false;el.classList.add('spring');el.style.transform='';};
   el.addEventListener('touchend',end);
@@ -650,38 +587,6 @@ document.addEventListener('gesturechange',e=>e.preventDefault());
 document.addEventListener('gestureend',e=>e.preventDefault());
 document.addEventListener('dblclick',e=>e.preventDefault());
 document.addEventListener('wheel',e=>{if(e.ctrlKey)e.preventDefault();},{passive:false});
-
-/* ---------- المدير ---------- */
-function applyAdminUI(){document.querySelectorAll('[data-admin]').forEach(el=>el.hidden=!isAdmin);}
-let tapCount=0,tapTimer=null;
-$('adminTap').addEventListener('click',e=>{
-  e.stopPropagation();
-  if(isAdmin){toast('وضع المدير مفعّل بالفعل 👤');return;}
-  tapCount++;clearTimeout(tapTimer);tapTimer=setTimeout(()=>tapCount=0,2500);
-  if(tapCount>=5){tapCount=0;openLogin();}
-});
-function openLogin(){
-  let lm=$('loginModalDyn');
-  if(!lm){
-    lm=document.createElement('div');lm.id='loginModalDyn';lm.className='overlay';lm.style.zIndex=85;
-    lm.innerHTML='<div class="modal" style="width:min(380px,94vw)"><div class="m-head"><h2>🔐 دخول المدير</h2><button class="x" data-close>✕</button></div><div class="m-body"><label>اسم المستخدم</label><input type="text" id="loginUser" autocomplete="off"><label>كلمة السر</label><input type="password" id="loginPass"><div class="row"><button class="btn pri" id="loginBtn">دخول</button></div></div></div>';
-    document.body.appendChild(lm);
-    lm.querySelector('[data-close]').onclick=()=>lm.hidden=true;
-    lm.addEventListener('click',e=>{if(e.target===lm)lm.hidden=true;});
-    lm.querySelector('#loginBtn').onclick=doLogin;
-    lm.querySelector('#loginPass').addEventListener('keydown',e=>{if(e.key==='Enter')doLogin();});
-  }
-  lm.hidden=false;setTimeout(()=>lm.querySelector('#loginUser').focus(),150);
-}
-function doLogin(){
-  const u=$('loginUser').value.trim(),p=$('loginPass').value;
-  if(u==='مدير'&&p==='11'){
-    isAdmin=true;sessionStorage.setItem('isAdmin','1');
-    $('loginModalDyn').hidden=true;$('loginUser').value='';$('loginPass').value='';
-    applyAdminUI();toast('✔ تم تفعيل وضع المدير — أهلاً بك');
-  }else toast('بيانات الدخول غير صحيحة','err');
-}
-$('btnLogout').onclick=()=>{isAdmin=false;sessionStorage.removeItem('isAdmin');applyAdminUI();toast('تم الخروج من وضع المدير 🚪');};
 
 /* ---------- تأكيد ---------- */
 function askConfirm(msg){return new Promise(res=>{$('confirmTxt').textContent=msg;$('confirmModal').hidden=false;
@@ -714,10 +619,8 @@ async function recognize(url){
   $('scanStart').hidden=true;$('scanRes').hidden=true;$('scanProg').hidden=false;setScan('المعيار 1: الشكل (الشبكة العصبية)…',15);
   try{
     const emb=await getEmbed(url);
-    lastScanEmb=emb;
     setScan('المعيار 2: بصمة الألوان…',35);
     const hist=await histFrom(url);
-    lastScanHist=hist;
     let res=[];
     for(const im of Object.values(IMAGES)){
       try{
@@ -740,7 +643,6 @@ async function recognize(url){
         return {...r,o,s:.5*r.v+.2*r.h+.3*o};}).sort((a,b)=>b.s-a.s);}
     }
     setScan('تجهيز النتائج…',95);
-    lastRes=res;
     renderResults(url,res);
   }catch(e){console.error(e);toast('تعذر التحليل: '+e.message,'err');$('scanStart').hidden=false;}
   $('scanProg').hidden=true;
@@ -761,14 +663,14 @@ function renderResults(url,res){
         <span class="mini">🧠 شكل ${Math.round(best.v*100)}%</span>
         <span class="mini">🎨 ألوان ${Math.round(best.h*100)}%</span>
         <span class="mini">🔤 نص ${Math.round((best.o||0)*100)}%</span>
-        <div class="best-meta">
-          <h3 class="best-name">${esc(r?r.name:'')}</h3>
-          <div class="best-badges">
-            <div class="best-price">${fm(r?r.sell:0)} <small>د.ع</small></div>
-            <div class="best-qty">📦 ${fm(r?r.qty:0)}</div>
-          </div>
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;margin:10px 0 6px;flex-wrap:wrap">
+          <h3 style="margin:0;font-size:19px;font-weight:800;color:#141c2e;flex:1;min-width:150px">${esc(r?r.name:'')}</h3>
+          <span style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+            <span class="pct" style="background:linear-gradient(135deg,#157a4a,#2f9e6e)">${fm(r?r.sell:0)} <small style="font-size:11px">د.ع</small></span>
+            <span style="background:#eef1f8;color:var(--pri2);border-radius:14px;padding:7px 16px;font-size:15px;font-weight:800">📦 ${fm(r?r.qty:0)}</span>
+          </span>
         </div>
-        <span class="best-group">📁 ${esc(r?(r.group||NO_GROUP):'')}</span>
+        <span class="chip" style="background:#eef1f8;color:var(--pri2);border-radius:12px;padding:3px 12px;font-size:12px;font-weight:800">📁 ${esc(r?(r.group||NO_GROUP):'')}</span>
       </div>`;
       if(pct>=80)setTimeout(()=>{toast('✔ تعرّف مباشر '+pct+'%');$('scanModal').hidden=true;openView(best.im.id);},300);
     }
@@ -799,7 +701,7 @@ async function attachTo(id){
   $('scanProg').hidden=true;
 }
 
-/* ---------- المزامنة (توكن محفوظ على جهاز المدير فقط) ---------- */
+/* ---------- المزامنة ---------- */
 async function ensureToken(){
   let t=(localStorage.getItem('ghToken')||'').trim();
   if(t)return t;
@@ -808,60 +710,69 @@ async function ensureToken(){
   localStorage.setItem('ghToken',t);
   return t;
 }
-async function putJSON(path,obj,token){
-  const api='https://api.github.com/repos/'+REPO+'/contents/'+path;
-  let sha;
-  const g=await fetch(api,{headers:{Authorization:'token '+token,Accept:'application/vnd.github+json'}});
-  if(g.ok){const gj=await g.json();sha=gj.sha;}
-  const put=await fetch(api,{method:'PUT',headers:{Authorization:'token '+token,Accept:'application/vnd.github+json','Content-Type':'application/json'},
-    body:JSON.stringify({message:'sync '+path,content:b64encode(JSON.stringify(obj)),...(sha?{sha}:{})})});
-  if(!put.ok){const er=await put.json().catch(()=>null);throw new Error((er&&er.message)||('HTTP '+put.status));}
-}
-async function publishImages(scope){
+async function publishImages(silent){
   if(!isAdmin)return toast('المزامنة للمدير فقط 🔐','err');
-  const ids=scope==='current'?(currentId&&hasImg(currentId)?[currentId]:[]):Object.keys(IMAGES).filter(id=>hasImg(id));
-  if(!ids.length)return toast(scope==='current'?'لا توجد صور لهذه المادة':'لا توجد صور محلية للنشر','err');
-  const btns=[$('btnSync'),$('btnPublish'),$('btnPublish2')];
-  btns.forEach(b=>{if(b)b.disabled=true;});
+  const ids=Object.keys(IMAGES).filter(id=>hasImg(id));
+  if(!ids.length){if(!silent)toast('لا توجد صور محلية للنشر','err');return;}
+  const token=await ensureToken();
+  if(!token){if(!silent)toast('أُلغي النشر — أدخل التوكن للمحاولة','err');return;}
+  if(!silent)toast('جارٍ تجهيز الصور للنشر…');
+  const out={};let added=0,skipped=0;
+  let merged={};
+  try{const r=await fetch(SHARED_URL,{cache:'no-store'});if(r.ok){const d=await r.json();if(d&&typeof d==='object')merged=d;}}catch(e){}
+  for(const id of ids){
+    const local=IMAGES[id].imgs;
+    const have=(merged[id]&&Array.isArray(merged[id].imgs))?merged[id].imgs:[];
+    const haveTs=new Set(have.map(g=>g.ts));
+    const newOnes=local.filter(g=>!haveTs.has(g.ts));
+    if(!newOnes.length){skipped++;continue;}
+    const smallOnes=[];
+    for(const g of newOnes){const small=await scaleDataUrl(g.thumb,110,.55);
+      smallOnes.push({thumb:small,emb:g.emb.map(v=>+v.toFixed(3)),hist:g.hist,ocr:g.ocr||'',ts:g.ts||Date.now()});}
+    merged[id]={imgs:have.concat(smallOnes)};
+    added+=smallOnes.length;
+  }
+  if(!added){if(!silent)toast('✔ لا جديد — جميع الصور موجودة مسبقاً ('+skipped+' مادة)');return;}
+  const json=JSON.stringify(merged);
+  if(json.length>950000){if(!silent)toast('حجم البيانات كبير ('+Math.round(json.length/1024)+'KB) — قلّل الصور','err');return;}
   try{
-    const token=await ensureToken();
-    if(!token){toast('أُلغي النشر — أدخل التوكن للمحاولة','err');return;}
-    toast('جارٍ تجهيز الصور للنشر…');
-    let merged={};
-    try{const r=await fetch(SHARED_URL,{cache:'no-store'});if(r.ok){const d=await r.json();if(d&&typeof d==='object')merged=d;}}catch(e){}
-    let added=0,skipped=0;
-    for(const id of ids){
-      const local=IMAGES[id].imgs;
-      const have=(merged[id]&&Array.isArray(merged[id].imgs))?merged[id].imgs:[];
-      const haveTs=new Set(have.map(g=>g.ts));
-      const newOnes=local.filter(g=>!haveTs.has(g.ts));
-      if(!newOnes.length){skipped++;continue;}
-      const smallOnes=[];
-      for(const g of newOnes){const small=await scaleDataUrl(g.thumb,110,.55);
-        smallOnes.push({thumb:small,emb:g.emb.map(v=>+v.toFixed(3)),hist:g.hist,ocr:g.ocr||'',ts:g.ts||Date.now()});}
-      merged[id]={imgs:have.concat(smallOnes)};
-      added+=smallOnes.length;
-    }
-    if(!added){toast('✔ لا جديد — جميع الصور موجودة مسبقاً ('+skipped+' مادة متجاهلة)');return;}
-    await putJSON('data/images.json',merged,token);
-    toast('✔ تمت المزامنة: رُفعت '+added+' صورة جديدة وتُجاهلت '+skipped+' مادة موجودة مسبقاً');
-  }catch(e){console.error(e);toast('فشل الرفع: '+e.message,'err');}
-  finally{btns.forEach(b=>{if(b)b.disabled=false;});}
+    const api='https://api.github.com/repos/'+REPO+'/contents/data/images.json';
+    let sha;
+    const g=await fetch(api,{headers:{Authorization:'token '+token,Accept:'application/vnd.github+json'}});
+    if(g.ok){const gj=await g.json();sha=gj.sha;}
+    const put=await fetch(api,{method:'PUT',headers:{Authorization:'token '+token,Accept:'application/vnd.github+json','Content-Type':'application/json'},
+      body:JSON.stringify({message:'sync images (merge new)',content:b64encode(json),...(sha?{sha}:{})})});
+    if(!put.ok){const er=await put.json().catch(()=>null);throw new Error((er&&er.message)||('HTTP '+put.status));}
+    if(!silent)toast('✔ تمت المزامنة: رُفعت '+added+' صورة جديدة وتُجاهلت '+skipped+' مادة موجودة');
+  }catch(e){console.error(e);if(!silent)toast('فشل الرفع: '+e.message,'err');}
 }
-$('btnSync').onclick=()=>publishImages('all');
 
-/* ---------- أدوات الترويسة ---------- */
-function toggleTools(){const willShow=$('toolsBox').hidden;$('toolsBox').hidden=!willShow;$('toolsChev').classList.toggle('open',willShow);}
-$('toolsChev').onclick=toggleTools;
-$('appTitle').addEventListener('click',toggleTools);
-$('btnRepo').onclick=()=>refreshFromRepo(false);
+/* ---------- رفع ملف الإكسل (للمدير: تحميل + نشر للجميع) ---------- */
 $('btnUpload').onclick=()=>$('filePick').click();
-$('filePick').onchange=e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();
-  r.onload=()=>{const rows=parseWorkbook(r.result);if(rows){loadDataset(rows);try{localStorage.setItem('rowsCache',JSON.stringify(rows));}catch(e2){}toast('تم تحميل «'+f.name+'» ✔');}else toast('ملف غير مدعوم','err');};
-  r.readAsArrayBuffer(f);};
+$('filePick').onchange=async e=>{
+  const f=e.target.files[0];if(!f)return;
+  let buf;try{buf=await f.arrayBuffer();}catch(err){return toast('تعذر قراءة الملف','err');}
+  const rows=parseWorkbook(buf);
+  if(!rows)return toast('ملف غير مدعوم — صدّر من سراج بصيغة xlsx','err');
+  loadDataset(rows);
+  try{localStorage.setItem('rowsCache',JSON.stringify(rows));}catch(err){}
+  toast('تم تحميل «'+f.name+'» ✔ ('+rows.length+' مادة)');
+  if(isAdmin){
+    const ok=await askConfirm('هل تريد نشر هذا الملف إلى المستودع ليصل لجميع المستخدمين فوراً؟');
+    if(ok){
+      toast('جارٍ رفع الملف إلى المستودع…');
+      try{await pushXlsxToRepo(buf);toast('✔ رُفع الملف إلى المستودع — وصل لجميع المستخدمين');}
+      catch(err){console.error(err);toast('فشل رفع الملف: '+err.message,'err');}
+    }
+  }
+};
+$('btnRepo').onclick=async()=>{toast('جارٍ الجلب من المستودع…');
+  const buf=await fetchRepoFile();
+  if(buf){const rows=parseWorkbook(buf);if(rows){loadDataset(rows);try{localStorage.setItem('rowsCache',JSON.stringify(rows));}catch(e){}toast('تم تحديث المواد ✔ '+rows.length+' مادة');return;}}
+  toast('تعذر الجلب — حاول لاحقاً','err');};
 
 /* ---------- إغلاق النوافذ ---------- */
-const MOD_ORDER=['confirmModal','loginModalDyn','camModal','imgsModal','viewModal','scanModal','searchModal','groupModal'];
+const MOD_ORDER=['confirmModal','camModal','imgsModal','viewModal','scanModal','searchModal','groupModal'];
 function closeTop(){const id=MOD_ORDER.find(x=>{const el=$(x);return el&&!el.hidden;});if(!id)return;$(id).hidden=true;if(id==='camModal')stopCam();}
 document.querySelectorAll('[data-close]').forEach(b=>b.onclick=()=>{const o=b.closest('.overlay');if(o){o.hidden=true;if(o.id==='camModal')stopCam();}});
 document.querySelectorAll('.overlay').forEach(o=>o.addEventListener('click',e=>{
@@ -876,11 +787,44 @@ document.addEventListener('keydown',e=>{
   }
 });
 
-/* ---------- بدء: كل خطوة مستقلة، والجلب التلقائي يعمل دائماً ---------- */
+/* ---------- المدير ---------- */
+function applyAdminUI(){document.querySelectorAll('[data-admin]').forEach(el=>el.hidden=!isAdmin);}
+let tapCount=0,tapTimer=null;
+$('adminTap').addEventListener('click',e=>{
+  e.stopPropagation();
+  if(isAdmin){toast('وضع المدير مفعّل بالفعل 👤');return;}
+  tapCount++;clearTimeout(tapTimer);tapTimer=setTimeout(()=>tapCount=0,2500);
+  if(tapCount>=5){tapCount=0;openLogin();}
+});
+function openLogin(){
+  let lm=$('loginModalDyn');
+  if(!lm){
+    lm=document.createElement('div');lm.id='loginModalDyn';lm.className='overlay';lm.style.zIndex=85;
+    lm.innerHTML='<div class="modal" style="width:min(380px,94vw)"><div class="m-head"><h2>🔐 دخول المدير</h2><button class="x" data-close>✕</button></div><div class="m-body"><label>اسم المستخدم</label><input type="text" id="loginUser" autocomplete="off"><label>كلمة السر</label><input type="password" id="loginPass"><div class="row"><button class="btn pri" id="loginBtn">دخول</button></div></div></div>';
+    document.body.appendChild(lm);
+    lm.querySelector('[data-close]').onclick=()=>lm.hidden=true;
+    lm.addEventListener('click',e=>{if(e.target===lm)lm.hidden=true;});
+    lm.querySelector('#loginBtn').onclick=doLogin;
+    lm.querySelector('#loginPass').addEventListener('keydown',e=>{if(e.key==='Enter')doLogin();});
+  }
+  lm.hidden=false;setTimeout(()=>lm.querySelector('#loginUser').focus(),150);
+}
+function doLogin(){
+  const u=$('loginUser').value.trim(),p=$('loginPass').value;
+  if(u==='مدير'&&p==='11'){
+    isAdmin=true;sessionStorage.setItem('isAdmin','1');
+    $('loginModalDyn').hidden=true;$('loginUser').value='';$('loginPass').value='';
+    applyAdminUI();toast('✔ تم تفعيل وضع المدير — أهلاً بك');
+  }else toast('بيانات الدخول غير صحيحة','err');
+}
+$('btnLogout').onclick=()=>{isAdmin=false;sessionStorage.removeItem('isAdmin');applyAdminUI();toast('تم الخروج من وضع المدير 🚪');};
+function toggleTools(){const willShow=$('toolsBox').hidden;$('toolsBox').hidden=!willShow;$('toolsChev').classList.toggle('open',willShow);}
+$('toolsChev').onclick=toggleTools;
+$('appTitle').addEventListener('click',toggleTools);
+
+/* ---------- بدء ---------- */
 (async()=>{
-  /* 1) وضع المدير */
   try{applyAdminUI();}catch(e){}
-  /* 2) البيانات المحلية (غير قاتلة إن فشلت) */
   try{
     (await dbGetAll('extras')).forEach(x=>EXTRAS[x.id]=x);
     (await dbGetAll('images')).forEach(v=>{
@@ -896,17 +840,16 @@ document.addEventListener('keydown',e=>{
     }
     if(removed)toast('تم تنظيف '+removed+' صورة تالفة','err');
   }catch(e){}
-  /* 3) الكاش الفوري */
   try{
     const cache=localStorage.getItem('rowsCache');
     if(cache){const rows=JSON.parse(cache);if(rows&&rows.length)loadDataset(rows);}
   }catch(e){}
-  /* 4) الجلب التلقائي من المستودع — مستقل تماماً مع 3 محاولات */
   (async()=>{
-    const ok=await refreshFromRepo(true);
-    if(!ok&&!ROWS.length)$('emptyMsg').textContent='تعذر الجلب تلقائياً — افتح الأدوات ⌄ واضغط «تحديث من المستودع»';
+    const buf=await fetchRepoFile();
+    if(buf){const rows=parseWorkbook(buf);
+      if(rows){loadDataset(rows);try{localStorage.setItem('rowsCache',JSON.stringify(rows));}catch(e){}toast('تم تحديث المواد من المستودع ✔');}}
+    else if(!ROWS.length)$('emptyMsg').textContent='تعذر جلب المواد — افتح الأدوات ⌄ واضغط «تحديث من المستودع»';
   })();
-  /* 5) الصور المشتركة */
   (async()=>{try{
     const r=await fetch(SHARED_URL,{cache:'no-store'});
     if(!r.ok)return;
