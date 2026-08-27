@@ -127,6 +127,7 @@ textarea:focus{border-color:var(--pri)}
 .best .imgs{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px}
 .best .imgs img{width:100%;height:130px;object-fit:cover;border-radius:12px;background:#eef1f8}
 .best .imgs span{display:block;text-align:center;font-size:11.5px;color:var(--mut);font-weight:700}
+.best h3,.best p{color:#2a3245}
 .pct{display:inline-block;background:var(--grn);color:#fff;border-radius:20px;padding:3px 14px;font-weight:800}
 .pct.mid{background:var(--amb)}.pct.low{background:var(--dng)}
 .mini{display:inline-block;background:#eef1f8;color:var(--pri2);border-radius:14px;padding:2px 10px;font-size:11px;font-weight:800;margin-left:4px}
@@ -152,7 +153,6 @@ textarea:focus{border-color:var(--pri)}
       <button class="btn grn" id="btnSave">💾 حفظ الملف</button>
       <button class="btn ghost" id="btnUpload">📂 رفع ملف</button>
       <button class="btn ghost" id="btnSync">☁️ مزامنة الصور</button>
-      <button class="btn ghost" id="btnToken">🔑 تغيير التوكن</button>
     </div>
     <button class="btn amb scanbig" id="btnScan">📷 التعرف على المادة</button>
   </div>
@@ -229,7 +229,7 @@ textarea:focus{border-color:var(--pri)}
         <button class="btn ghost" id="fileAttach2">🖼 رفع صورة</button>
       </div>
       <div class="row"><button class="btn grn" id="btnPublish">☁️ مزامنة الصور للمستودع (لكل المستخدمين)</button></div>
-      <p class="hint">الصور تُحفظ محلياً على جهازك. زر المزامنة يرفعها مضغوطةً إلى مستودعك عبر GitHub API لتظهر لجميع من يفتح النظام. إن فشل بـ401 استخدم 🔑 تغيير التوكن.</p>
+      <p class="hint">التوكن يُطلب مرة واحدة فقط ويُحفظ على جهازك وحده — لا يُكتب في الكود ولا يظهر للمستودع، ولهذا لن يظهر إنذار GitHub again.</p>
       <input type="file" id="fileAttachInput" accept="image/*" hidden>
       <div id="procProg" hidden><div class="bar"><i id="procBar"></i></div><p class="prog-txt" id="procTxt"></p></div>
     </div>
@@ -513,7 +513,7 @@ async function processAttach(url){
     $('procTxt').textContent='✔ تمت المعالجة والإضافة';$('procBar').style.width='100%';
     setTimeout(()=>{$('procProg').hidden=true;},1200);
     renderImgs();
-    toast('تمت معالجة الصورة وإضافتها كمرجع ✔ (محلياً — وللنشر ☁️)');
+    toast('تمت معالجة الصورة وإضافتها كمرجع ✔');
   }catch(e){console.error(e);$('procProg').hidden=true;toast('خطأ بالمعالجة: '+e.message,'err');}
 }
 
@@ -670,66 +670,48 @@ async function attachTo(id){
   $('scanProg').hidden=true;
 }
 
-/* ---------- Token والمزامنة ---------- */
-async function getToken(allowSaved){
+/* ---------- المزامنة: التوكن على جهازك فقط (لا يوضع في الكود أبداً) ---------- */
+async function ensureToken(){
   let t=(localStorage.getItem('ghToken')||'').trim();
-  if(allowSaved&&t){
-    try{
-      const v=await fetch('https://api.github.com/user',{headers:{Authorization:'token '+t,Accept:'application/vnd.github+json'}});
-      if(v.ok)return t;
-    }catch(e){}
-    localStorage.removeItem('ghToken');
-  }
-  t=(prompt('🔑 أدخل Token شخصي من GitHub بصلاحية Contents (Read and write) على مستودع Baht:\n\n1) github.com ← Settings ← Developer settings\n2) Personal access tokens ← Generate new token\n3) Repository access: Only select repositories ← Baht\n4) Permissions ← Contents ← Read and write\n5) انسخ الرمز (يبدأ بـ github_pat_) وألصقه هنا\n\n⚠ يُحفظ على هذا الجهاز فقط.')||'').trim();
+  if(t)return t;
+  t=(prompt('🔑 أدخل Token شخصي من GitHub:\n\n1) Settings ← Developer settings ← Personal access tokens\n2) Generate new token (classic) ← علّم repo\n3) انسخ الرمز وألصقه هنا\n\n✅ يُحفظ على هذا الجهاز فقط، ولا يُرفع للمستودع، ولن يظهر إنذار GitHub.')||'').trim();
   if(!t)return null;
   localStorage.setItem('ghToken',t);
   return t;
 }
-$('btnToken').onclick=async()=>{
-  localStorage.removeItem('ghToken');
-  const t=await getToken(false);
-  if(!t)return toast('أُلغي إدخال التوكن');
-  try{
-    const v=await fetch('https://api.github.com/user',{headers:{Authorization:'token '+t,Accept:'application/vnd.github+json'}});
-    if(v.ok)toast('✔ تم حفظ توكن صالح — يمكنك الآن المزامنة ☁️');
-    else{localStorage.removeItem('ghToken');toast('⚠ التوكن غير صالح ('+v.status+') — أنشئ توكن جديداً من GitHub','err');}
-  }catch(e){toast('تعذر التحقق: '+e.message,'err');}
-};
-async function publishImages(){
+async function publishImages(silent){
   const ids=Object.keys(IMAGES).filter(id=>hasImg(id));
-  if(!ids.length)return toast('لا توجد صور مرجعية للنشر — أضف صوراً أولاً من ⚙','err');
-  for(let attempt=0;attempt<2;attempt++){
-    const token=await getToken(attempt===0);
-    if(!token)return toast('أُلغي النشر — اضغط 🔑 تغيير التوكن ثم ☁️ مجدداً','err');
-    toast('جارٍ تجهيز الصور المضغوطة للنشر…');
-    const out={};
-    for(const id of ids){
-      const imgs=[];
-      for(const g of IMAGES[id].imgs){
-        const small=await scaleDataUrl(g.thumb,120,.6);
-        imgs.push({thumb:small,emb:g.emb,hist:g.hist,ocr:g.ocr||'',ts:g.ts||Date.now()});
-      }
-      out[id]={imgs};
+  if(!ids.length){if(!silent)toast('لا توجد صور مرجعية للنشر — أضف صوراً أولاً من ⚙','err');return;}
+  const token=await ensureToken();
+  if(!token){if(!silent)toast('أُلغي النشر — اضغط ☁️ مجدداً وأدخل التوكن','err');return;}
+  if(!silent)toast('جارٍ تجهيز الصور للنشر…');
+  const out={};
+  for(const id of ids){
+    const imgs=[];
+    for(const g of IMAGES[id].imgs){
+      const small=await scaleDataUrl(g.thumb,120,.6);
+      imgs.push({thumb:small,emb:g.emb,hist:g.hist,ocr:g.ocr||'',ts:g.ts||Date.now()});
     }
-    const json=JSON.stringify(out);
-    if(json.length>950000)return toast('الصور كثيرة جداً للنشر دفعة واحدة — قلّل العدد','err');
-    try{
-      const api='https://api.github.com/repos/'+REPO+'/contents/data/images.json';
-      let sha;
-      const gres=await fetch(api,{headers:{Authorization:'token '+token,Accept:'application/vnd.github+json'}});
-      if(gres.ok){const gj=await gres.json();sha=gj.sha;}
-      const put=await fetch(api,{method:'PUT',headers:{Authorization:'token '+token,Accept:'application/vnd.github+json','Content-Type':'application/json'},
-        body:JSON.stringify({message:'sync material images',content:b64encode(json),...(sha?{sha}:{})})});
-      if(put.ok){toast('✔ نُشرت الصور للمستودع — ستظهر لجميع المستخدمين خلال دقيقة');return;}
-      if(put.status===401){localStorage.removeItem('ghToken');toast('التوكن مرفوض (401) — استخدم 🔑 تغيير التوكن وأدخل رمزاً جديداً','err');continue;}
-      const er=await put.json().catch(()=>null);
-      return toast('فشل الرفع: '+(er&&er.message?er.message:('HTTP '+put.status)),'err');
-    }catch(e){return toast('فشل الرفع: '+e.message,'err');}
+    out[id]={imgs};
   }
+  const json=JSON.stringify(out);
+  if(json.length>950000){if(!silent)toast('الصور كثيرة جداً للنشر دفعة واحدة — قلّل العدد','err');return;}
+  try{
+    const api='https://api.github.com/repos/'+REPO+'/contents/data/images.json';
+    let sha;
+    const gres=await fetch(api,{headers:{Authorization:'token '+token,Accept:'application/vnd.github+json'}});
+    if(gres.ok){const gj=await gres.json();sha=gj.sha;}
+    const put=await fetch(api,{method:'PUT',headers:{Authorization:'token '+token,Accept:'application/vnd.github+json','Content-Type':'application/json'},
+      body:JSON.stringify({message:'sync material images',content:b64encode(json),...(sha?{sha}:{})})});
+    if(put.ok){silent?toast('☁️ تمت المزامنة التلقائية ✔'):toast('✔ نُشرت الصور — ستظهر لجميع المستخدمين خلال دقيقة');return;}
+    if(put.status===401){localStorage.removeItem('ghToken');toast('⚠ التوكن مرفوض (401) — اضغط ☁️ وأدخل توكناً جديداً','err');return;}
+    const er=await put.json().catch(()=>null);
+    toast('فشل الرفع: '+(er&&er.message?er.message:('HTTP '+put.status)),'err');
+  }catch(e){toast('فشل الرفع: '+e.message,'err');}
 }
-$('btnSync').onclick=publishImages;
-$('btnPublish').onclick=publishImages;
-/* جلب الصور المشتركة عند البدء */
+$('btnSync').onclick=()=>publishImages(false);
+$('btnPublish').onclick=()=>publishImages(false);
+/* جلب الصور المشتركة من المستودع (بدون توكن — قراءة عامة) */
 async function fetchSharedImages(){
   try{
     const r=await fetch(SHARED_URL,{cache:'no-store'});
@@ -768,7 +750,7 @@ $('filesList').addEventListener('click',async e=>{
   const d=e.target.closest('[data-delfile]');if(d){await dbDel('files',d.dataset.delfile);FILES=FILES.filter(x=>x.id!==d.dataset.delfile);renderFiles();toast('حُذف الملف 🗑');}
 });
 
-/* ---------- بدء ---------- */
+/* ---------- بدء + مزامنة تلقائية إن وُجد توكن محفوظ ---------- */
 (async()=>{
   try{
     FILES=(await dbGetAll('files')).sort((a,b)=>b.ts-a.ts);renderFiles();
@@ -787,6 +769,10 @@ $('filesList').addEventListener('click',async e=>{
     if(removed)toast('تم تنظيف '+removed+' صورة تالفة','err');
     if(FILES.length){loadDataset(FILES[0].rows,{name:FILES[0].name});toast('تم تحميل النسخة المحلية ✔');}
     await fetchSharedImages();
+    if(Object.keys(IMAGES).some(hasImg)&&localStorage.getItem('ghToken')&&!sessionStorage.getItem('autoSynced')){
+      sessionStorage.setItem('autoSynced','1');
+      publishImages(true);
+    }
   }catch(e){console.error(e);}
 })();
 </script>
