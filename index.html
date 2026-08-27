@@ -33,7 +33,6 @@ header{max-width:960px;margin:16px auto 0;padding:0 12px}
 .hrow{display:flex;gap:12px;align-items:center;justify-content:space-between}
 .hrow h1{margin:0;font-size:26px;font-weight:800;background:linear-gradient(90deg,#4f46e5,#0ea5a4);-webkit-background-clip:text;background-clip:text;color:transparent}
 .hrow p{margin:4px 0 0;color:var(--mut);font-size:13px;font-weight:600}
-#adminTap{cursor:pointer}
 .hbtns{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-top:16px}
 .btn{border:none;border-radius:14px;padding:13px 14px;font-size:14px;font-weight:800;cursor:pointer;transition:.15s;display:inline-flex;gap:8px;align-items:center;justify-content:center}
 .btn:active{transform:scale(.96)}
@@ -132,12 +131,19 @@ textarea:focus{border-color:var(--pri)}
 .imbig{position:relative}
 .imbig img{width:100%;height:150px;object-fit:cover;border-radius:14px;pointer-events:none}
 .imbig button{position:absolute;top:-8px;left:-8px;width:26px;height:26px;border:none;border-radius:50%;background:var(--dng);color:#fff;cursor:pointer;font-size:12px}
+/* بطاقة النتيجة: اسم واضح + سعر وكمية بارزان (للجميع) */
 .best{border:2px solid var(--grn);border-radius:16px;padding:12px;margin:0 16px 12px;cursor:pointer}
 .best.mid{border-color:var(--amb)}.best.low{border-color:var(--dng);cursor:default}
 .best .imgs{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px}
 .best .imgs img{width:100%;height:130px;object-fit:cover;border-radius:12px;pointer-events:none}
 .best .imgs span{display:block;text-align:center;font-size:11.5px;color:var(--mut);font-weight:700}
-.best h3,.best p{color:#2a3245}
+.best-meta{display:flex;justify-content:space-between;align-items:center;gap:10px;margin:10px 0 6px;flex-wrap:wrap}
+.best-name{margin:0;font-size:19px;font-weight:800;color:#141c2e;line-height:1.4;flex:1;min-width:150px}
+.best-badges{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.best-price{background:linear-gradient(135deg,#157a4a,#2f9e6e);color:#fff;border-radius:14px;padding:7px 16px;font-size:17px;font-weight:800;box-shadow:0 5px 14px rgba(47,158,110,.35);white-space:nowrap}
+.best-price small{font-size:11px;font-weight:700;opacity:.9}
+.best-qty{background:#eef1f8;color:var(--pri2);border-radius:14px;padding:7px 16px;font-size:15px;font-weight:800;white-space:nowrap}
+.best-group{display:inline-block;background:#eef1f8;color:var(--pri2);border-radius:12px;padding:3px 12px;font-size:12px;font-weight:800}
 .pct{display:inline-block;background:var(--grn);color:#fff;border-radius:20px;padding:3px 14px;font-weight:800}
 .pct.mid{background:var(--amb)}.pct.low{background:var(--dng)}
 .mini{display:inline-block;background:#eef1f8;color:var(--pri2);border-radius:14px;padding:2px 10px;font-size:11px;font-weight:800;margin-left:4px}
@@ -156,7 +162,7 @@ textarea:focus{border-color:var(--pri)}
 <header>
   <div class="hcard">
     <div class="hrow">
-      <div class="clickable" id="appTitle"><h1>نظام إدارة <span id="adminTap">المواد</span></h1><p>المبرمج: أحمد برزان</p></div>
+      <div class="clickable" id="appTitle"><h1>نظام إدارة المواد</h1><p>المبرمج: أحمد برزان</p></div>
       <button class="chev" id="toolsChev" title="إظهار/إخفاء الأدوات">⌄</button>
     </div>
     <div class="hbtns" id="toolsBox" hidden>
@@ -194,11 +200,11 @@ textarea:focus{border-color:var(--pri)}
   <p class="empty" id="emptyMsg">جارٍ تحميل المواد من المستودع…</p>
 </main>
 
-<!-- البحث عن أي مادة -->
+<!-- البحث العام -->
 <div class="overlay" id="searchModal" hidden>
   <div class="modal wide">
     <div class="m-head"><h2>🔍 البحث عن أي مادة</h2><button class="x" data-close>✕</button></div>
-    <div class="g-tools"><input type="text" class="gsearch" id="sSearch" placeholder="اكتب اسم المادة أو الرمز أو الباركود…"></div>
+    <div class="g-tools"><input type="text" class="gsearch" id="sSearch" style="margin:0;width:auto;flex:1" placeholder="اكتب اسم المادة أو الرمز أو الباركود…"></div>
     <div class="m-body"><div id="sContent"><p class="empty">✅ للمطابقة التامة • الأصفر للمتشابه — اكتب للبحث…</p></div></div>
   </div>
 </div>
@@ -208,7 +214,7 @@ textarea:focus{border-color:var(--pri)}
   <div class="modal wide">
     <div class="m-head"><h2 id="gTitle"></h2><button class="x" data-close>✕</button></div>
     <div class="g-tools">
-      <input type="text" class="gsearch" id="gSearch" placeholder="🔍 بحث ذكي في البطاقة…">
+      <input type="text" class="gsearch" id="gSearch" style="margin:0;width:auto;flex:1" placeholder="🔍 بحث ذكي في البطاقة…">
       <div class="vtoggle">
         <button id="gViewTable" class="on">📋 جدول</button>
         <button id="gViewGrid">🧱 شبكة</button>
@@ -239,8 +245,7 @@ textarea:focus{border-color:var(--pri)}
           <button class="btn ghost" id="fileAttach2">🖼 رفع صورة</button>
         </div>
         <div class="row" data-admin><button class="btn grn" id="btnPublish">☁️ مزامنة الصور للمستودع (استبدال الكل)</button></div>
-        <p class="hint" data-admin>المزامنة ترفع كل صور هذا الجهاز وتستبدل ما في المستودع — لتصل لجميع المستخدمين.</p>
-        <input type="file" id="fileAttachInput" accept="image/*" hidden>
+        <p class="hint" data-admin>المدير هو المسؤول عن التعديلات والرفع — المستخدمون يرون النتائج نفسها تلقائياً.</p>
         <div class="row"><div id="procProg" hidden style="width:100%"><div class="bar"><i id="procBar"></i></div><p class="prog-txt" id="procTxt"></p></div></div>
       </div>
     </div>
@@ -409,39 +414,6 @@ async function fetchRepoFile(){
 /* ---------- الشركات ---------- */
 $('compsBar').addEventListener('click',e=>{const c=e.target.closest('[data-open-group]');if(c)openGroupModal(c.dataset.openGroup);});
 
-/* ---------- البحث العام ---------- */
-$('btnSearch').onclick=()=>{$('searchModal').hidden=false;$('sSearch').value='';renderSearchResults('');setTimeout(()=>$('sSearch').focus(),150);};
-$('sSearch').addEventListener('input',e=>{clearTimeout(sSearchT);sSearchT=setTimeout(()=>renderSearchResults(e.target.value.trim()),120);});
-$('sSearch').addEventListener('keydown',e=>{
-  if(e.key!=='ArrowDown'&&e.key!=='ArrowUp'&&e.key!=='Enter')return;
-  const items=$('sContent').querySelectorAll('[data-id]');if(!items.length)return;
-  e.preventDefault();
-  if(e.key==='Enter'){openView(items[0].dataset.id);return;}
-  const cur=$('sContent').querySelector('.hl');let idx=cur?[...items].indexOf(cur):-1;
-  idx=Math.max(0,Math.min(items.length-1,idx+(e.key==='ArrowDown'?1:-1)));
-  items.forEach((el,i)=>el.classList.toggle('hl',i===idx));items[idx].scrollIntoView({block:'nearest'});
-});
-$('sContent').addEventListener('click',e=>{const it=e.target.closest('[data-id]');if(it)openView(it.dataset.id);});
-function renderSearchResults(q){
-  const el=$('sContent'),nq=norm(q);
-  if(!nq){el.innerHTML='<p class="empty">✅ للمطابقة التامة • الأصفر للمتشابه — اكتب للبحث…</p>';return;}
-  const res=ROWS.map(r=>({r,s:searchScore(q,r)})).filter(x=>x.s>0).sort((a,b)=>b.s-a.s).slice(0,40);
-  if(!res.length){el.innerHTML='<p class="empty">لا توجد نتائج مشابهة.</p>';return;}
-  el.innerHTML='<table class="tbl"><thead><tr><th>الرمز</th><th>اسم المادة</th><th>الكمية</th><th>سعر المبيع</th><th>الشركة</th></tr></thead><tbody>'
-   +res.map(x=>{
-     const exact=x.s>=120||(x.s>=100&&nq.length>=5);
-     const cls=exact?'s-hit':(x.s>=40?'s-sim':'');
-     return `<tr tabindex="0" data-id="${x.r.id}" class="${cls} ${hasImg(x.r.id)?'hi-img':''}"><td>${esc(x.r.code)}</td><td>${exact?'✅ ':''}${esc(x.r.name)}</td><td>${fm(x.r.qty)}</td><td>${fm(x.r.sell)}</td><td>${esc(x.r.group||NO_GROUP)}</td></tr>`;}).join('')
-   +'</tbody></table>';
-}
-function searchScore(q,r){const nq=norm(q);if(!nq)return 0;let s=0;
-  if(r.n===nq)s+=120;else if(r.n.includes(nq))s+=100;else if(r.ln.includes(nq))s+=70;
-  for(const t of nq.split(' ')){if(t.length<2)continue;
-    if(r.n.includes(t))s+=30;else if(r.ln.includes(t))s+=20;
-    else if(String(r.code).includes(t)||String(r.barcode).includes(t))s+=40;
-    else for(const w of r.n.split(' '))if(w.length>=3&&lev(w,t)<=1){s+=18;break;}}
-  return s;}
-
 /* ---------- بطاقة المجموعة ---------- */
 function openGroupModal(name){
   currentGroup=name;const g=GROUPS.find(x=>x.name===name);if(!g)return;
@@ -479,38 +451,39 @@ function renderGroupContent(){
   }
   g.hi=-1;
 }
+function searchScore(q,r){const nq=norm(q);if(!nq)return 0;let s=0;
+  if(r.n===nq)s+=120;else if(r.n.includes(nq))s+=100;else if(r.ln.includes(nq))s+=70;
+  for(const t of nq.split(' ')){if(t.length<2)continue;
+    if(r.n.includes(t))s+=30;else if(r.ln.includes(t))s+=20;
+    else if(String(r.code).includes(t)||String(r.barcode).includes(t))s+=40;
+    else for(const w of r.n.split(' '))if(w.length>=3&&lev(w,t)<=1){s+=18;break;}}
+  return s;}
 
-/* ---------- المدير ---------- */
-function applyAdminUI(){document.querySelectorAll('[data-admin]').forEach(el=>el.hidden=!isAdmin);}
-let tapCount=0,tapTimer=null;
-$('adminTap').addEventListener('click',e=>{
-  e.stopPropagation();
-  if(isAdmin){toast('وضع المدير مفعّل بالفعل 👤');return;}
-  tapCount++;clearTimeout(tapTimer);tapTimer=setTimeout(()=>tapCount=0,2500);
-  if(tapCount>=5){tapCount=0;openLogin();}
+/* ---------- البحث العام ---------- */
+$('btnSearch').onclick=()=>{$('searchModal').hidden=false;$('sSearch').value='';renderSearchResults('');setTimeout(()=>$('sSearch').focus(),150);};
+$('sSearch').addEventListener('input',e=>{clearTimeout(sSearchT);sSearchT=setTimeout(()=>renderSearchResults(e.target.value.trim()),120);});
+$('sSearch').addEventListener('keydown',e=>{
+  if(e.key!=='ArrowDown'&&e.key!=='ArrowUp'&&e.key!=='Enter')return;
+  const items=$('sContent').querySelectorAll('[data-id]');if(!items.length)return;
+  e.preventDefault();
+  if(e.key==='Enter'){openView(items[0].dataset.id);return;}
+  const cur=$('sContent').querySelector('.hl');let idx=cur?[...items].indexOf(cur):-1;
+  idx=Math.max(0,Math.min(items.length-1,idx+(e.key==='ArrowDown'?1:-1)));
+  items.forEach((el,i)=>el.classList.toggle('hl',i===idx));items[idx].scrollIntoView({block:'nearest'});
 });
-function openLogin(){
-  let lm=$('loginModalDyn');
-  if(!lm){
-    lm=document.createElement('div');lm.id='loginModalDyn';lm.className='overlay';lm.style.zIndex=85;
-    lm.innerHTML='<div class="modal" style="width:min(380px,94vw)"><div class="m-head"><h2>🔐 دخول المدير</h2><button class="x" data-close>✕</button></div><div class="m-body"><label>اسم المستخدم</label><input type="text" id="loginUser" autocomplete="off"><label>كلمة السر</label><input type="password" id="loginPass"><div class="row"><button class="btn pri" id="loginBtn">دخول</button></div></div></div>';
-    document.body.appendChild(lm);
-    lm.querySelector('[data-close]').onclick=()=>lm.hidden=true;
-    lm.addEventListener('click',e=>{if(e.target===lm)lm.hidden=true;});
-    lm.querySelector('#loginBtn').onclick=doLogin;
-    lm.querySelector('#loginPass').addEventListener('keydown',e=>{if(e.key==='Enter')doLogin();});
-  }
-  lm.hidden=false;setTimeout(()=>lm.querySelector('#loginUser').focus(),150);
+$('sContent').addEventListener('click',e=>{const it=e.target.closest('[data-id]');if(it)openView(it.dataset.id);});
+function renderSearchResults(q){
+  const el=$('sContent'),nq=norm(q);
+  if(!nq){el.innerHTML='<p class="empty">✅ للمطابقة التامة • الأصفر للمتشابه — اكتب للبحث…</p>';return;}
+  const res=ROWS.map(r=>({r,s:searchScore(nq,r)})).filter(x=>x.s>0).sort((a,b)=>b.s-a.s).slice(0,40);
+  if(!res.length){el.innerHTML='<p class="empty">لا توجد نتائج مشابهة.</p>';return;}
+  el.innerHTML='<table class="tbl"><thead><tr><th>الرمز</th><th>اسم المادة</th><th>الكمية</th><th>سعر المبيع</th><th>الشركة</th></tr></thead><tbody>'
+   +res.map(x=>{
+     const exact=x.s>=120||(x.s>=100&&nq.length>=5);
+     const cls=exact?'s-hit':(x.s>=40?'s-sim':'');
+     return `<tr tabindex="0" data-id="${x.r.id}" class="${cls} ${hasImg(x.r.id)?'hi-img':''}"><td>${esc(x.r.code)}</td><td>${exact?'✅ ':''}${esc(x.r.name)}</td><td>${fm(x.r.qty)}</td><td>${fm(x.r.sell)}</td><td>${esc(x.r.group||NO_GROUP)}</td></tr>`;}).join('')
+   +'</tbody></table>';
 }
-function doLogin(){
-  const u=$('loginUser').value.trim(),p=$('loginPass').value;
-  if(u==='مدير'&&p==='11'){
-    isAdmin=true;sessionStorage.setItem('isAdmin','1');
-    $('loginModalDyn').hidden=true;$('loginUser').value='';$('loginPass').value='';
-    applyAdminUI();toast('✔ تم تفعيل وضع المدير — أهلاً بك');
-  }else toast('بيانات الدخول غير صحيحة','err');
-}
-$('btnLogout').onclick=()=>{isAdmin=false;sessionStorage.removeItem('isAdmin');applyAdminUI();toast('تم الخروج من وضع المدير 🚪');};
 
 /* ---------- تفاصيل المادة ---------- */
 function openView(id){const r=ROWMAP[id];if(!r)return;currentId=id;
@@ -549,10 +522,8 @@ $('imgsGrid').addEventListener('click',async e=>{const d=e.target.closest('[data
   renderImgs();toast('حُذفت الصورة 🗑');});
 $('camAttach2').onclick=()=>openCamModal('attach');
 $('camAttach3').onclick=()=>openCamModal('attach');
-$('fileAttach2').onclick=()=>$('fileAttachInput').click();
+$('fileAttach2').onclick=()=>$('fileAttachInput3').click();
 $('fileAttach3').onclick=()=>$('fileAttachInput3').click();
-$('fileAttachInput').onchange=async e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();
-  r.onload=async()=>processAttach(await scaleDataUrl(r.result,900,.88),'main');r.readAsDataURL(f);};
 $('fileAttachInput3').onchange=async e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();
   r.onload=async()=>processAttach(await scaleDataUrl(r.result,900,.88),'imgs');r.readAsDataURL(f);};
 $('btnPublish').onclick=()=>publishImages(false);
@@ -595,14 +566,14 @@ async function processAttach(url,which){
   }catch(e){console.error(e);$('procProg').hidden=true;$('procProg3').hidden=true;toast('خطأ بالمعالجة: '+e.message,'err');}
 }
 
-/* ---------- الكاميرا: الإذن مرة واحدة ---------- */
+/* ---------- الكاميرا (الإذن مرة واحدة) ---------- */
 async function ensureCam(){
   if(camStream&&camStream.active)return true;
   try{
     camStream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'environment'},audio:false});
     return true;
   }catch(e){
-    if(e&&e.name==='NotAllowedError')toast('⚠ صلاحية الكاميرا مرفوضة — فعّلها نهائياً من إعدادات الموقع في المتصفح (رمز «اA» أو القفل ← الكاميرا ← السماح) ولن يُسأل بعدها','err');
+    if(e&&e.name==='NotAllowedError')toast('⚠ صلاحية الكاميرا مرفوضة — فعّلها نهائياً من إعدادات الموقع (رمز «اA» ← الكاميرا ← السماح)','err');
     else toast('تعذر فتح الكاميرا: '+e.message,'err');
     return false;
   }
@@ -620,6 +591,20 @@ $('camUploadBtn').onclick=()=>$('camUpload').click();
 $('camUpload').onchange=async e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();
   r.onload=async()=>{$('camModal').hidden=true;route(await scaleDataUrl(r.result,900,.88));};r.readAsDataURL(f);};
 function route(url){if(camMode==='attach'){if(!currentId)return toast('افتح المادة أولاً','err');processAttach(url,'main');}else recognize(url);}
+
+/* ---------- ملاءمة الكيبورد ---------- */
+if(window.visualViewport){
+  const vv=window.visualViewport;let vvT=null;
+  const apply=()=>{clearTimeout(vvT);vvT=setTimeout(()=>{
+    const kb=vv.height<window.innerHeight-60;
+    document.querySelectorAll('.overlay').forEach(o=>{
+      if(!o.hidden){o.style.top=vv.offsetTop+'px';o.style.height=vv.height+'px';o.style.bottom='auto';}
+      else{o.style.top='';o.style.height='';o.style.bottom='';}
+    });
+    if(kb){const ae=document.activeElement;if(ae&&ae.closest&&ae.closest('.m-body'))ae.scrollIntoView({block:'center'});}
+  },80);};
+  vv.addEventListener('resize',apply);vv.addEventListener('scroll',apply);
+}
 
 /* ---------- قفل الخلفية + المطاط ---------- */
 function anyModalOpen(){return !!document.querySelector('.overlay:not([hidden])');}
@@ -660,6 +645,38 @@ document.addEventListener('gesturechange',e=>e.preventDefault());
 document.addEventListener('gestureend',e=>e.preventDefault());
 document.addEventListener('dblclick',e=>e.preventDefault());
 document.addEventListener('wheel',e=>{if(e.ctrlKey)e.preventDefault();},{passive:false});
+
+/* ---------- المدير ---------- */
+function applyAdminUI(){document.querySelectorAll('[data-admin]').forEach(el=>el.hidden=!isAdmin);}
+let tapCount=0,tapTimer=null;
+$('adminTap').addEventListener('click',e=>{
+  e.stopPropagation();
+  if(isAdmin){toast('وضع المدير مفعّل بالفعل 👤');return;}
+  tapCount++;clearTimeout(tapTimer);tapTimer=setTimeout(()=>tapCount=0,2500);
+  if(tapCount>=5){tapCount=0;openLogin();}
+});
+function openLogin(){
+  let lm=$('loginModalDyn');
+  if(!lm){
+    lm=document.createElement('div');lm.id='loginModalDyn';lm.className='overlay';lm.style.zIndex=85;
+    lm.innerHTML='<div class="modal" style="width:min(380px,94vw)"><div class="m-head"><h2>🔐 دخول المدير</h2><button class="x" data-close>✕</button></div><div class="m-body"><label>اسم المستخدم</label><input type="text" id="loginUser" autocomplete="off"><label>كلمة السر</label><input type="password" id="loginPass"><div class="row"><button class="btn pri" id="loginBtn">دخول</button></div></div></div>';
+    document.body.appendChild(lm);
+    lm.querySelector('[data-close]').onclick=()=>lm.hidden=true;
+    lm.addEventListener('click',e=>{if(e.target===lm)lm.hidden=true;});
+    lm.querySelector('#loginBtn').onclick=doLogin;
+    lm.querySelector('#loginPass').addEventListener('keydown',e=>{if(e.key==='Enter')doLogin();});
+  }
+  lm.hidden=false;setTimeout(()=>lm.querySelector('#loginUser').focus(),150);
+}
+function doLogin(){
+  const u=$('loginUser').value.trim(),p=$('loginPass').value;
+  if(u==='مدير'&&p==='11'){
+    isAdmin=true;sessionStorage.setItem('isAdmin','1');
+    $('loginModalDyn').hidden=true;$('loginUser').value='';$('loginPass').value='';
+    applyAdminUI();toast('✔ تم تفعيل وضع المدير — أهلاً بك');
+  }else toast('بيانات الدخول غير صحيحة','err');
+}
+$('btnLogout').onclick=()=>{isAdmin=false;sessionStorage.removeItem('isAdmin');applyAdminUI();toast('تم الخروج من وضع المدير 🚪');};
 
 /* ---------- تأكيد ---------- */
 function askConfirm(msg){return new Promise(res=>{$('confirmTxt').textContent=msg;$('confirmModal').hidden=false;
@@ -720,6 +737,7 @@ async function recognize(url){
   }catch(e){console.error(e);toast('تعذر التحليل: '+e.message,'err');$('scanStart').hidden=false;}
   $('scanProg').hidden=true;
 }
+/* بطاقة النتيجة موحّدة: اسم واضح + سعر أخضر + كمية (مستخدم ومدير) */
 function renderResults(url,res){
   const best=res[0],bc=$('bestCard');
   $('candHint').innerHTML=isAdmin
@@ -739,9 +757,15 @@ function renderResults(url,res){
         <span class="mini">🧠 شكل ${Math.round(best.v*100)}%</span>
         <span class="mini">🎨 ألوان ${Math.round(best.h*100)}%</span>
         <span class="mini">🔤 نص ${Math.round((best.o||0)*100)}%</span>
-        <h3 style="margin:8px 0 4px;font-size:16px;font-weight:800">${esc(r?r.name:'')}</h3>
-        <p style="margin:0;font-size:13px;color:var(--mut);font-weight:700">${esc(r?(r.group||NO_GROUP)+' • سعر المبيع: '+fm(r.sell):'')}</p></div>`;
-      /* ≥80% : تعرف مباشر بدون أي خطوة إضافية */
+        <div class="best-meta">
+          <h3 class="best-name">${esc(r?r.name:'')}</h3>
+          <div class="best-badges">
+            <div class="best-price">${fm(r?r.sell:0)} <small>د.ع</small></div>
+            <div class="best-qty">📦 ${fm(r?r.qty:0)}</div>
+          </div>
+        </div>
+        <span class="best-group">📁 ${esc(r?(r.group||NO_GROUP):'')}</span>
+      </div>`;
       if(pct>=80)setTimeout(()=>{toast('✔ تعرّف مباشر '+pct+'%');$('scanModal').hidden=true;openView(best.im.id);},300);
     }
   }
@@ -771,7 +795,7 @@ async function attachTo(id){
   $('scanProg').hidden=true;
 }
 
-/* ---------- المزامنة ---------- */
+/* ---------- المزامنة (استبدال كامل) ---------- */
 async function ensureToken(){
   let t=(localStorage.getItem('ghToken')||'').trim();
   if(t)return t;
@@ -805,7 +829,7 @@ async function publishImages(silent){
     if(gres.ok){const gj=await gres.json();sha=gj.sha;}
     const put=await fetch(api,{method:'PUT',headers:{Authorization:'token '+token,Accept:'application/vnd.github+json','Content-Type':'application/json'},
       body:JSON.stringify({message:'sync material images (full replace)',content:b64encode(json),...(sha?{sha}:{})})});
-    if(put.ok){silent?toast('☁️ تمت المزامنة والاستبدال ✔'):toast('✔ رُفعت كل الصور واستُبدل ما في المستودع');return;}
+    if(put.ok){silent?toast('☁️ تمت المزامنة والاستبدال ✔'):toast('✔ رُفعت كل الصور واستُبدل ما في المستودع — وصلت للجميع');return;}
     if(put.status===401){localStorage.removeItem('ghToken');toast('⚠ التوكن مرفوض (401) — أدخل توكناً جديداً','err');return;}
     const er=await put.json().catch(()=>null);
     toast('فشل الرفع: '+(er&&er.message?er.message:('HTTP '+put.status)),'err');
