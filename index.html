@@ -135,11 +135,17 @@ textarea:focus{border-color:var(--pri)}
 .imbig{position:relative}
 .imbig img{width:100%;height:150px;object-fit:cover;border-radius:14px;pointer-events:none}
 .imbig button{position:absolute;top:-8px;left:-8px;width:26px;height:26px;border:none;border-radius:50%;background:var(--dng);color:#fff;cursor:pointer;font-size:12px}
+/* بطاقة النتيجة: اسم وسعر بارزان */
 .best{border:2px solid var(--grn);border-radius:16px;padding:12px;margin-bottom:12px;cursor:pointer}
 .best.mid{border-color:var(--amb)}.best.low{border-color:var(--dng);cursor:default}
 .best .imgs{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px}
 .best .imgs img{width:100%;height:130px;object-fit:cover;border-radius:12px;pointer-events:none}
 .best .imgs span{display:block;text-align:center;font-size:11.5px;color:var(--mut);font-weight:700}
+.best-meta{display:flex;justify-content:space-between;align-items:center;gap:10px;margin:10px 0 6px;flex-wrap:wrap}
+.best-name{margin:0;font-size:19px;font-weight:800;color:#141c2e;line-height:1.4;flex:1;min-width:150px}
+.best-price{background:linear-gradient(135deg,#157a4a,#2f9e6e);color:#fff;border-radius:14px;padding:7px 16px;font-size:17px;font-weight:800;box-shadow:0 5px 14px rgba(47,158,110,.35);white-space:nowrap}
+.best-price small{font-size:11px;font-weight:700;opacity:.9}
+.best-group{display:inline-block;background:#eef1f8;color:var(--pri2);border-radius:12px;padding:3px 12px;font-size:12px;font-weight:800}
 .pct{display:inline-block;background:var(--grn);color:#fff;border-radius:20px;padding:3px 14px;font-weight:800}
 .pct.mid{background:var(--amb)}.pct.low{background:var(--dng)}
 .mini{display:inline-block;background:#eef1f8;color:var(--pri2);border-radius:14px;padding:2px 10px;font-size:11px;font-weight:800;margin-left:4px}
@@ -195,7 +201,7 @@ textarea:focus{border-color:var(--pri)}
   <p class="empty" id="emptyMsg">جارٍ تحميل المواد…</p>
 </main>
 
-<!-- دخول المدير (مخفي: 5 ضغطات على كلمة المواد) -->
+<!-- دخول المدير -->
 <div class="overlay" id="loginModal" hidden>
   <div class="modal" style="width:min(380px,94vw)">
     <div class="m-head"><h2>🔐 دخول المدير</h2><button class="x" data-close>✕</button></div>
@@ -209,7 +215,7 @@ textarea:focus{border-color:var(--pri)}
   </div>
 </div>
 
-<!-- نافذة بطاقة المجموعة -->
+<!-- بطاقة المجموعة -->
 <div class="overlay" id="groupModal" hidden>
   <div class="modal wide">
     <div class="m-head"><h2 id="gTitle"></h2><button class="x" data-close>✕</button></div>
@@ -253,7 +259,7 @@ textarea:focus{border-color:var(--pri)}
   </div>
 </div>
 
-<!-- نافذة الصور المرجعية -->
+<!-- الصور المرجعية -->
 <div class="overlay" id="imgsModal" hidden>
   <div class="modal">
     <div class="m-head"><h2 id="imgsTitle">🖼 الصور المرجعية</h2><button class="x" data-close>✕</button></div>
@@ -354,6 +360,25 @@ function scaleDataUrl(url,maxW,q){return new Promise(res=>{const i=new Image();i
 function imgEl(url){return new Promise((res,rej)=>{const i=new Image();i.onload=()=>res(i);i.onerror=rej;i.src=url;});}
 function textSim(a,b){const A=norm(a).split(' ').filter(w=>w.length>=3),B=norm(b).split(' ').filter(w=>w.length>=3);if(!A.length||!B.length)return 0;let hit=0;for(const w of A){for(const p of B){if(p===w||(w.length>=4&&lev(w,p)<=1)){hit++;break;}}}return hit/A.length;}
 function b64encode(str){const bytes=new TextEncoder().encode(str);let bin='';for(let i=0;i<bytes.length;i+=0x8000){bin+=String.fromCharCode.apply(null,bytes.subarray(i,i+0x8000));}return btoa(bin);}
+function anyModalOpen(){return !!document.querySelector('.overlay:not([hidden])');}
+
+/* ---------- ملاءمة الكيبورد: النافذة فوق الكيبورد ---------- */
+if(window.visualViewport){
+  const vv=window.visualViewport;let vvT=null;
+  const apply=()=>{clearTimeout(vvT);vvT=setTimeout(()=>{
+    const open=anyModalOpen();
+    document.querySelectorAll('.overlay').forEach(o=>{
+      if(open){o.style.top=vv.offsetTop+'px';o.style.height=vv.height+'px';o.style.bottom='auto';}
+      else{o.style.top='';o.style.height='';o.style.bottom='';}
+      const m=o.querySelector('.modal');
+      if(m)m.style.maxHeight=(vv.height-16)+'px';
+    });
+    const ae=document.activeElement;
+    if(ae&&ae.closest&&ae.closest('.m-body'))ae.scrollIntoView({block:'center'});
+  },80);};
+  vv.addEventListener('resize',apply);
+  vv.addEventListener('scroll',apply);
+}
 
 /* ---------- قاعدة البيانات ---------- */
 let dbP=null;
@@ -437,7 +462,12 @@ $('gViewGrid').onclick=()=>setGroupView('grid');
 $('gSearch').addEventListener('input',e=>{clearTimeout(gSearchT);gSearchT=setTimeout(()=>{
   const g=GROUPS.find(x=>x.name===currentGroup);if(!g)return;const q=e.target.value.trim();
   g.vis=q?g.rows.map(r=>({r,s:searchScore(q,r)})).filter(x=>x.s>0).sort((a,b)=>b.s-a.s).map(x=>x.r):g.rows;
-  renderGroupContent();},120);});
+  renderGroupContent();
+  /* عند فتح الكيبورد: اصعد بالنتائج للمساحة المرئية */
+  if(window.visualViewport&&window.visualViewport.height<window.innerHeight*0.9){
+    setTimeout(()=>{const el=$('gContent');if(el)el.scrollIntoView({block:'nearest'});},60);
+  }
+},120);});
 $('gSearch').addEventListener('keydown',e=>{const g=GROUPS.find(x=>x.name===currentGroup);if(!g)return;const items=$('gContent').querySelectorAll('[data-id]');
   if(e.key==='ArrowDown'||e.key==='ArrowUp'){e.preventDefault();if(!items.length)return;
     g.hi=Math.max(0,Math.min(items.length-1,g.hi+(e.key==='ArrowDown'?1:-1)));
@@ -538,7 +568,6 @@ $('imgsGrid').addEventListener('click',async e=>{const d=e.target.closest('[data
   if(!im.imgs.length){delete IMAGES[currentId];await dbDel('images',currentId);}
   else await dbPut('images',currentId,im);
   renderImgs();toast('حُذفت الصورة 🗑');});
-/* أزرار الرفع (للمدير فقط) */
 $('camAttach2').onclick=()=>openCamModal('attach');
 $('camAttach3').onclick=()=>openCamModal('attach');
 $('fileAttach2').onclick=()=>$('fileAttachInput').click();
@@ -599,9 +628,8 @@ $('camUpload').onchange=async e=>{const f=e.target.files[0];if(!f)return;const r
   r.onload=async()=>{stopCam();$('camModal').hidden=true;route(await scaleDataUrl(r.result,900,.88));};r.readAsDataURL(f);};
 function route(url){if(camMode==='attach'){if(!currentId)return toast('افتح المادة أولاً','err');processAttach(url,'main');}else recognize(url);}
 
-/* ---------- قفل الخلفية + المطاط + منع التكبير ---------- */
-function anyModalOpen(){return !!document.querySelector('.overlay:not([hidden])');}
-const lockObs=new MutationObserver(()=>{document.body.classList.toggle('lock',anyModalOpen());applyAdminUI();});
+/* ---------- قفل الخلفية + المطاط ---------- */
+const lockObs=new MutationObserver(()=>{document.body.classList.toggle('lock',anyModalOpen());});
 document.querySelectorAll('.overlay').forEach(o=>lockObs.observe(o,{attributes:true,attributeFilter:['hidden']}));
 document.addEventListener('touchmove',e=>{
   if(!anyModalOpen())return;
@@ -725,8 +753,12 @@ function renderResults(url,res){
         <span class="mini">🧠 شكل ${Math.round(best.v*100)}%</span>
         <span class="mini">🎨 ألوان ${Math.round(best.h*100)}%</span>
         <span class="mini">🔤 نص ${Math.round((best.o||0)*100)}%</span>
-        <h3 style="margin:8px 0 4px;font-size:16px;font-weight:800">${esc(r?r.name:'')}</h3>
-        <p style="margin:0;font-size:13px;color:var(--mut);font-weight:700">${esc(r?(r.group||NO_GROUP)+' • سعر المبيع: '+fm(r.sell):'')}</p></div>`;
+        <div class="best-meta">
+          <h3 class="best-name">${esc(r?r.name:'')}</h3>
+          <div class="best-price">${fm(r?r.sell:0)} <small>د.ع</small></div>
+        </div>
+        <span class="best-group">📁 ${esc(r?(r.group||NO_GROUP):'')}</span>
+      </div>`;
       if(pct>=60)setTimeout(()=>{toast('تعرّف مباشر ✔');$('scanModal').hidden=true;openView(best.im.id);},350);
     }
   }
@@ -751,7 +783,7 @@ async function attachTo(id){
     IMAGES[id].imgs.push(g);
     await dbPut('images',id,IMAGES[id]);
     $('scanModal').hidden=true;
-    toast('✔ أُضيفت الصورة — اضغط ☁️ مزامنة لنشرها للجميع');
+    toast('✔ أُضيفت الصورة كمرجع إضافي — اضغط ☁️ مزامنة لنشرها');
   }catch(e){console.error(e);toast('خطأ: '+e.message,'err');$('scanStart').hidden=false;}
   $('scanProg').hidden=true;
 }
@@ -796,8 +828,6 @@ async function publishImages(silent){
     toast('فشل الرفع: '+(er&&er.message?er.message:('HTTP '+put.status)),'err');
   }catch(e){toast('فشل الرفع: '+e.message,'err');}
 }
-$('btnSync').onclick=()=>publishImages(false);
-/* جلب الصور المشتركة للجميع (قراءة عامة بدون توكن) */
 async function fetchSharedImages(){
   try{
     const r=await fetch(SHARED_URL,{cache:'no-store'});
@@ -860,7 +890,6 @@ $('filesList').addEventListener('click',async e=>{
       if(buf){const rows=parseWorkbook(buf);if(rows)loadDataset(rows,{name:'جميع المواد.xlsx'});}
     }
     await fetchSharedImages();
-    /* مزامنة تلقائية للمدير فقط إن وُجد توكن */
     if(isAdmin&&localStorage.getItem('ghToken')&&Object.keys(IMAGES).some(hasImg)&&!sessionStorage.getItem('autoSynced')){
       sessionStorage.setItem('autoSynced','1');
       publishImages(true);
