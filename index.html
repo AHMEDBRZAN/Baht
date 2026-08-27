@@ -82,8 +82,9 @@ main{max-width:960px;margin:0 auto;padding:14px 12px calc(30px + env(safe-area-i
 .x{border:none;background:#f1f3fa;width:38px;height:38px;border-radius:50%;cursor:pointer;font-size:15px;flex:0 0 auto}
 .m-body{overflow:auto;padding:0 0 16px;flex:1;overscroll-behavior:contain;will-change:transform}
 .m-body.spring{transition:transform .4s cubic-bezier(.22,.9,.32,1.15)}
+.modal input[type=text],.modal input[type=password]{width:calc(100% - 32px);margin:0 16px;border:2px solid #e3e7f5;border-radius:12px;padding:11px 12px;font-family:inherit;font-size:14px;outline:none;background:#fff}
+.modal input[type=text]:focus,.modal input[type=password]:focus{border-color:var(--pri)}
 .g-tools{position:sticky;top:0;z-index:5;display:flex;gap:10px;flex-wrap:wrap;padding:12px 16px;background:#fff;border-bottom:1px solid #eef0f6}
-#sContent,#gContent{padding:12px 16px 0}
 .gsearch{flex:1;min-width:180px;border:2px solid #e3e7f5;border-radius:12px;padding:10px 14px;font-family:inherit;font-size:13px;outline:none;background:#fff}
 .gsearch:focus{border-color:var(--pri)}
 .vtoggle{display:flex;background:#eef1f8;border-radius:12px;padding:3px}
@@ -133,13 +134,7 @@ textarea{width:calc(100% - 32px);margin:0 16px;border:2px solid #e3e7f5;border-r
 .best .imgs{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px}
 .best .imgs img{width:100%;height:130px;object-fit:cover;border-radius:12px;pointer-events:none}
 .best .imgs span{display:block;text-align:center;font-size:11.5px;color:var(--mut);font-weight:700}
-.best-meta{display:flex;justify-content:space-between;align-items:center;gap:10px;margin:10px 0 6px;flex-wrap:wrap}
-.best-name{margin:0;font-size:19px;font-weight:800;color:#141c2e;line-height:1.4;flex:1;min-width:150px}
-.best-badges{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
-.best-price{background:linear-gradient(135deg,#157a4a,#2f9e6e);color:#fff;border-radius:14px;padding:7px 16px;font-size:17px;font-weight:800;box-shadow:0 5px 14px rgba(47,158,110,.35);white-space:nowrap}
-.best-price small{font-size:11px;font-weight:700;opacity:.9}
-.best-qty{background:#eef1f8;color:var(--pri2);border-radius:14px;padding:7px 16px;font-size:15px;font-weight:800;white-space:nowrap}
-.best-group{display:inline-block;background:#eef1f8;color:var(--pri2);border-radius:12px;padding:3px 12px;font-size:12px;font-weight:800}
+.best h3,.best p{color:#2a3245}
 .pct{display:inline-block;background:var(--grn);color:#fff;border-radius:20px;padding:3px 14px;font-weight:800}
 .pct.mid{background:var(--amb)}.pct.low{background:var(--dng)}
 .mini{display:inline-block;background:#eef1f8;color:var(--pri2);border-radius:14px;padding:2px 10px;font-size:11px;font-weight:800;margin-left:4px}
@@ -163,7 +158,7 @@ textarea{width:calc(100% - 32px);margin:0 16px;border:2px solid #e3e7f5;border-r
     </div>
     <div class="hbtns" id="toolsBox" hidden>
       <button class="btn pri" id="btnRepo">🔄 تحديث من المستودع</button>
-      <button class="btn ghost" id="btnUpload">📂 رفع ملف</button>
+      <button class="btn ghost" id="btnUpload" data-admin>📂 رفع ملف</button>
       <button class="btn ghost" id="btnSync" data-admin>☁️ مزامنة الصور</button>
       <button class="btn dngr" id="btnLogout" data-admin>🚪 خروج المدير</button>
     </div>
@@ -196,12 +191,12 @@ textarea{width:calc(100% - 32px);margin:0 16px;border:2px solid #e3e7f5;border-r
   <p class="empty" id="emptyMsg">جارٍ تحميل المواد من المستودع…</p>
 </main>
 
-<!-- البحث العام -->
+<!-- البحث عن أي مادة -->
 <div class="overlay" id="searchModal" hidden>
   <div class="modal wide">
     <div class="m-head"><h2>🔍 البحث عن أي مادة</h2><button class="x" data-close>✕</button></div>
     <div class="g-tools"><input type="text" class="gsearch" id="sSearch" style="margin:0;width:auto;flex:1" placeholder="اكتب اسم المادة أو الرمز أو الباركود…"></div>
-    <div class="m-body"><div id="sContent"><p class="empty">✅ للمطابقة التامة • الأصفر للمتشابه — اكتب للبحث…</p></div></div>
+    <div class="m-body"><div id="sContent" style="padding:12px 16px 0"><p class="empty">✅ للمطابقة التامة • الأصفر للمتشابه — اكتب للبحث…</p></div></div>
   </div>
 </div>
 
@@ -216,7 +211,7 @@ textarea{width:calc(100% - 32px);margin:0 16px;border:2px solid #e3e7f5;border-r
         <button id="gViewGrid">🧱 شبكة</button>
       </div>
     </div>
-    <div class="m-body"><div id="gContent"></div></div>
+    <div class="m-body"><div id="gContent" style="padding:12px 16px 0"></div></div>
   </div>
 </div>
 
@@ -268,7 +263,7 @@ textarea{width:calc(100% - 32px);margin:0 16px;border:2px solid #e3e7f5;border-r
       <div style="padding:12px 16px 0">
         <video id="camVideo" class="cam-video" playsinline muted autoplay></video>
         <div class="row" style="padding:0">
-          <button class="btn dngr" id="camShot">⬤ التقاط (Enter)</button>
+          <button class="btn dngr" id="camShot">⬤ التقاط</button>
           <button class="btn ghost" id="camUploadBtn">🖼 رفع صورة</button>
         </div>
         <input type="file" id="camUpload" accept="image/*" hidden>
@@ -282,15 +277,15 @@ textarea{width:calc(100% - 32px);margin:0 16px;border:2px solid #e3e7f5;border-r
   <div class="modal">
     <div class="m-head"><h2>📷 التعرف على المادة</h2><button class="x" data-close>✕</button></div>
     <div class="m-body">
-      <div id="scanStart">
-        <p class="hint">صوّر العلبة أو ارفع صورة — المطابقة: الشكل + الألوان + النص المطبوع + النص المخزّن. تطابق ≥ 80% يفتح المادة مباشرة.</p>
+      <div id="scanStart" style="padding:12px 16px 0">
+        <p class="hint" style="margin:4px 0 10px">صوّر العلبة ثم اضغط ⬤ التقاط — المطابقة: الشكل + الألوان + النص المطبوع + النص المخزّن.</p>
         <div class="row" style="padding:0">
           <button class="btn amb" id="btnCamScan">📷 فتح الكاميرا</button>
           <button class="btn ghost" id="fileScanBtn">🖼 رفع صورة</button>
         </div>
         <input type="file" id="fileScan" accept="image/*" hidden>
       </div>
-      <div id="scanProg" hidden><div class="bar"><i id="scanBar"></i></div><p class="prog-txt" id="scanProgTxt"></p></div>
+      <div id="scanProg" hidden style="padding:0 16px"><div class="bar"><i id="scanBar"></i></div><p class="prog-txt" id="scanProgTxt"></p></div>
       <div id="scanRes" hidden>
         <div id="bestCard"></div>
         <h3>بقية المرشحات (12 الأكثر تشابهاً):</h3>
@@ -336,7 +331,7 @@ let isAdmin=sessionStorage.getItem('isAdmin')==='1';
 function toast(m,t){const e=$('toast');e.textContent=m;e.className=t||'';e.hidden=false;clearTimeout(e._h);e._h=setTimeout(()=>e.hidden=true,5000);}
 function esc(s){return (s??'').toString().replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
 function short(s,n){n=n||42;s=s??'';return s.length>n?s.slice(0,n)+'…':s;}
-function parseNum(v){if(typeof v==='number')return isFinite(v)?v:0;if(v==null)return 0;let s=String(v).replace(/[٠-٩]/g,d=>'٠١٣٤٥٧٨٩'.indexOf(d)).replace(/[,،\s]/g,'');const n=parseFloat(s);return isFinite(n)?n:0;}
+function parseNum(v){if(typeof v==='number')return isFinite(v)?v:0;if(v==null)return 0;let s=String(v).replace(/[٠-٩]/g,d=>'٠١٢٣٤٥٦٧٨٩'.indexOf(d)).replace(/[,،\s]/g,'');const n=parseFloat(s);return isFinite(n)?n:0;}
 function fm(n){n=parseNum(n);return n?n.toLocaleString('en-US',{maximumFractionDigits:2}):'0';}
 function norm(s){return (s||'').toLowerCase().replace(/[\u064B-\u0652\u0640]/g,'').replace(/[أإآ]/g,'ا').replace(/ة/g,'ه').replace(/ى/g,'ي').replace(/[^\p{L}\p{N}]+/gu,' ').trim();}
 function lev(a,b){a=a||'';b=b||'';if(a===b)return 0;const m=a.length,n=b.length;if(!m||!n)return m||n;let p=Array.from({length:n+1},(_,i)=>i);for(let i=1;i<=m;i++){const c=[i];for(let j=1;j<=n;j++)c[j]=Math.min(p[j]+1,c[j-1]+1,p[j-1]+(a[i-1]===b[j-1]?0:1));p=c;}return p[n];}
@@ -394,7 +389,7 @@ async function fetchRepoFile(){
     if(r.ok){const list=await r.json();
       const f=(Array.isArray(list)?list:[]).find(x=>x.name&&x.name.toLowerCase().endsWith('.xlsx'));
       if(f&&f.download_url){const d=await fetch(f.download_url);if(d.ok)return await d.arrayBuffer();}}
-  }catch(e){console.error(e);}
+  }catch(e){}
   for(const u of REPO_URLS){try{const r=await fetch(u,{cache:'no-store'});if(!r.ok)continue;
     const buf=await r.arrayBuffer();if(buf.byteLength>1000)return buf;}catch(e){}}
   return null;
@@ -549,27 +544,58 @@ async function processAttach(url){
   }catch(e){console.error(e);$('procProg3').hidden=true;toast('خطأ بالمعالجة: '+e.message,'err');}
 }
 
-/* ---------- الكاميرا (الإذن مرة واحدة) ---------- */
-async function ensureCam(){
-  if(camStream&&camStream.active)return true;
-  try{camStream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'environment'},audio:false});return true;}
-  catch(e){
-    if(e&&e.name==='NotAllowedError')toast('⚠ صلاحية الكاميرا مرفوضة — فعّلها من إعدادات الموقع (رمز «اA» ← الكاميرا ← السماح)','err');
-    else toast('تعذر فتح الكاميرا: '+e.message,'err');
-    return false;
-  }
-}
+/* ---------- الكاميرا ---------- */
+function openCamModal(mode){camMode=mode;$('camModal').hidden=false;startCam();}
+async function startCam(){stopCam();try{camStream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'environment'},audio:false});$('camVideo').srcObject=camStream;try{await $('camVideo').play();}catch(e){}}catch(e){toast('تعذر فتح الكاميرا: '+e.message,'err');}}
 function stopCam(){if(camStream){camStream.getTracks().forEach(t=>t.stop());camStream=null;}}
-window.addEventListener('pagehide',stopCam);
-async function openCamModal(mode){camMode=mode;$('camModal').hidden=false;
-  if(await ensureCam()){$('camVideo').srcObject=camStream;try{await $('camVideo').play();}catch(e){}}}
 function capture(){const v=$('camVideo');if(!v.videoWidth)return null;const s=Math.min(1,640/v.videoWidth);const c=document.createElement('canvas');c.width=Math.round(v.videoWidth*s);c.height=Math.round(v.videoHeight*s);c.getContext('2d').drawImage(v,0,0,c.width,c.height);return c.toDataURL('image/jpeg',.9);}
-$('camClose').onclick=()=>{$('camModal').hidden=true;};
+$('camClose').onclick=()=>{stopCam();$('camModal').hidden=true;};
+/* الالتقاط فقط بضغط الزر — لا التقاط تلقائي */
 $('camShot').onclick=async()=>{const u=capture();if(!u)return toast('انتظر جاهزية الكاميرا','err');$('camModal').hidden=true;route(await scaleDataUrl(u,900,.88));};
 $('camUploadBtn').onclick=()=>$('camUpload').click();
 $('camUpload').onchange=async e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();
   r.onload=async()=>{$('camModal').hidden=true;route(await scaleDataUrl(r.result,900,.88));};r.readAsDataURL(f);};
 function route(url){if(camMode==='attach'){if(!currentId)return toast('افتح المادة أولاً','err');processAttach(url);}else recognize(url);}
+
+/* ---------- ملاءمة الكيبورد + قفل ---------- */
+function anyModalOpen(){return !!document.querySelector('.overlay:not([hidden])');}
+const lockObs=new MutationObserver(()=>{document.body.classList.toggle('lock',anyModalOpen());});
+document.querySelectorAll('.overlay').forEach(o=>lockObs.observe(o,{attributes:true,attributeFilter:['hidden']}));
+document.addEventListener('touchmove',e=>{
+  if(!anyModalOpen())return;
+  const sc=e.target.closest&&e.target.closest('.m-body');
+  if(!sc)e.preventDefault();
+},{passive:false});
+function rubberize(el){
+  let startY=0,dragging=false,atTop=false,atBottom=false;
+  el.addEventListener('touchstart',e=>{
+    if(e.touches.length!==1)return;
+    startY=e.touches[0].clientY;dragging=true;
+    atTop=el.scrollTop<=0;
+    atBottom=el.scrollTop+el.clientHeight>=el.scrollHeight-1;
+    el.classList.remove('spring');el.style.transform='';
+  },{passive:true});
+  el.addEventListener('touchmove',e=>{
+    if(!dragging)return;
+    const dy=e.touches[0].clientY-startY;
+    const scrollable=el.scrollHeight>el.clientHeight+1;
+    const over=(!scrollable&&Math.abs(dy)>4)||(atTop&&dy>6)||(atBottom&&dy<-6);
+    if(over){
+      e.preventDefault();
+      const pull=Math.max(-90,Math.min(90,dy/3));
+      el.style.transform='translateY('+pull+'px)';
+    }
+  },{passive:false});
+  const end=()=>{if(!dragging)return;dragging=false;el.classList.add('spring');el.style.transform='';};
+  el.addEventListener('touchend',end);
+  el.addEventListener('touchcancel',end);
+}
+document.querySelectorAll('.m-body').forEach(rubberize);
+document.addEventListener('gesturestart',e=>e.preventDefault());
+document.addEventListener('gesturechange',e=>e.preventDefault());
+document.addEventListener('gestureend',e=>e.preventDefault());
+document.addEventListener('dblclick',e=>e.preventDefault());
+document.addEventListener('wheel',e=>{if(e.ctrlKey)e.preventDefault();},{passive:false});
 
 /* ---------- المدير ---------- */
 function applyAdminUI(){document.querySelectorAll('[data-admin]').forEach(el=>el.hidden=!isAdmin);}
@@ -681,14 +707,14 @@ function renderResults(url,res){
         <span class="mini">🧠 شكل ${Math.round(best.v*100)}%</span>
         <span class="mini">🎨 ألوان ${Math.round(best.h*100)}%</span>
         <span class="mini">🔤 نص ${Math.round((best.o||0)*100)}%</span>
-        <div class="best-meta">
-          <h3 class="best-name">${esc(r?r.name:'')}</h3>
-          <div class="best-badges">
-            <div class="best-price">${fm(r?r.sell:0)} <small>د.ع</small></div>
-            <div class="best-qty">📦 ${fm(r?r.qty:0)}</div>
+        <div class="best-meta" style="display:flex;justify-content:space-between;align-items:center;gap:10px;margin:10px 0 6px;flex-wrap:wrap">
+          <h3 style="margin:0;font-size:19px;font-weight:800;color:#141c2e;flex:1;min-width:150px">${esc(r?r.name:'')}</h3>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+            <div class="best-price" style="background:linear-gradient(135deg,#157a4a,#2f9e6e);color:#fff;border-radius:14px;padding:7px 16px;font-size:17px;font-weight:800;white-space:nowrap">${fm(r?r.sell:0)} <small style="font-size:11px">د.ع</small></div>
+            <div style="background:#eef1f8;color:var(--pri2);border-radius:14px;padding:7px 16px;font-size:15px;font-weight:800;white-space:nowrap">📦 ${fm(r?r.qty:0)}</div>
           </div>
         </div>
-        <span class="best-group">📁 ${esc(r?(r.group||NO_GROUP):'')}</span>
+        <span class="best-group" style="display:inline-block;background:#eef1f8;color:var(--pri2);border-radius:12px;padding:3px 12px;font-size:12px;font-weight:800">📁 ${esc(r?(r.group||NO_GROUP):'')}</span>
       </div>`;
       if(pct>=80)setTimeout(()=>{toast('✔ تعرّف مباشر '+pct+'%');$('scanModal').hidden=true;openView(best.im.id);},300);
     }
@@ -759,23 +785,18 @@ async function publishImages(silent){
     toast('فشل الرفع: '+(er&&er.message?er.message:('HTTP '+put.status)),'err');
   }catch(e){toast('فشل الرفع: '+e.message,'err');}
 }
-async function fetchSharedImages(){
-  try{
-    const r=await fetch(SHARED_URL,{cache:'no-store'});
-    if(!r.ok)return;
-    const data=await r.json();
-    if(!data||typeof data!=='object')return;
-    let added=0;
-    for(const id of Object.keys(data)){
-      const entry=data[id];if(!entry||!Array.isArray(entry.imgs))continue;
-      const valid=entry.imgs.filter(validImg);
-      if(!valid.length)continue;
-      if(!IMAGES[id]){IMAGES[id]={id,imgs:valid};added++;}
-      else{const have=new Set(IMAGES[id].imgs.map(g=>g.ts));valid.forEach(g=>{if(!have.has(g.ts))IMAGES[id].imgs.push(g);});}
-    }
-    if(added)toast('🌐 تم تحميل '+added+' مادة مصوَّرة من المستودع');
-  }catch(e){}
-}
+
+/* ---------- إغلاق النوافذ ---------- */
+const MOD_ORDER=['confirmModal','loginModalDyn','camModal','imgsModal','viewModal','scanModal','searchModal','groupModal'];
+function closeTop(){const id=MOD_ORDER.find(x=>{const el=$(x);return el&&!el.hidden;});if(!id)return;$(id).hidden=true;if(id==='camModal')stopCam();}
+document.querySelectorAll('[data-close]').forEach(b=>b.onclick=()=>{const o=b.closest('.overlay');if(o){o.hidden=true;if(o.id==='camModal')stopCam();}});
+document.querySelectorAll('.overlay').forEach(o=>o.addEventListener('click',e=>{
+  if(e.target!==o)return;
+  if(o.id==='confirmModal'){$('confirmNo').click();return;}
+  o.hidden=true;if(o.id==='camModal')stopCam();
+}));
+/* Esc فقط — لا التقاط تلقائي بأي زر آخر */
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeTop();});
 
 /* ---------- أدوات الترويسة ---------- */
 function toggleTools(){const willShow=$('toolsBox').hidden;$('toolsBox').hidden=!willShow;$('toolsChev').classList.toggle('open',willShow);}
@@ -784,84 +805,16 @@ $('appTitle').onclick=toggleTools;
 $('btnRepo').onclick=async()=>{toast('جارٍ الجلب من المستودع…');
   const buf=await fetchRepoFile();
   if(buf){const rows=parseWorkbook(buf);if(rows){loadDataset(rows);try{localStorage.setItem('rowsCache',JSON.stringify(rows));}catch(e){}toast('تم تحديث المواد ✔ '+rows.length+' مادة');return;}}
-  toast('تعذر الجلب — حاول لاحقاً أو ارفع الملف يدوياً','err');};
+  toast('تعذر الجلب — حاول لاحقاً','err');};
 $('btnUpload').onclick=()=>$('filePick').click();
 $('filePick').onchange=e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();
   r.onload=()=>{const rows=parseWorkbook(r.result);if(rows){loadDataset(rows);try{localStorage.setItem('rowsCache',JSON.stringify(rows));}catch(e2){}toast('تم تحميل «'+f.name+'» ✔');}else toast('ملف غير مدعوم','err');};
   r.readAsArrayBuffer(f);};
 
-/* ---------- ملاءمة الكيبورد + قفل + مطاط ---------- */
-if(window.visualViewport){
-  const vv=window.visualViewport;let vvT=null;
-  const apply=()=>{clearTimeout(vvT);vvT=setTimeout(()=>{
-    const kb=vv.height<window.innerHeight-60;
-    document.querySelectorAll('.overlay').forEach(o=>{
-      if(!o.hidden){o.style.top=vv.offsetTop+'px';o.style.height=vv.height+'px';o.style.bottom='auto';}
-      else{o.style.top='';o.style.height='';o.style.bottom='';}
-    });
-    if(kb){const ae=document.activeElement;if(ae&&ae.closest&&ae.closest('.m-body'))ae.scrollIntoView({block:'center'});}
-  },80);};
-  vv.addEventListener('resize',apply);vv.addEventListener('scroll',apply);
-}
-function anyModalOpen(){return !!document.querySelector('.overlay:not([hidden])');}
-const lockObs=new MutationObserver(()=>{document.body.classList.toggle('lock',anyModalOpen());});
-document.querySelectorAll('.overlay').forEach(o=>lockObs.observe(o,{attributes:true,attributeFilter:['hidden']}));
-document.addEventListener('touchmove',e=>{
-  if(!anyModalOpen())return;
-  const sc=e.target.closest&&e.target.closest('.m-body');
-  if(!sc)e.preventDefault();
-},{passive:false});
-function rubberize(el){
-  let startY=0,dragging=false,atTop=false,atBottom=false;
-  el.addEventListener('touchstart',e=>{
-    if(e.touches.length!==1)return;
-    startY=e.touches[0].clientY;dragging=true;
-    atTop=el.scrollTop<=0;
-    atBottom=el.scrollTop+el.clientHeight>=el.scrollHeight-1;
-    el.classList.remove('spring');el.style.transform='';
-  },{passive:true});
-  el.addEventListener('touchmove',e=>{
-    if(!dragging)return;
-    const dy=e.touches[0].clientY-startY;
-    const scrollable=el.scrollHeight>el.clientHeight+1;
-    const over=(!scrollable&&Math.abs(dy)>4)||(atTop&&dy>6)||(atBottom&&dy<-6);
-    if(over){
-      e.preventDefault();
-      const pull=Math.max(-90,Math.min(90,dy/3));
-      el.style.transform='translateY('+pull+'px)';
-    }
-  },{passive:false});
-  const end=()=>{if(!dragging)return;dragging=false;el.classList.add('spring');el.style.transform='';};
-  el.addEventListener('touchend',end);
-  el.addEventListener('touchcancel',end);
-}
-document.querySelectorAll('.m-body').forEach(rubberize);
-document.addEventListener('gesturestart',e=>e.preventDefault());
-document.addEventListener('gesturechange',e=>e.preventDefault());
-document.addEventListener('gestureend',e=>e.preventDefault());
-document.addEventListener('dblclick',e=>e.preventDefault());
-document.addEventListener('wheel',e=>{if(e.ctrlKey)e.preventDefault();},{passive:false});
-
-/* ---------- إغلاق النوافذ ---------- */
-const MOD_ORDER=['confirmModal','loginModalDyn','camModal','imgsModal','viewModal','scanModal','searchModal','groupModal'];
-function closeTop(){const id=MOD_ORDER.find(x=>{const el=$(x);return el&&!el.hidden;});if(!id)return;$(id).hidden=true;if(id==='camModal')stopCam();}
-document.querySelectorAll('[data-close]').forEach(b=>b.onclick=()=>{const o=b.closest('.overlay');if(o)o.hidden=true;if(o&&o.id==='camModal')stopCam();});
-document.querySelectorAll('.overlay').forEach(o=>o.addEventListener('click',e=>{
-  if(e.target!==o)return;
-  if(o.id==='confirmModal'){$('confirmNo').click();return;}
-  o.hidden=true;if(o.id==='camModal')stopCam();
-}));
-document.addEventListener('keydown',e=>{
-  if(e.key==='Escape'){closeTop();return;}
-  if(e.key==='Enter'&&!e.target.closest('input,textarea,button')){
-    if(!$('camModal').hidden)$('camShot').click();
-  }
-});
-
-/* ---------- بدء (محصّن ضد التعليق) ---------- */
+/* ---------- بدء ---------- */
 (async()=>{
-  try{applyAdminUI();}catch(e){}
   try{
+    applyAdminUI();
     (await dbGetAll('extras')).forEach(x=>EXTRAS[x.id]=x);
     (await dbGetAll('images')).forEach(v=>{
       if(v&&Array.isArray(v.imgs))IMAGES[v.id]=v;
@@ -875,21 +828,30 @@ document.addEventListener('keydown',e=>{
       else dbPut('images',id,im);
     }
     if(removed)toast('تم تنظيف '+removed+' صورة تالفة','err');
-  }catch(e){console.error(e);}
-  /* تحميل فوري من الذاكرة المؤقتة */
-  try{
     const cache=localStorage.getItem('rowsCache');
-    if(cache){const rows=JSON.parse(cache);if(rows&&rows.length)loadDataset(rows);}
-  }catch(e){}
-  /* جلب أحدث نسخة من المستودع */
-  (async()=>{
-    const buf=await fetchRepoFile();
-    if(buf){const rows=parseWorkbook(buf);
-      if(rows){loadDataset(rows);try{localStorage.setItem('rowsCache',JSON.stringify(rows));}catch(e){}toast('تم تحديث المواد من المستودع ✔');return;}}
-    if(!ROWS.length)$('emptyMsg').textContent='تعذر جلب المواد — افتح الأدوات ⌄ واضغط «تحديث من المستودع» أو «رفع ملف»';
-  })();
-  /* صور مشتركة للمستخدمين */
-  if(!Object.keys(IMAGES).length)fetchSharedImages();
+    if(cache){try{const rows=JSON.parse(cache);if(rows&&rows.length)loadDataset(rows);}catch(e){}}
+    (async()=>{
+      const buf=await fetchRepoFile();
+      if(buf){const rows=parseWorkbook(buf);
+        if(rows){loadDataset(rows);try{localStorage.setItem('rowsCache',JSON.stringify(rows));}catch(e){}toast('تم تحديث المواد من المستودع ✔');}}
+      else if(!ROWS.length)$('emptyMsg').textContent='تعذر جلب المواد — افتح الأدوات ⌄ واضغط «تحديث من المستودع»';
+    })();
+    if(!Object.keys(IMAGES).length)(async()=>{try{
+      const r=await fetch(SHARED_URL,{cache:'no-store'});
+      if(!r.ok)return;
+      const data=await r.json();
+      if(!data||typeof data!=='object')return;
+      let added=0;
+      for(const id of Object.keys(data)){
+        const entry=data[id];if(!entry||!Array.isArray(entry.imgs))continue;
+        const valid=entry.imgs.filter(validImg);
+        if(!valid.length)continue;
+        if(!IMAGES[id]){IMAGES[id]={id,imgs:valid};added++;}
+        else{const have=new Set(IMAGES[id].imgs.map(g=>g.ts));valid.forEach(g=>{if(!have.has(g.ts))IMAGES[id].imgs.push(g);});}
+      }
+      if(added)toast('🌐 تم تحميل '+added+' مادة مصوَّرة من المستودع');
+    }catch(e){}})();
+  }catch(e){console.error(e);}
 })();
 </script>
 </body>
