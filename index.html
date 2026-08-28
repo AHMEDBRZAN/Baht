@@ -68,7 +68,7 @@ main{max-width:960px;margin:0 auto;padding:14px 12px 60px}
 .brand-line{width:130px;height:4px;border-radius:4px;background:linear-gradient(90deg,#f2662a 0 25%,#3faa4a 0 50%,#e2231f 0 75%,#2a8ed8 0 100%)}
 .brand-txt span{color:var(--mut);font-size:12px;font-weight:700}
 .overlay{position:fixed;inset:0;background:rgba(20,25,50,.45);backdrop-filter:blur(3px);z-index:50;display:flex;padding:calc(12px + env(safe-area-inset-top)) 12px 12px;overflow:auto;overscroll-behavior:contain}
-#groupModal,#searchModal{z-index:55}
+#groupModal,#searchModal,#imgsListModal{z-index:55}
 #viewModal{z-index:60}
 #imgsModal{z-index:65}
 #camModal{z-index:70}
@@ -160,6 +160,7 @@ textarea{width:calc(100% - 32px);margin:0 16px;border:2px solid #e3e7f5;border-r
       <button class="btn pri" id="btnRepo">🔄 تحديث من المستودع</button>
       <button class="btn ghost" id="btnUpload" data-admin>📂 رفع ملف (ونشره)</button>
       <button class="btn grn" id="btnSync" data-admin>☁️ مزامنة الصور</button>
+      <button class="btn ghost" id="btnImgsList" data-admin>🖼 مواد مرفقة بالصور</button>
       <button class="btn ghost" id="btnEditCode" data-admin>📝 تغيير الكود</button>
       <button class="btn dngr" id="btnLogout" data-admin>🚪 خروج المدير</button>
     </div>
@@ -191,6 +192,18 @@ textarea{width:calc(100% - 32px);margin:0 16px;border:2px solid #e3e7f5;border-r
 
   <p class="empty" id="emptyMsg">جارٍ تحميل المواد من المستودع…</p>
 </main>
+
+<!-- مواد مرفقة بالصور (مدير فقط) -->
+<div class="overlay" id="imgsListModal" hidden>
+  <div class="modal wide">
+    <div class="m-head"><h2>🖼 مواد مرفقة بالصور</h2><button class="x" data-close>✕</button></div>
+    <div class="g-tools">
+      <input type="text" class="gsearch" id="imgsListSearch" style="margin:0;width:auto;flex:1" placeholder="🔍 بحث في المواد المصوَّرة…">
+      <span class="chip" id="imgsListCount" style="background:#eef1f8;color:var(--pri2);border-radius:20px;padding:3px 12px;font-size:12px;font-weight:800"></span>
+    </div>
+    <div class="m-body"><div id="imgsListContent" style="padding:12px 16px 0"></div></div>
+  </div>
+</div>
 
 <!-- تغيير الكود -->
 <div class="overlay" id="codeModal" hidden>
@@ -498,6 +511,30 @@ function searchScore(q,r){const nq=q;let s=0;
     else for(const w of r.n.split(' '))if(w.length>=3&&lev(w,t)<=1){s+=18;break;}}
   return s;}
 
+/* ---------- مواد مرفقة بالصور (مدير) ---------- */
+function openImgsList(){
+  $('imgsListModal').hidden=false;
+  $('imgsListSearch').value='';
+  renderImgsList('');
+}
+$('btnImgsList').onclick=openImgsList;
+$('imgsListSearch').addEventListener('input',e=>renderImgsList(e.target.value.trim()));
+function renderImgsList(q){
+  const nq=norm(q);
+  let list=Object.keys(IMAGES).filter(id=>hasImg(id)&&ROWMAP[id])
+    .map(id=>Object.assign({},ROWMAP[id],{imgCount:IMAGES[id].imgs.length}));
+  if(nq)list=list.filter(r=>searchScore(nq,r)>0);
+  list.sort((a,b)=>(b.imgCount-a.imgCount)||a.n.localeCompare(b.n,'ar'));
+  $('imgsListCount').textContent=list.length+' مادة';
+  const el=$('imgsListContent');
+  if(!list.length){el.innerHTML='<p class="empty">لا توجد مواد مصوَّرة بعد.</p>';return;}
+  el.innerHTML='<table class="tbl"><thead><tr><th>ت</th><th>اسم المادة</th><th>🖼 الصور</th><th>الكمية</th><th>سعر المبيع</th></tr></thead><tbody>'
+    +list.map((r,i)=>`<tr tabindex="0" data-id="${r.id}" class="hi-img"><td>${i+1}</td><td>${esc(short(r.name))}</td><td>${r.imgCount}</td><td>${fm(r.qty)}</td><td>${fm(r.sell)}</td></tr>`).join('')
+    +'</tbody></table>';
+}
+$('imgsListContent').addEventListener('click',e=>{const it=e.target.closest('[data-id]');if(it)openView(it.dataset.id);});
+$('imgsListContent').addEventListener('keydown',e=>{if(e.key==='Enter'&&e.target.dataset&&e.target.dataset.id)openView(e.target.dataset.id);});
+
 /* ---------- تفاصيل المادة ---------- */
 function hasImg(id){return !!(IMAGES[id]&&IMAGES[id].imgs&&IMAGES[id].imgs.length);}
 function openView(id){const r=ROWMAP[id];if(!r)return;currentId=id;
@@ -544,7 +581,6 @@ $('fileAttachInput3').onchange=async e=>{const f=e.target.files[0];if(!f)return;
   r.onload=async()=>processAttach(await scaleDataUrl(r.result,900,.88),'main');r.readAsDataURL(f);};
 $('fileAttachInput').onchange=async e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();
   r.onload=async()=>processAttach(await scaleDataUrl(r.result,900,.88),'imgs');r.readAsDataURL(f);};
-/* ✔✔✔ ب: زر رفع الصور المرجعية (للمادة الحالية فقط) ✔✔✔ */
 $('btnPublish').onclick=()=>publishCurrentMaterial();
 $('btnPublish2').onclick=()=>publishCurrentMaterial();
 
@@ -719,7 +755,7 @@ function renderResults(url,res){
         </div>
         <span class="chip" style="background:#eef1f8;color:var(--pri2);border-radius:12px;padding:3px 12px;font-size:12px;font-weight:800">📁 ${esc(r?(r.group||NO_GROUP):'')}</span>
       </div>`;
-      if(pct>=80)setTimeout(()=>{toast('✔ تعرّف مباشر '+pct+'%');$('scanModal').hidden=true;openView(best.im.id);},300);
+      if(pct>=80)setTimeout(()=>{toast('✔ تعرّف مباشر '+pct+'%');$('scanModal').hidden=true;openView(best.im.id);},350);
     }
   }
   $('candList').innerHTML=res.slice(1,13).map(x=>{const r=ROWMAP[x.im.id];const p=Math.round(x.s*100);
@@ -773,8 +809,6 @@ async function putImagesJson(token,merged){
 }
 async function encodeSmall(g){const small=await scaleDataUrl(g.thumb,110,.55);
   return {thumb:small,emb:g.emb.map(v=>+v.toFixed(3)),hist:g.hist,ocr:g.ocr||'',ts:g.ts||Date.now()};}
-
-/* ✔✔✔ أ: مزامنة الصور = رفع جميع صور كل المواد + استبدال القديم ✔✔✔ */
 async function publishAllImages(){
   if(!isAdmin)return toast('المزامنة للمدير فقط 🔐','err');
   const ids=Object.keys(IMAGES).filter(id=>hasImg(id));
@@ -802,8 +836,6 @@ async function publishAllImages(){
   }catch(e){console.error(e);toast('فشل الرفع: '+e.message,'err');}
 }
 $('btnSync').onclick=()=>publishAllImages();
-
-/* ✔✔✔ ب: رفع الصور المرجعية للمادة الحالية فقط + رسالة بعدد الصور ✔✔✔ */
 async function publishCurrentMaterial(){
   if(!isAdmin)return toast('الرفع للمدير فقط 🔐','err');
   if(!currentId||!hasImg(currentId))return toast('لا توجد صور لهذه المادة','err');
@@ -892,7 +924,7 @@ $('btnPublishCode').onclick=async()=>{
 };
 
 /* ---------- إغلاق النوافذ ---------- */
-const MOD_ORDER=['confirmModal','codeModal','camModal','imgsModal','viewModal','scanModal','searchModal','groupModal'];
+const MOD_ORDER=['confirmModal','codeModal','camModal','imgsModal','viewModal','imgsListModal','scanModal','searchModal','groupModal'];
 function closeTop(){const id=MOD_ORDER.find(x=>{const el=$(x);return el&&!el.hidden;});if(!id)return;$(id).hidden=true;if(id==='camModal')stopCam();}
 document.querySelectorAll('[data-close]').forEach(b=>b.onclick=()=>{const o=b.closest('.overlay');if(o){o.hidden=true;if(o.id==='camModal')stopCam();}});
 document.querySelectorAll('.overlay').forEach(o=>o.addEventListener('click',e=>{
