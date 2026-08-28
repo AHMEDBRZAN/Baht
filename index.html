@@ -41,8 +41,10 @@ header{max-width:960px;margin:16px auto 0;padding:0 12px}
 .btn.ghost{background:#eef1f8;color:var(--txt)}
 .btn.amb{background:linear-gradient(135deg,#f2a541,#e8960c);color:#fff;box-shadow:0 6px 16px rgba(232,150,12,.35)}
 .btn.dngr{background:var(--dng);color:#fff}
-.btn.teal{background:linear-gradient(135deg,#14b8a6,#0d9488);color:#fff;box-shadow:0 6px 16px rgba(14,165,164,.35)}
-.btn.vio{background:linear-gradient(135deg,#8b5cf6,#6d28d9);color:#fff;box-shadow:0 6px 16px rgba(139,92,246,.35)}
+/* ✔✔✔ [1] ألوان مميزة للأزرار ✔✔✔ */
+.btn.code{background:linear-gradient(135deg,#a78bfa,#7c3aed);color:#fff;box-shadow:0 6px 14px rgba(124,58,237,.3)}
+.btn.imgs{background:linear-gradient(135deg,#38bdf8,#0284c7);color:#fff;box-shadow:0 6px 14px rgba(2,132,199,.3)}
+.btn.upload{background:linear-gradient(135deg,#fbbf24,#d97706);color:#fff;box-shadow:0 6px 14px rgba(217,119,6,.3)}
 .scanbig,.searchbig{width:100%;margin-top:14px;padding:16px;font-size:16px;border-radius:18px}
 .searchbig{margin:0;background:linear-gradient(135deg,#4f46e5,#2563eb);color:#fff;box-shadow:0 6px 16px rgba(79,70,229,.3)}
 .chev{border:none;background:#eef1f8;width:40px;height:40px;border-radius:14px;cursor:pointer;font-size:16px;font-weight:800;color:var(--pri2);transition:.25s;flex:0 0 auto}
@@ -76,32 +78,35 @@ main{max-width:960px;margin:0 auto;padding:14px 12px 60px}
 #camModal{z-index:70}
 #codeModal{z-index:72}
 #confirmModal{z-index:80}
-.modal{background:#fff;border-radius:22px;width:min(600px,96vw);max-height:calc(100vh - 24px);max-height:calc(var(--vv,100dvh) - 24px);display:flex;flex-direction:column;padding:0;overflow:hidden;animation:up .25s;margin:auto}
+.modal{background:#fff;border-radius:22px;width:min(600px,96vw);max-height:calc(100vh - 24px);max-height:calc(100dvh - 24px);display:flex;flex-direction:column;padding:0;overflow:hidden;animation:up .25s;margin:auto}
 .modal.wide{width:min(780px,96vw)}
 @keyframes up{from{transform:translateY(24px);opacity:0}}
-@keyframes shake{0%,100%{transform:translateX(0)}20%{transform:translateX(-10px)}40%{transform:translateX(10px)}60%{transform:translateX(-7px)}80%{transform:translateX(7px)}}
-.modal.shake{animation:shake .45s}
 .m-head{flex:0 0 auto;display:flex;justify-content:space-between;align-items:center;gap:10px;padding:14px 16px;background:#fff;border-bottom:1px solid #eef0f6}
 .m-head h2{margin:0;font-size:18px;font-weight:800}
 .x{border:none;background:#f1f3fa;width:38px;height:38px;border-radius:50%;cursor:pointer;font-size:15px;flex:0 0 auto}
 .m-body{overflow:auto;padding:0 0 16px;flex:1;overscroll-behavior:contain;will-change:transform}
 .m-body.spring{transition:transform .4s cubic-bezier(.22,.9,.32,1.15)}
-.modal input[type=text],.modal input[type=password]{width:calc(100% - 32px);margin:0 16px;border:2px solid #e3e7f5;border-radius:12px;padding:11px 12px;font-family:inherit;font-size:14px;outline:none;background:#fff;color:var(--txt)}
+.modal input[type=text],.modal input[type=password]{width:calc(100% - 32px);margin:0 16px;border:2px solid #e3e7f5;border-radius:12px;padding:11px 12px;font-family:inherit;font-size:14px;outline:none;background:#fff}
 textarea.code{width:calc(100% - 32px);margin:0 16px;font-family:'Courier New',monospace;font-size:11px;min-height:320px;direction:ltr;text-align:left;white-space:pre;border:2px solid #e3e7f5;border-radius:12px;padding:10px;outline:none;background:#0f1220;color:#d7e0ff}
-.math-eq{direction:ltr;font-size:38px;font-weight:800;text-align:center;margin:18px 0 14px;color:var(--pri2);letter-spacing:3px;font-family:Arial,Helvetica,sans-serif}
-#mathAns{text-align:center;font-size:24px;font-weight:800;letter-spacing:2px}
 .g-tools{position:sticky;top:0;z-index:5;display:flex;gap:10px;flex-wrap:wrap;padding:12px 16px;background:#fff;border-bottom:1px solid #eef0f6}
-.gsearch{flex:1;min-width:180px;border:2px solid #e3e7f5;border-radius:12px;padding:10px 14px;font-family:inherit;font-size:13px;outline:none;background:#fff;color:var(--txt)}
+.gsearch{flex:1;min-width:180px;border:2px solid #e3e7f5;border-radius:12px;padding:10px 14px;font-family:inherit;font-size:13px;outline:none;background:#fff}
 .gsearch:focus{border-color:var(--pri)}
 .vtoggle{display:flex;background:#eef1f8;border-radius:12px;padding:3px}
 .vtoggle button{border:none;background:none;border-radius:10px;padding:8px 14px;font-size:12px;font-weight:800;cursor:pointer;color:var(--mut)}
 .vtoggle button.on{background:var(--pri);color:#fff}
 .tbl{width:100%;border-collapse:collapse;font-size:13px}
 .tbl th{background:#f6f8fc;padding:9px 8px;text-align:center;font-size:12px;color:var(--mut)}
-.tbl td{padding:9px 8px;border-top:1px solid #eef0f6;text-align:center;color:var(--txt)}
-.tbl tr{cursor:pointer}
+.tbl td{padding:9px 8px;border-top:1px solid #eef0f6;text-align:center;color:var(--txt);font-weight:600}
+.tbl tr{cursor:pointer;background:#fff}
 .tbl tr:hover,.tbl tr.hl{background:#eef2ff}
 .tbl tr.hi-img{background:#e9f9f0}
+/* ✔✔✔ [4] إصلاح ظهور محتوى نافذة المواد المرفقة بالصور ✔✔✔ */
+#imgsListContent{color:var(--txt)}
+#imgsListContent .tbl{background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 2px 8px rgba(40,50,90,.05)}
+#imgsListContent .tbl td{color:#1e2430}
+#imgsListContent .tbl tr{background:#fff;transition:background .15s}
+#imgsListContent .tbl tr.hi-img{background:#e9f9f0}
+#imgsListContent .tbl tr:hover{background:#eef2ff}
 .imgdot{font-size:11px}
 .tiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
 .tile{border:1px solid #e8ebf7;background:#fbfcff;border-radius:16px;padding:12px;cursor:pointer;text-align:right;display:flex;flex-direction:column;gap:8px;transition:.15s}
@@ -153,6 +158,13 @@ textarea{width:calc(100% - 32px);margin:0 16px;border:2px solid #e3e7f5;border-r
 .hint{font-size:12.5px;color:#4a5468;margin:4px 16px 10px;font-weight:600;line-height:1.9}
 #toast{position:fixed;bottom:calc(18px + env(safe-area-inset-bottom));right:50%;transform:translateX(50%);background:#22333b;color:#fff;border-radius:12px;padding:11px 20px;font-size:13px;z-index:99;max-width:90vw;text-align:center}
 #toast.err{background:var(--dng)}
+/* ✔✔✔ [3] تصميم نافذة الدخول الرياضية ✔✔✔ */
+.math-login{text-align:center;padding:20px 16px}
+.math-eq{font-size:32px;font-weight:800;color:var(--txt);margin:20px 0 12px;direction:ltr;display:flex;align-items:center;justify-content:center;gap:12px;font-family:'Courier New',monospace}
+.math-input{width:110px;font-size:28px;font-weight:800;text-align:center;border:3px solid var(--pri);border-radius:14px;padding:10px 8px;background:#f6f8fc;color:var(--pri2);outline:none;transition:.2s;font-family:'Courier New',monospace}
+.math-input:focus{border-color:var(--grn);background:#fff;box-shadow:0 0 0 4px rgba(47,158,110,.15)}
+.math-hint{color:var(--mut);font-size:12.5px;margin-top:14px;font-weight:700}
+.math-icon{font-size:42px;margin:8px 0}
 </style>
 </head>
 <body>
@@ -164,10 +176,10 @@ textarea{width:calc(100% - 32px);margin:0 16px;border:2px solid #e3e7f5;border-r
     </div>
     <div class="hbtns" id="toolsBox" hidden>
       <button class="btn pri" id="btnRepo">🔄 تحديث من المستودع</button>
-      <button class="btn amb" id="btnUpload" data-admin>📂 رفع ملف (ونشره)</button>
+      <button class="btn upload" id="btnUpload" data-admin>📂 رفع ملف (ونشره)</button>
       <button class="btn grn" id="btnSync" data-admin>☁️ مزامنة الصور</button>
-      <button class="btn teal" id="btnImgsList" data-admin>🖼 مواد مرفقة بالصور</button>
-      <button class="btn vio" id="btnEditCode" data-admin>📝 تغيير الكود</button>
+      <button class="btn imgs" id="btnImgsList" data-admin>🖼 مواد مرفقة بالصور</button>
+      <button class="btn code" id="btnEditCode" data-admin>📝 تغيير الكود</button>
       <button class="btn dngr" id="btnLogout" data-admin>🚪 خروج المدير</button>
     </div>
     <button class="btn amb scanbig" id="btnScan">📷 التعرف على المادة</button>
@@ -367,7 +379,7 @@ const REPO_URLS=['https://raw.githubusercontent.com/'+REPO+'/main/'+encodeURICom
 const SHARED_URL='https://raw.githubusercontent.com/'+REPO+'/main/data/images.json';
 
 let ROWS=[],ROWMAP={},GROUPS=[],IMAGES={},EXTRAS={},VIEWS={},FILES=[];
-let currentId=null,currentGroup=null,model=null,tfOk=false,camStream=null,camMode=null,lastScanUrl=null,lastRes=[],gSearchT=null,sSearchT=null,ilSearchT=null;
+let currentId=null,currentGroup=null,model=null,tfOk=false,camStream=null,camMode=null,lastScanUrl=null,lastRes=[],gSearchT=null,sSearchT=null;
 let isAdmin=sessionStorage.getItem('isAdmin')==='1';
 
 /* ---------- أدوات ---------- */
@@ -385,15 +397,6 @@ function textSim(a,b){const A=norm(a).split(' ').filter(w=>w.length>=3),B=norm(b
 const CHUNK=0x8000;
 function b64encode(str){const bytes=new TextEncoder().encode(str);let bin='';for(let i=0;i<bytes.length;i+=CHUNK){bin+=String.fromCharCode.apply(null,bytes.subarray(i,i+CHUNK));}return btoa(bin);}
 function bufToB64(buf){const bytes=new Uint8Array(buf);let bin='';for(let i=0;i<bytes.length;i+=CHUNK){bin+=String.fromCharCode.apply(null,bytes.subarray(i,i+CHUNK));}return btoa(bin);}
-
-/* ---------- ✔✔✔ [4] ملاءمة ارتفاع النوافذ مع الكيبورد (يبقى المحتوى مرئياً أثناء الكتابة) ---------- */
-(function(){
-  const set=()=>{const h=(window.visualViewport?window.visualViewport.height:window.innerHeight);
-    document.documentElement.style.setProperty('--vv',h+'px');};
-  set();
-  if(window.visualViewport){window.visualViewport.addEventListener('resize',set);window.visualViewport.addEventListener('scroll',set);}
-  window.addEventListener('resize',set);
-})();
 
 /* ---------- قاعدة البيانات ---------- */
 let dbP=null;
@@ -531,10 +534,10 @@ function openImgsList(){
   $('imgsListModal').hidden=false;
   $('imgsListSearch').value='';
   renderImgsList('');
+  setTimeout(()=>$('imgsListSearch').focus(),150);
 }
 $('btnImgsList').onclick=openImgsList;
-/* ✔✔✔ [4] بحث مع تأخير قصير + إعادة رسم موثوقة */
-$('imgsListSearch').addEventListener('input',e=>{clearTimeout(ilSearchT);ilSearchT=setTimeout(()=>renderImgsList(e.target.value.trim()),120);});
+$('imgsListSearch').addEventListener('input',e=>renderImgsList(e.target.value.trim()));
 function renderImgsList(q){
   const nq=norm(q);
   let list=Object.keys(IMAGES).filter(id=>hasImg(id)&&ROWMAP[id])
@@ -543,9 +546,9 @@ function renderImgsList(q){
   list.sort((a,b)=>(b.imgCount-a.imgCount)||a.n.localeCompare(b.n,'ar'));
   $('imgsListCount').textContent=list.length+' مادة';
   const el=$('imgsListContent');
-  if(!list.length){el.innerHTML='<p class="empty">'+(nq?'لا توجد نتائج مطابقة.':'لا توجد مواد مصوَّرة بعد.')+'</p>';return;}
+  if(!list.length){el.innerHTML='<p class="empty">'+(q?'لا توجد نتائج مطابقة للبحث':'لا توجد مواد مصوَّرة بعد.')+'</p>';return;}
   el.innerHTML='<table class="tbl"><thead><tr><th>ت</th><th>اسم المادة</th><th>🖼 الصور</th><th>الكمية</th><th>سعر المبيع</th></tr></thead><tbody>'
-    +list.map((r,i)=>`<tr tabindex="0" data-id="${r.id}" class="hi-img"><td>${i+1}</td><td>${esc(short(r.name))}</td><td>${r.imgCount}</td><td>${fm(r.qty)}</td><td>${fm(r.sell)}</td></tr>`).join('')
+    +list.map((r,i)=>`<tr tabindex="0" data-id="${r.id}" class="hi-img"><td>${i+1}</td><td style="text-align:right;padding-right:12px">${esc(short(r.name))}</td><td>${r.imgCount}</td><td>${fm(r.qty)}</td><td>${fm(r.sell)}</td></tr>`).join('')
     +'</tbody></table>';
 }
 $('imgsListContent').addEventListener('click',e=>{const it=e.target.closest('[data-id]');if(it)openView(it.dataset.id);});
@@ -584,19 +587,48 @@ function renderImgs(){const im=IMAGES[currentId];
   updateImgsBtn();
   if(currentGroup)renderGroupContent();
 }
-/* ✔✔✔ [2] حذف الصورة محلياً + من المستودع مع رسالة */
-$('imgsGrid').addEventListener('click',async e=>{const d=e.target.closest('[data-delimg]');if(!d||!isAdmin)return;
-  const im=IMAGES[currentId];const idx=+d.dataset.delimg;
-  const ts=im.imgs[idx]?im.imgs[idx].ts:null;
+/* ✔✔✔ [2] حذف الصورة من الجهاز + المستودع مع رسالة ✔✔✔ */
+$('imgsGrid').addEventListener('click',async e=>{
+  const d=e.target.closest('[data-delimg]');
+  if(!d||!isAdmin)return;
+  const idx=+d.dataset.delimg;
+  const im=IMAGES[currentId];
+  const ok=await askConfirm('هل تريد حذف هذه الصورة من الجهاز ومن المستودع؟');
+  if(!ok)return;
+  
+  // حذف محلي
   im.imgs.splice(idx,1);
   if(!im.imgs.length){delete IMAGES[currentId];await dbDel('images',currentId);}
   else await dbPut('images',currentId,im);
   renderImgs();
-  if(ts!=null){
-    const ok=await deleteFromRepo(currentId,ts);
-    toast(ok?'حُذفت الصورة 🗑 وتم حذفها من المستودع أيضاً ✔':'حُذفت الصورة محلياً 🗑 — تعذر الحذف من المستودع');
-  }else toast('حُذفت الصورة 🗑');
+  toast('حُذفت محلياً 🗑 — جارٍ الحذف من المستودع…');
+  
+  // حذف من المستودع
+  await deleteImgFromServer(currentId,idx);
 });
+
+async function deleteImgFromServer(id,deletedLocalIdx){
+  const token=await ensureToken();
+  if(!token){toast('أدخل التوكن لحذف الصورة من المستودع','err');return;}
+  try{
+    const merged=await getServerImages(token);
+    if(!merged[id]||!Array.isArray(merged[id].imgs)){
+      toast('✔ تم الحذف محلياً — الصورة غير موجودة في المستودع');
+      return;
+    }
+    // نحاول مطابقة الصورة المحذوفة بالـ ts أو thumb
+    const localNow=IMAGES[id]?IMAGES[id].imgs:[];
+    const localTsSet=new Set(localNow.map(g=>g.ts));
+    merged[id].imgs=merged[id].imgs.filter(sg=>localTsSet.has(sg.ts));
+    if(!merged[id].imgs.length)delete merged[id];
+    await putImagesJson(token,merged);
+    toast('✔ تم حذف الصورة من المستودع أيضاً');
+  }catch(e){
+    console.error(e);
+    toast('حُذفت محلياً لكن فشل الحذف من المستودع: '+e.message,'err');
+  }
+}
+
 $('camAttach2').onclick=()=>openCamModal('attach');
 $('camAttach3').onclick=()=>openCamModal('attach');
 $('fileAttach2').onclick=()=>$('fileAttachInput3').click();
@@ -833,22 +865,6 @@ async function putImagesJson(token,merged){
 }
 async function encodeSmall(g){const small=await scaleDataUrl(g.thumb,110,.55);
   return {thumb:small,emb:g.emb.map(v=>+v.toFixed(3)),hist:g.hist,ocr:g.ocr||'',ts:g.ts||Date.now()};}
-/* ✔✔✔ [2] حذف صورة معينة من المستودع */
-async function deleteFromRepo(id,ts){
-  try{
-    const token=await ensureToken();
-    if(!token)return false;
-    const merged=await getServerImages(token);
-    const entry=merged[id];
-    if(!entry||!Array.isArray(entry.imgs))return false;
-    const before=entry.imgs.length;
-    const after=entry.imgs.filter(g=>g.ts!==ts);
-    if(after.length===before)return false;
-    if(after.length)merged[id]={imgs:after};else delete merged[id];
-    await putImagesJson(token,merged);
-    return true;
-  }catch(e){console.error(e);return false;}
-}
 async function publishAllImages(){
   if(!isAdmin)return toast('المزامنة للمدير فقط 🔐','err');
   const ids=Object.keys(IMAGES).filter(id=>hasImg(id));
@@ -979,7 +995,7 @@ document.addEventListener('keydown',e=>{
   }
 });
 
-/* ---------- المدير: ضغط مستمر + نافذة المعادلة ---------- */
+/* ✔✔✔ [3] المدير — نافذة دخول رياضية تفاعلية ✔✔✔ */
 function applyAdminUI(){document.querySelectorAll('[data-admin]').forEach(el=>el.hidden=!isAdmin);}
 (function(){
   const el=$('adminLoginTap');let t=null;
@@ -988,36 +1004,74 @@ function applyAdminUI(){document.querySelectorAll('[data-admin]').forEach(el=>el
   el.addEventListener('click',e=>e.stopPropagation());
   el.addEventListener('contextmenu',e=>e.preventDefault());
 })();
-/* ✔✔✔ [3] نافذة دخول المدير = معادلة ثابتة تفاعلية، الرمز 97 */
 function openLogin(){
   let lm=$('loginModalDyn');
   if(!lm){
     lm=document.createElement('div');lm.id='loginModalDyn';lm.className='overlay';lm.style.zIndex=85;
-    lm.innerHTML='<div class="modal" style="width:min(380px,94vw)"><div class="m-head"><h2>🧮 بوابة المدير</h2><button class="x" data-close>✕</button></div><div class="m-body"><div class="math-eq">5 − 5 =</div><input type="text" inputmode="numeric" pattern="[0-9]*" enterkeyhint="done" id="mathAns" autocomplete="off" placeholder="؟"><p class="hint" style="text-align:center;margin-top:12px">أدخل الناتج الصحيح للدخول…</p></div></div>';
+    lm.innerHTML=`
+      <div class="modal" style="width:min(380px,94vw)">
+        <div class="m-head"><h2>🔐 دخول المدير</h2><button class="x" data-close>✕</button></div>
+        <div class="m-body">
+          <div class="math-login">
+            <div class="math-icon">🧮</div>
+            <div class="math-eq">
+              <span>5</span>
+              <span>−</span>
+              <span>5</span>
+              <span>=</span>
+              <input type="text" inputmode="numeric" pattern="[0-9]*" class="math-input" id="loginMath" maxlength="6" autocomplete="off">
+            </div>
+            <p class="math-hint">أدخل الناتج الصحيح للدخول</p>
+          </div>
+          <div class="row"><button class="btn pri" id="loginBtn">تسجيل الدخول</button></div>
+        </div>
+      </div>`;
     document.body.appendChild(lm);
     lm.querySelector('[data-close]').onclick=()=>lm.hidden=true;
     lm.addEventListener('click',e=>{if(e.target===lm)lm.hidden=true;});
-    const inp=lm.querySelector('#mathAns');
-    inp.addEventListener('input',()=>{
-      let v=inp.value.replace(/[٠-٩]/g,d=>String('٠١٢٣٤٥٦٧٨٩'.indexOf(d))).replace(/\D/g,'');
-      if(v!==inp.value)inp.value=v;
-      if(v&&parseInt(v,10)===97){inp.value='';lm.hidden=true;enterAdmin();}
+    lm.querySelector('#loginBtn').onclick=doLogin;
+    const inp=lm.querySelector('#loginMath');
+    // فلترة الأرقام فقط
+    inp.addEventListener('input',e=>{
+      e.target.value=e.target.value.replace(/[^0-9]/g,'');
     });
     inp.addEventListener('keydown',e=>{
-      if(e.key!=='Enter')return;
-      const v=inp.value.replace(/[٠-٩]/g,d=>String('٠١٢٣٤٥٦٧٨٩'.indexOf(d))).replace(/\D/g,'');
-      if(v&&parseInt(v,10)===97){inp.value='';lm.hidden=true;enterAdmin();}
-      else{const md=lm.querySelector('.modal');md.classList.add('shake');setTimeout(()=>md.classList.remove('shake'),450);toast('إجابة غير صحيحة ✖','err');}
+      if(e.key==='Enter'){e.preventDefault();doLogin();}
     });
   }
-  lm.hidden=false;setTimeout(()=>lm.querySelector('#mathAns').focus(),150);
+  lm.hidden=false;
+  setTimeout(()=>{
+    const inp=lm.querySelector('#loginMath');
+    if(inp){inp.value='';inp.focus();}
+  },150);
 }
-function enterAdmin(){
-  isAdmin=true;sessionStorage.setItem('isAdmin','1');
-  applyAdminUI();
-  if(navigator.vibrate)navigator.vibrate(60);
-  toast('✔ تم تفعيل وضع المدير — أهلاً بك');
+function doLogin(){
+  const inp=$('loginMath');
+  if(!inp)return;
+  const val=inp.value.trim();
+  if(val==='97'){
+    isAdmin=true;sessionStorage.setItem('isAdmin','1');
+    $('loginModalDyn').hidden=true;
+    applyAdminUI();
+    toast('✔ تم تفعيل وضع المدير — أهلاً بك');
+  }else{
+    toast('❌ الناتج غير صحيح','err');
+    inp.value='';
+    inp.focus();
+    // هزة خفيفة عند الخطأ
+    const eq=inp.closest('.math-eq');
+    if(eq){
+      eq.style.animation='shake .4s';
+      setTimeout(()=>eq.style.animation='',400);
+    }
+  }
 }
+// أنيميشن الاهتزاز
+(function(){
+  const s=document.createElement('style');
+  s.textContent='@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-8px)}75%{transform:translateX(8px)}}';
+  document.head.appendChild(s);
+})();
 $('btnLogout').onclick=()=>{isAdmin=false;sessionStorage.removeItem('isAdmin');applyAdminUI();toast('تم الخروج من وضع المدير 🚪');};
 function toggleTools(){const willShow=$('toolsBox').hidden;$('toolsBox').hidden=!willShow;$('toolsChev').classList.toggle('open',willShow);}
 $('toolsChev').onclick=toggleTools;
