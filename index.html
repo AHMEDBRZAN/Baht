@@ -251,7 +251,7 @@ textarea{width:calc(100% - 32px);margin:0 16px;border:2px solid #e3e7f5;border-r
           <button class="btn amb" id="camAttach2">📷 فتح الكاميرا</button>
           <button class="btn ghost" id="fileAttach2">🖼 رفع صورة</button>
         </div>
-        <div class="row" data-admin><button class="btn grn" id="btnPublish">☁️ مزامنة الصور للمستودع</button></div>
+        <div class="row" data-admin><button class="btn grn" id="btnPublish">📤 رفع الصور المرجعية</button></div>
         <p class="hint" data-admin>المدير هو المسؤول عن التعديلات والرفع — المستخدمون يجلبون النتائج تلقائياً.</p>
         <input type="file" id="fileAttachInput3" accept="image/*" hidden>
         <div id="procProg" hidden><div class="bar"><i id="procBar"></i></div><p class="prog-txt" id="procTxt"></p></div>
@@ -271,7 +271,7 @@ textarea{width:calc(100% - 32px);margin:0 16px;border:2px solid #e3e7f5;border-r
           <button class="btn amb" id="camAttach3">📷 فتح الكاميرا</button>
           <button class="btn ghost" id="fileAttach3">🖼 رفع صورة</button>
         </div>
-        <div class="row" data-admin style="padding:0"><button class="btn grn" id="btnPublish2">☁️ مزامنة الصور للمستودع</button></div>
+        <div class="row" data-admin style="padding:0"><button class="btn grn" id="btnPublish2">📤 رفع الصور المرجعية</button></div>
         <input type="file" id="fileAttachInput" accept="image/*" hidden>
         <div id="procProg3" hidden><div class="bar"><i id="procBar3"></i></div><p class="prog-txt" id="procTxt3"></p></div>
       </div>
@@ -418,7 +418,6 @@ async function fetchRepoFile(){
   }catch(e){}
   return null;
 }
-/* رفع ملف الإكسل إلى المستودع (يستبدل الملف الموجود بنفس الاسم) */
 async function pushXlsxToRepo(buf){
   const token=await ensureToken();
   if(!token)throw new Error('أدخل التوكن أولاً');
@@ -430,8 +429,6 @@ async function pushXlsxToRepo(buf){
     body:JSON.stringify({message:'update materials from app',content:bufToB64(buf),...(sha?{sha}:{})})});
   if(!put.ok){const er=await put.json().catch(()=>null);throw new Error((er&&er.message)||('HTTP '+put.status));}
 }
-
-/* ✔✔✔ [1] دالة جلب الصور المرجعية من المستودع — يُعاد استخدامها في btnRepo وعند البدء ✔✔✔ */
 async function fetchSharedImages(){
   let added=0,total=0;
   try{
@@ -520,14 +517,11 @@ function openView(id){const r=ROWMAP[id];if(!r)return;currentId=id;
 }
 function updateImgsBtn(){const n=hasImg(currentId)?IMAGES[currentId].imgs.length:0;
   $('btnImgs').textContent='🖼 الصور المرجعية ('+n+')';}
-
-/* ✔✔✔ [3] إصلاح زر الصور المرجعية — كان ناقصاً ✔✔✔ */
 $('btnImgs').onclick=()=>{
   $('imgsTitle').textContent='🖼 الصور المرجعية — '+(ROWMAP[currentId]?ROWMAP[currentId].name:'');
   $('imgsModal').hidden=false;
   renderImgs();
 };
-
 $('btnMaint').onclick=()=>{$('maintSec').hidden=!$('maintSec').hidden;};
 $('saveNote').onclick=async()=>{const n=$('noteInput').value.trim();EXTRAS[currentId]={id:currentId,note:n};
   await dbPut('extras',currentId,EXTRAS[currentId]);toast('تم حفظ التفاصيل ✔');openView(currentId);$('maintSec').hidden=false;};
@@ -550,8 +544,9 @@ $('fileAttachInput3').onchange=async e=>{const f=e.target.files[0];if(!f)return;
   r.onload=async()=>processAttach(await scaleDataUrl(r.result,900,.88),'main');r.readAsDataURL(f);};
 $('fileAttachInput').onchange=async e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();
   r.onload=async()=>processAttach(await scaleDataUrl(r.result,900,.88),'imgs');r.readAsDataURL(f);};
-$('btnPublish').onclick=()=>publishImages(false);
-$('btnPublish2').onclick=()=>publishImages(false);
+/* ✔✔✔ ب: زر رفع الصور المرجعية (للمادة الحالية فقط) ✔✔✔ */
+$('btnPublish').onclick=()=>publishCurrentMaterial();
+$('btnPublish2').onclick=()=>publishCurrentMaterial();
 
 /* ---------- المحركات ---------- */
 async function tfReady(){if(tfOk)return;try{await tf.setBackend('webgl');}catch(e){try{await tf.setBackend('cpu');}catch(e2){}}await tf.ready();tfOk=true;}
@@ -586,7 +581,7 @@ async function processAttach(url,which){
     setProc(which,'✔ تمت المعالجة والإضافة',100);
     setTimeout(()=>{$('procProg').hidden=true;$('procProg3').hidden=true;},1200);
     renderImgs();
-    toast('تمت معالجة الصورة ✔ — اضغط ☁️ مزامنة لنشرها');
+    toast('تمت معالجة الصورة ✔ — اضغط 📤 رفع الصور المرجعية لنشرها');
   }catch(e){console.error(e);$('procProg').hidden=true;$('procProg3').hidden=true;toast('خطأ بالمعالجة: '+e.message,'err');}
 }
 
@@ -748,7 +743,7 @@ async function attachTo(id){
     IMAGES[id].imgs.push(g);
     await dbPut('images',id,IMAGES[id]);
     $('scanModal').hidden=true;
-    toast('✔ أُضيفت الصورة كمرجع إضافي — اضغط ☁️ مزامنة لنشرها');
+    toast('✔ أُضيفت الصورة كمرجع إضافي — اضغط 📤 رفع الصور المرجعية لنشرها');
   }catch(e){console.error(e);toast('خطأ: '+e.message,'err');$('scanStart').hidden=false;}
   $('scanProg').hidden=true;
 }
@@ -762,44 +757,76 @@ async function ensureToken(){
   localStorage.setItem('ghToken',t);
   return t;
 }
-async function publishImages(silent){
-  if(!isAdmin)return toast('المزامنة للمدير فقط 🔐','err');
-  const ids=Object.keys(IMAGES).filter(id=>hasImg(id));
-  if(!ids.length){if(!silent)toast('لا توجد صور محلية للنشر','err');return;}
-  const token=await ensureToken();
-  if(!token){if(!silent)toast('أُلغي النشر — أدخل التوكن للمحاولة','err');return;}
-  if(!silent)toast('جارٍ تجهيز الصور للنشر…');
-  let added=0,skipped=0;
+async function getServerImages(token){
   let merged={};
   try{const r=await fetch(SHARED_URL,{cache:'no-store'});if(r.ok){const d=await r.json();if(d&&typeof d==='object')merged=d;}}catch(e){}
+  return merged;
+}
+async function putImagesJson(token,merged){
+  const api='https://api.github.com/repos/'+REPO+'/contents/data/images.json';
+  let sha;
+  const g=await fetch(api,{headers:{Authorization:'token '+token,Accept:'application/vnd.github+json'}});
+  if(g.ok){const gj=await g.json();sha=gj.sha;}
+  const put=await fetch(api,{method:'PUT',headers:{Authorization:'token '+token,Accept:'application/vnd.github+json','Content-Type':'application/json'},
+    body:JSON.stringify({message:'sync images',content:b64encode(JSON.stringify(merged)),...(sha?{sha}:{})})});
+  if(!put.ok){const er=await put.json().catch(()=>null);throw new Error((er&&er.message)||('HTTP '+put.status));}
+}
+async function encodeSmall(g){const small=await scaleDataUrl(g.thumb,110,.55);
+  return {thumb:small,emb:g.emb.map(v=>+v.toFixed(3)),hist:g.hist,ocr:g.ocr||'',ts:g.ts||Date.now()};}
+
+/* ✔✔✔ أ: مزامنة الصور = رفع جميع صور كل المواد + استبدال القديم ✔✔✔ */
+async function publishAllImages(){
+  if(!isAdmin)return toast('المزامنة للمدير فقط 🔐','err');
+  const ids=Object.keys(IMAGES).filter(id=>hasImg(id));
+  if(!ids.length)return toast('لا توجد صور محلية للنشر','err');
+  const token=await ensureToken();
+  if(!token)return toast('أُلغي النشر — أدخل التوكن للمحاولة','err');
+  toast('جارٍ تجهيز جميع الصور للنشر…');
+  const merged=await getServerImages(token);
+  let newMats=0,repMats=0,newImgs=0;
   for(const id of ids){
     const local=IMAGES[id].imgs;
     const have=(merged[id]&&Array.isArray(merged[id].imgs))?merged[id].imgs:[];
     const haveTs=new Set(have.map(g=>g.ts));
     const newOnes=local.filter(g=>!haveTs.has(g.ts));
-    if(!newOnes.length){skipped++;continue;}
+    newImgs+=newOnes.length;
+    if(have.length)repMats++;else newMats++;
+    const keep=have.filter(hg=>local.some(l=>l.ts===hg.ts));
     const smallOnes=[];
-    for(const g of newOnes){const small=await scaleDataUrl(g.thumb,110,.55);
-      smallOnes.push({thumb:small,emb:g.emb.map(v=>+v.toFixed(3)),hist:g.hist,ocr:g.ocr||'',ts:g.ts||Date.now()});}
-    merged[id]={imgs:have.concat(smallOnes)};
-    added+=smallOnes.length;
+    for(const g of newOnes){smallOnes.push(await encodeSmall(g));}
+    merged[id]={imgs:keep.concat(smallOnes)};
   }
-  if(!added){if(!silent)toast('✔ لا جديد — جميع الصور موجودة مسبقاً ('+skipped+' مادة)');return;}
-  const json=JSON.stringify(merged);
-  if(json.length>950000){if(!silent)toast('حجم البيانات كبير ('+Math.round(json.length/1024)+'KB) — قلّل الصور','err');return;}
   try{
-    const api='https://api.github.com/repos/'+REPO+'/contents/data/images.json';
-    let sha;
-    const g=await fetch(api,{headers:{Authorization:'token '+token,Accept:'application/vnd.github+json'}});
-    if(g.ok){const gj=await g.json();sha=gj.sha;}
-    const put=await fetch(api,{method:'PUT',headers:{Authorization:'token '+token,Accept:'application/vnd.github+json','Content-Type':'application/json'},
-      body:JSON.stringify({message:'sync images (merge new)',content:b64encode(json),...(sha?{sha}:{})})});
-    if(!put.ok){const er=await put.json().catch(()=>null);throw new Error((er&&er.message)||('HTTP '+put.status));}
-    if(!silent)toast('✔ تمت المزامنة: رُفعت '+added+' صورة جديدة وتُجاهلت '+skipped+' مادة موجودة');
-  }catch(e){console.error(e);if(!silent)toast('فشل الرفع: '+e.message,'err');}
+    await putImagesJson(token,merged);
+    toast('✔ تم رفع '+ids.length+' مادة (جديدة +'+newMats+') واستبدال '+repMats+' • '+newImgs+' صورة جديدة');
+  }catch(e){console.error(e);toast('فشل الرفع: '+e.message,'err');}
+}
+$('btnSync').onclick=()=>publishAllImages();
+
+/* ✔✔✔ ب: رفع الصور المرجعية للمادة الحالية فقط + رسالة بعدد الصور ✔✔✔ */
+async function publishCurrentMaterial(){
+  if(!isAdmin)return toast('الرفع للمدير فقط 🔐','err');
+  if(!currentId||!hasImg(currentId))return toast('لا توجد صور لهذه المادة','err');
+  const token=await ensureToken();
+  if(!token)return toast('أُلغي الرفع — أدخل التوكن للمحاولة','err');
+  toast('جارٍ رفع صور المادة…');
+  const merged=await getServerImages(token);
+  const local=IMAGES[currentId].imgs;
+  const have=(merged[currentId]&&Array.isArray(merged[currentId].imgs))?merged[currentId].imgs:[];
+  const haveTs=new Set(have.map(g=>g.ts));
+  const newOnes=local.filter(g=>!haveTs.has(g.ts));
+  const keep=have.filter(hg=>local.some(l=>l.ts===hg.ts));
+  const smallOnes=[];
+  for(const g of newOnes){smallOnes.push(await encodeSmall(g));}
+  merged[currentId]={imgs:keep.concat(smallOnes)};
+  try{
+    await putImagesJson(token,merged);
+    const name=ROWMAP[currentId]?ROWMAP[currentId].name:'مادة';
+    toast('✔ تم رفع صور مادة «'+name+'» — '+local.length+' صورة');
+  }catch(e){console.error(e);toast('فشل الرفع: '+e.message,'err');}
 }
 
-/* ---------- رفع ملف الإكسل (تحميل محلي + نشر واستبدال بالمستودع) ---------- */
+/* ---------- رفع ملف الإكسل ---------- */
 $('btnUpload').onclick=()=>$('filePick').click();
 $('filePick').onchange=async e=>{
   const f=e.target.files[0];if(!f)return;
@@ -819,7 +846,7 @@ $('filePick').onchange=async e=>{
   }
 };
 
-/* ✔✔✔ [1+2] زر تحديث من المستودع: يجلب المواد + الصور مع إشعار يعرض الأعداد ✔✔✔ */
+/* ---------- تحديث من المستودع ---------- */
 $('btnRepo').onclick=async()=>{
   toast('جارٍ الجلب من المستودع…');
   let rowsCount=0,okRows=false;
@@ -831,7 +858,7 @@ $('btnRepo').onclick=async()=>{
   else toast('تعذر الجلب — حاول لاحقاً','err');
 };
 
-/* ---------- تغيير الكود (مدير فقط) ---------- */
+/* ---------- تغيير الكود ---------- */
 $('btnEditCode').onclick=()=>{$('codeModal').hidden=false;$('codeInput').value='';};
 $('btnFetchCode').onclick=async()=>{
   toast('جارٍ جلب الكود الحالي…');
@@ -880,7 +907,7 @@ document.addEventListener('keydown',e=>{
   }
 });
 
-/* ---------- المدير: ضغط مستمر على اسم المبرمج ---------- */
+/* ---------- المدير ---------- */
 function applyAdminUI(){document.querySelectorAll('[data-admin]').forEach(el=>el.hidden=!isAdmin);}
 (function(){
   const el=$('adminLoginTap');let t=null;
