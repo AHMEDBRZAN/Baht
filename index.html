@@ -74,7 +74,6 @@ main{max-width:960px;margin:0 auto;padding:14px 12px 60px}
 #groupModal,#searchModal,#imgsListModal{z-index:55}
 #viewModal{z-index:60}
 #imgsModal{z-index:65}
-#camModal{z-index:70}
 #codeModal{z-index:72}
 #confirmModal{z-index:80}
 .modal{background:#fff;border-radius:22px;width:min(600px,96vw);max-height:calc(100vh - 24px);max-height:calc(100dvh - 24px);display:flex;flex-direction:column;padding:0;overflow:hidden;animation:up .25s;margin:auto}
@@ -138,7 +137,6 @@ textarea.code{width:calc(100% - 32px);margin:0 16px;font-family:'Courier New',mo
 label{display:block;font-size:13px;font-weight:800;margin:12px 16px 6px}
 textarea{width:calc(100% - 32px);margin:0 16px;border:2px solid #e3e7f5;border-radius:12px;padding:10px;font-family:inherit;font-size:13px;min-height:70px;resize:vertical;outline:none}
 #maintSec{background:#f6f8ff;border:1px solid #e3e7f5;border-radius:16px;padding:12px 0 4px;margin:12px 16px 0}
-.cam-video{width:100%;max-height:320px;object-fit:cover;border-radius:16px;background:#000;margin-top:4px}
 .bar{height:8px;background:#e5e9f5;border-radius:8px;overflow:hidden;margin-top:10px}
 .bar i{display:block;height:100%;width:0;background:var(--pri);transition:width .3s}
 .prog-txt{text-align:center;font-size:12.5px;color:var(--mut);margin:6px 0 0;font-weight:700}
@@ -284,7 +282,7 @@ textarea{width:calc(100% - 32px);margin:0 16px;border:2px solid #e3e7f5;border-r
         <textarea id="noteInput" placeholder="اكتب أي ملاحظات إضافية…"></textarea>
         <div class="row"><button class="btn pri" id="saveNote">💾 حفظ التفاصيل</button></div>
         <div class="row" data-admin>
-          <button class="btn amb" id="camAttach2">📷 فتح الكاميرا</button>
+          <button class="btn amb" id="camAttach2">📷 التقاط صورة</button>
           <button class="btn ghost" id="fileAttach2">🖼 رفع صورة</button>
         </div>
         <div class="row" data-admin><button class="btn grn" id="btnPublish">📤 رفع الصور المرجعية</button></div>
@@ -304,29 +302,12 @@ textarea{width:calc(100% - 32px);margin:0 16px;border:2px solid #e3e7f5;border-r
       <div style="padding:12px 16px 0">
         <div id="imgsGrid"></div>
         <div class="row" data-admin style="padding:0">
-          <button class="btn amb" id="camAttach3">📷 فتح الكاميرا</button>
+          <button class="btn amb" id="camAttach3">📷 التقاط صورة</button>
           <button class="btn ghost" id="fileAttach3">🖼 رفع صورة</button>
         </div>
         <div class="row" data-admin style="padding:0"><button class="btn grn" id="btnPublish2">📤 رفع الصور المرجعية</button></div>
         <input type="file" id="fileAttachInput" accept="image/*" hidden>
         <div id="procProg3" hidden><div class="bar"><i id="procBar3"></i></div><p class="prog-txt" id="procTxt3"></p></div>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- الكاميرا -->
-<div class="overlay" id="camModal" hidden>
-  <div class="modal">
-    <div class="m-head"><h2>📷 الكاميرا</h2><button class="x" id="camClose">✕</button></div>
-    <div class="m-body">
-      <div style="padding:12px 16px 0">
-        <video id="camVideo" class="cam-video" playsinline muted autoplay></video>
-        <div class="row" style="padding:0">
-          <button class="btn dngr" id="camShot">⬤ التقاط</button>
-          <button class="btn ghost" id="camUploadBtn">🖼 رفع صورة</button>
-        </div>
-        <input type="file" id="camUpload" accept="image/*" hidden>
       </div>
     </div>
   </div>
@@ -338,9 +319,9 @@ textarea{width:calc(100% - 32px);margin:0 16px;border:2px solid #e3e7f5;border-r
     <div class="m-head"><h2>📷 التعرف على المادة</h2><button class="x" data-close>✕</button></div>
     <div class="m-body">
       <div id="scanStart" style="padding:12px 16px 0">
-        <p class="hint" style="margin:4px 0 10px">صوّر العلبة أو ارفع صورة ثم اضغط ⬤ التقاط — المطابقة: الشكل + الألوان + النص المطبوع + النص المخزّن.</p>
+        <p class="hint" style="margin:4px 0 10px">صوّر العلبة أو ارفع صورة ثم اضغط — المطابقة: الشكل + الألوان + النص المطبوع + النص المخزّن.</p>
         <div class="row" style="padding:0">
-          <button class="btn amb" id="btnCamScan">📷 فتح الكاميرا</button>
+          <button class="btn amb" id="btnCamScan">📷 التقاط صورة</button>
           <button class="btn ghost" id="fileScanBtn">🖼 رفع صورة</button>
         </div>
         <input type="file" id="fileScan" accept="image/*" hidden>
@@ -384,7 +365,7 @@ const REPO_URLS=['https://raw.githubusercontent.com/'+REPO+'/main/'+encodeURICom
 const SHARED_URL='https://raw.githubusercontent.com/'+REPO+'/main/data/images.json';
 
 let ROWS=[],ROWMAP={},GROUPS=[],IMAGES={},EXTRAS={},VIEWS={},FILES=[];
-let currentId=null,currentGroup=null,model=null,tfOk=false,camStream=null,camMode=null,lastScanUrl=null,lastRes=[],gSearchT=null,sSearchT=null;
+let currentId=null,currentGroup=null,model=null,tfOk=false,camMode=null,lastScanUrl=null,lastRes=[],gSearchT=null,sSearchT=null;
 let isAdmin=sessionStorage.getItem('isAdmin')==='1';
 
 function toast(m,t){const e=$('toast');e.textContent=m;e.className=t||'';e.hidden=false;clearTimeout(e._h);e._h=setTimeout(()=>e.hidden=true,5000);}
@@ -401,6 +382,27 @@ function textSim(a,b){const A=norm(a).split(' ').filter(w=>w.length>=3),B=norm(b
 const CHUNK=0x8000;
 function b64encode(str){const bytes=new TextEncoder().encode(str);let bin='';for(let i=0;i<bytes.length;i+=CHUNK){bin+=String.fromCharCode.apply(null,bytes.subarray(i,i+CHUNK));}return btoa(bin);}
 function bufToB64(buf){const bytes=new Uint8Array(buf);let bin='';for(let i=0;i<bytes.length;i+=CHUNK){bin+=String.fromCharCode.apply(null,bytes.subarray(i,i+CHUNK));}return btoa(bin);}
+
+/* ✔✔✔ معالجة اتجاه/قياسات الصورة من الكاميرا ✔✔✔ */
+function fileToOrientedDataUrl(file,maxW,q){
+  return new Promise(async res=>{
+    try{
+      if(window.createImageBitmap){
+        const bmp=await createImageBitmap(file,{imageOrientation:'from-image'});
+        const s=Math.min(1,maxW/bmp.width);
+        const c=document.createElement('canvas');
+        c.width=Math.max(1,Math.round(bmp.width*s));c.height=Math.max(1,Math.round(bmp.height*s));
+        c.getContext('2d').drawImage(bmp,0,0,c.width,c.height);
+        const out=c.toDataURL('image/jpeg',q||.85);
+        if(bmp.close)bmp.close();
+        res(out);return;
+      }
+    }catch(e){}
+    const r=new FileReader();
+    r.onload=async()=>res(await scaleDataUrl(r.result,maxW,q));
+    r.readAsDataURL(file);
+  });
+}
 
 let dbP=null;
 function db(){if(!dbP)dbP=new Promise((res,rej)=>{const r=indexedDB.open('matSysDB',1);r.onupgradeneeded=()=>{const d=r.result;['files','extras','images'].forEach(s=>{if(!d.objectStoreNames.contains(s))d.createObjectStore(s);});};r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error);});return dbP;}
@@ -529,7 +531,6 @@ function searchScore(q,r){const nq=q;let s=0;
     else for(const w of r.n.split(' '))if(w.length>=3&&lev(w,t)<=1){s+=18;break;}}
   return s;}
 
-/* ✔✔✔ إصلاح زر البحث العام ✔✔✔ */
 $('btnSearch').onclick=()=>{
   $('searchModal').hidden=false;
   $('sSearch').value='';
@@ -658,16 +659,31 @@ async function deleteImgFromServer(id,deletedLocalIdx){
     toast('حُذفت محلياً لكن فشل الحذف من المستودع: '+e.message,'err');
   }
 }
-$('camAttach2').onclick=()=>openCamModal('attach');
-$('camAttach3').onclick=()=>openCamModal('attach');
+
+/* ✔✔✔ الكاميرا: التقاط صورة واحدة عبر كاميرا الجهاز + معالجة الاتجاه ✔✔✔ */
+const nativeCam=document.createElement('input');
+nativeCam.type='file';nativeCam.accept='image/*';nativeCam.setAttribute('capture','environment');nativeCam.hidden=true;
+document.body.appendChild(nativeCam);
+nativeCam.addEventListener('change',async e=>{
+  const f=e.target.files[0];
+  nativeCam.value='';
+  if(!f)return;
+  const url=await fileToOrientedDataUrl(f,900,.88);
+  route(url);
+});
+function openNativeCam(mode){camMode=mode;nativeCam.click();}
+$('camAttach2').onclick=()=>openNativeCam('attach');
+$('camAttach3').onclick=()=>openNativeCam('attach');
+$('btnCamScan').onclick=()=>openNativeCam('scan');
 $('fileAttach2').onclick=()=>$('fileAttachInput3').click();
 $('fileAttach3').onclick=()=>$('fileAttachInput').click();
-$('fileAttachInput3').onchange=async e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();
-  r.onload=async()=>processAttach(await scaleDataUrl(r.result,900,.88),'main');r.readAsDataURL(f);};
-$('fileAttachInput').onchange=async e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();
-  r.onload=async()=>processAttach(await scaleDataUrl(r.result,900,.88),'imgs');r.readAsDataURL(f);};
+$('fileAttachInput3').onchange=async e=>{const f=e.target.files[0];if(!f)return;
+  processAttach(await fileToOrientedDataUrl(f,900,.88),'main');};
+$('fileAttachInput').onchange=async e=>{const f=e.target.files[0];if(!f)return;
+  processAttach(await fileToOrientedDataUrl(f,900,.88),'imgs');};
 $('btnPublish').onclick=()=>publishCurrentMaterial();
 $('btnPublish2').onclick=()=>publishCurrentMaterial();
+function route(url){if(camMode==='attach'){if(!currentId)return toast('افتح المادة أولاً','err');processAttach(url,'main');}else recognize(url);}
 
 async function tfReady(){if(tfOk)return;try{await tf.setBackend('webgl');}catch(e){try{await tf.setBackend('cpu');}catch(e2){}}await tf.ready();tfOk=true;}
 async function getEmbed(url){await tfReady();if(!model)model=await mobilenet.load({version:2,alpha:0.75});
@@ -704,18 +720,6 @@ async function processAttach(url,which){
     toast('تمت معالجة الصورة ✔ — اضغط 📤 رفع الصور المرجعية لنشرها');
   }catch(e){console.error(e);$('procProg').hidden=true;$('procProg3').hidden=true;toast('خطأ بالمعالجة: '+e.message,'err');}
 }
-
-let camSession=0;
-async function openCamModal(mode){camMode=mode;$('camModal').hidden=false;await startCam();}
-async function startCam(){stopCam();const my=++camSession;try{const st=await navigator.mediaDevices.getUserMedia({video:{facingMode:'environment'},audio:false});if(my!==camSession||$('camModal').hidden){st.getTracks().forEach(t=>t.stop());return;}camStream=st;$('camVideo').srcObject=st;await $('camVideo').play();}catch(e){if(my===camSession)toast('تعذر فتح الكاميرا: '+e.message,'err');}}
-function stopCam(){camSession++;if(camStream){camStream.getTracks().forEach(t=>t.stop());camStream=null;}const v=$('camVideo');if(v)v.srcObject=null;}
-function capture(){const v=$('camVideo');if(!v.videoWidth)return null;const s=Math.min(1,640/v.videoWidth);const c=document.createElement('canvas');c.width=Math.round(v.videoWidth*s);c.height=Math.round(v.videoHeight*s);c.getContext('2d').drawImage(v,0,0,c.width,c.height);return c.toDataURL('image/jpeg',.9);}
-$('camClose').onclick=()=>{stopCam();$('camModal').hidden=true;};
-$('camShot').onclick=async()=>{const u=capture();if(!u)return toast('انتظر جاهزية الكاميرا','err');stopCam();$('camModal').hidden=true;route(await scaleDataUrl(u,900,.88));};
-$('camUploadBtn').onclick=()=>$('camUpload').click();
-$('camUpload').onchange=async e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();
-  r.onload=async()=>{stopCam();$('camModal').hidden=true;route(await scaleDataUrl(r.result,900,.88));};r.readAsDataURL(f);};
-function route(url){if(camMode==='attach'){if(!currentId)return toast('افتح المادة أولاً','err');processAttach(url,'main');}else recognize(url);}
 
 function anyModalOpen(){return !!document.querySelector('.overlay:not([hidden])');}
 const lockObs=new MutationObserver(()=>{document.body.classList.toggle('lock',anyModalOpen());});
@@ -769,10 +773,9 @@ function ocrVsSaved(txt,im){let m=0;for(const g of im.imgs||[])if(g&&g.ocr)m=Mat
 
 $('btnScan').onclick=()=>{if(!Object.keys(IMAGES).some(hasImg))return toast('لا توجد صور مرجعية بعد — سيقوم المدير برفعها قريباً','err');
   $('scanModal').hidden=false;$('scanStart').hidden=false;$('scanRes').hidden=true;$('scanProg').hidden=true;};
-$('btnCamScan').onclick=()=>openCamModal('scan');
 $('fileScanBtn').onclick=()=>$('fileScan').click();
-$('fileScan').onchange=async e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();
-  r.onload=async()=>recognize(await scaleDataUrl(r.result,900,.88));r.readAsDataURL(f);};
+$('fileScan').onchange=async e=>{const f=e.target.files[0];if(!f)return;
+  recognize(await fileToOrientedDataUrl(f,900,.88));};
 $('rescan').onclick=()=>{$('scanRes').hidden=true;$('scanStart').hidden=false;};
 function setScan(t,p){$('scanProgTxt').textContent=t;$('scanBar').style.width=p+'%';}
 
@@ -999,19 +1002,16 @@ $('btnPublishCode').onclick=async()=>{
   }catch(e){toast('فشل النشر: '+e.message,'err');}
 };
 
-const MOD_ORDER=['confirmModal','codeModal','camModal','imgsModal','viewModal','imgsListModal','searchModal','scanModal','groupModal'];
-function closeTop(){const id=MOD_ORDER.find(x=>{const el=$(x);return el&&!el.hidden;});if(!id)return;$(id).hidden=true;if(id==='camModal')stopCam();}
-document.querySelectorAll('[data-close]').forEach(b=>b.onclick=()=>{const o=b.closest('.overlay');if(o){o.hidden=true;if(o.id==='camModal')stopCam();}});
+const MOD_ORDER=['confirmModal','codeModal','imgsModal','viewModal','imgsListModal','searchModal','scanModal','groupModal'];
+function closeTop(){const id=MOD_ORDER.find(x=>{const el=$(x);return el&&!el.hidden;});if(!id)return;$(id).hidden=true;}
+document.querySelectorAll('[data-close]').forEach(b=>b.onclick=()=>{const o=b.closest('.overlay');if(o)o.hidden=true;});
 document.querySelectorAll('.overlay').forEach(o=>o.addEventListener('click',e=>{
   if(e.target!==o)return;
   if(o.id==='confirmModal'){$('confirmNo').click();return;}
-  o.hidden=true;if(o.id==='camModal')stopCam();
+  o.hidden=true;
 }));
 document.addEventListener('keydown',e=>{
   if(e.key==='Escape'){closeTop();return;}
-  if(e.key==='Enter'&&!e.target.closest('input,textarea,button')){
-    if(!$('camModal').hidden)$('camShot').click();
-  }
 });
 
 function applyAdminUI(){document.querySelectorAll('[data-admin]').forEach(el=>el.hidden=!isAdmin);}
