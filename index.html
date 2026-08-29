@@ -292,6 +292,7 @@ textarea{width:calc(100% - 32px);margin:0 16px;border:2px solid #e3e7f5;border-r
         <textarea id="noteInput" placeholder="اكتب أي ملاحظات إضافية…"></textarea>
         <div class="row"><button class="btn pri" id="saveNote">💾 حفظ التفاصيل</button></div>
         <div class="row" data-admin><button class="btn imgs" id="btnGenAI">🤖 توليد وصف ذكي من الصور</button></div>
+        <div class="row" data-admin><button class="btn dngr" id="btnDelDetails">🗑 حذف التفاصيل (ذكي)</button></div>
         <div class="row" data-admin>
           <button class="btn amb" id="camAttach2">📷 التقاط صورة</button>
           <button class="btn ghost" id="fileAttach2">🖼 رفع صورة</button>
@@ -399,7 +400,7 @@ let isAdmin=sessionStorage.getItem('isAdmin')==='1';
 function toast(m,t){const e=$('toast');e.textContent=m;e.className=t||'';e.hidden=false;clearTimeout(e._h);e._h=setTimeout(()=>e.hidden=true,5000);}
 function esc(s){return (s??'').toString().replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
 function short(s,n){n=n||42;s=s??'';return s.length>n?s.slice(0,n)+'…':s;}
-function parseNum(v){if(typeof v==='number')return isFinite(v)?v:0;if(v==null)return 0;let s=String(v).replace(/[٠-٩]/g,d=>'٠١٣٤٥٧٨٩'.indexOf(d)).replace(/[,،\s]/g,'');const n=parseFloat(s);return isFinite(n)?n:0;}
+function parseNum(v){if(typeof v==='number')return isFinite(v)?v:0;if(v==null)return 0;let s=String(v).replace(/[٠-٩]/g,d=>'٠١٢٣٤٥٦٧٨٩'.indexOf(d)).replace(/[,،\s]/g,'');const n=parseFloat(s);return isFinite(n)?n:0;}
 function fm(n){n=parseNum(n);return n?n.toLocaleString('en-US',{maximumFractionDigits:2}):'0';}
 function norm(s){return (s||'').toLowerCase().replace(/[\u064B-\u0652\u0640]/g,'').replace(/[أإآ]/g,'ا').replace(/ة/g,'ه').replace(/ى/g,'ي').replace(/[^\p{L}\p{N}]+/gu,' ').trim();}
 function lev(a,b){a=a||'';b=b||'';if(a===b)return 0;const m=a.length,n=b.length;if(!m||!n)return m||n;let p=Array.from({length:n+1},(_,i)=>i);for(let i=1;i<=m;i++){const c=[i];for(let j=1;j<=n;j++)c[j]=Math.min(p[j]+1,c[j-1]+1,p[j-1]+(a[i-1]===b[j-1]?0:1));p=c;}return p[n];}
@@ -411,11 +412,12 @@ const CHUNK=0x8000;
 function b64encode(str){const bytes=new TextEncoder().encode(str);let bin='';for(let i=0;i<bytes.length;i+=CHUNK){bin+=String.fromCharCode.apply(null,bytes.subarray(i,i+CHUNK));}return btoa(bin);}
 function bufToB64(buf){const bytes=new Uint8Array(buf);let bin='';for(let i=0;i<bytes.length;i+=CHUNK){bin+=String.fromCharCode.apply(null,bytes.subarray(i,i+CHUNK));}return btoa(bin);}
 
-/* ✔✔✔ [AI] توليد وصف ذكي من الصورة (OCR + الاسم + الفئة) ✔✔✔ */
+/* ✔✔✔ [AI] وصف ذكي مرتّب: اسم المادة أولاً ثم شرح عنها ✔✔✔ */
 function generateAIInfo(row,ocr){
-  const nm=row?norm(row.name):'';
+  const nm=row?row.name:'مادة';
+  const group=row?(row.group||NO_GROUP):'';
   const og=norm(ocr||'');
-  const src=nm+' '+og;
+  const src=norm(nm)+' '+og;
   const has=k=>src.includes(norm(k));
   let type='منتج دهانات وتشطيبات';
   if(has('برايمر')||has('استار')||has('أستار')||has('primer')||has('اساس'))type='برايمر / طبقة أساس';
@@ -436,14 +438,14 @@ function generateAIInfo(row,ocr){
   else if(type.includes('ثنر'))comp='مذيبات عضوية نقية سريعة التبخر';
   let use='يُطبق على سطح نظيف وجاف بعد التحضير ويُترك ليجف قبل الطبقة التالية';
   if(type.includes('برايمر'))use='يُطبق كطبقة أولى بعد التنظيف والصنفرة، يُترك ليجف 2-4 ساعات قبل المعجون أو الدهان';
-  else if(type.includes('معجون'))use='يُطبق بالمعجون لتسوية الشقوق، يُصنفر بعد الجفاف ثم يُطبق البرايمر';
+  else if(type.includes('معجون'))use='يُطبق لتسوية الشقوق، يُصنفر بعد الجفاف ثم يُطبق البرايمر';
   else if(type.includes('شفاف'))use='يُطبق كطبقة نهائية لحماية الوجه وإبراز المظهر، طبقة أو طبقتان';
   else if(type.includes('داخلي')||type.includes('خارجي'))use='يُطبق بالفرشاة أو الرولة أو الرش على سطح مُجهّز، طبقتان بفاصل جفاف كافٍ';
-  const sum=(row?row.name:'المادة')+' — '+type+' من '+(row?(row.group||NO_GROUP):'')+'. '+comp+'. '+use+'.';
-  return '🧪 ما هذه المادة:\n'+(row?row.name:'مادة')+' — '+type+
+  const desc=`${nm} هو ${type} من ${group}. يتكوّن من ${comp}. طريقة الاستخدام: ${use}.`;
+  return '🏷 اسم المادة:\n'+nm+
+    '\n\n📝 شرح عن المادة:\n'+desc+
     '\n\n🧬 التركيب:\n'+comp+
-    '\n\n🛠 طريقة الاستخدام:\n'+use+
-    '\n\n📋 ملخص:\n'+sum;
+    '\n\n🛠 طريقة الاستخدام:\n'+use;
 }
 
 function fileToOrientedDataUrl(file,maxW,q){
@@ -701,6 +703,27 @@ $('btnGenAI').onclick=async()=>{
   im.ai=ai;await dbPut('images',currentId,im);
   openView(currentId);$('maintSec').hidden=false;
   toast('✔ تم توليد الوصف الذكي');
+};
+/* ✔✔✔ [1] حذف التفاصيل بذكاء (مدير) ✔✔✔ */
+$('btnDelDetails').onclick=async()=>{
+  const ex=EXTRAS[currentId]||{};
+  const hasAi=(ex.ai)||(IMAGES[currentId]&&IMAGES[currentId].ai);
+  const hasNote=!!ex.note;
+  if(!hasAi&&!hasNote)return toast('لا توجد تفاصيل لحذفها','err');
+  const ok=await askConfirm('سيتم حذف الوصف الذكي والملاحظات لهذه المادة من الجهاز والمستودع. متابعة؟');
+  if(!ok)return;
+  EXTRAS[currentId]=Object.assign({},ex,{id:currentId,note:'',ai:''});
+  await dbPut('extras',currentId,EXTRAS[currentId]);
+  if(IMAGES[currentId]){IMAGES[currentId].ai='';await dbPut('images',currentId,IMAGES[currentId]);}
+  try{
+    const token=await ensureToken();
+    if(token){
+      const merged=await getServerImages(token);
+      if(merged[currentId]){merged[currentId].ai='';await putImagesJson(token,merged);}
+    }
+  }catch(e){}
+  openView(currentId);$('maintSec').hidden=false;
+  toast('✔ تم حذف التفاصيل من الجهاز والمستودع');
 };
 function renderImgs(){const im=IMAGES[currentId];
   $('imgsGrid').innerHTML=(im&&im.imgs&&im.imgs.length)?im.imgs.map((g,i)=>`<div class="imbig"><img src="${g.thumb}" alt="">${isAdmin?`<button data-delimg="${i}" title="حذف">✕</button>`:''}</div>`).join('')
