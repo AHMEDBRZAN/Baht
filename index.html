@@ -427,7 +427,7 @@ const CHUNK=0x8000;
 function b64encode(str){const bytes=new TextEncoder().encode(str);let bin='';for(let i=0;i<bytes.length;i+=CHUNK){bin+=String.fromCharCode.apply(null,bytes.subarray(i,i+CHUNK));}return btoa(bin);}
 function bufToB64(buf){const bytes=new Uint8Array(buf);let bin='';for(let i=0;i<bytes.length;i+=CHUNK){bin+=String.fromCharCode.apply(null,bytes.subarray(i,i+CHUNK));}return btoa(bin);}
 
-/* ✔✔✔ ذكاء متعدد المحركات + فحص وضوح الصورة ✔✔✔ */
+/* ✔✔✔ ذكاء متعدد المحركات + بحث ويب متعدد المصادر + نموذج لغوي ✔✔✔ */
 function colorNames(hist){let r=0,g=0,b=0,tot=0;const L=[.125,.375,.625,.875];
 for(let ri=0;ri<4;ri++)for(let gi=0;gi<4;gi++)for(let bi=0;bi<4;bi++){const v=hist[ri*16+gi*4+bi]||0;tot+=v;r+=v*L[ri];g+=v*L[gi];b+=v*L[bi];}
 if(tot<=0)return['محايد'];r/=tot;g/=tot;b/=tot;const o=[];const mx=Math.max(r,g,b),mn=Math.min(r,g,b);
@@ -436,32 +436,64 @@ if(r>.6&&g>.4&&b<.35)o.push('أصفر/برتقالي');if(r>.5&&g<.35&&b<.35)o.p
 if(!o.length)o.push('متعدد الألوان');return o;}
 async function clarityScore(url){return new Promise(res=>{const i=new Image();i.onload=()=>{const S=96,c=document.createElement('canvas');c.width=S;c.height=S;const x=c.getContext('2d');x.drawImage(i,0,0,S,S);const d=x.getImageData(0,0,S,S).data;const gA=new Array(S*S);let mean=0;for(let p=0;p<S*S;p++){const q=p*4;const gv=.299*d[q]+.587*d[q+1]+.114*d[q+2];gA[p]=gv;mean+=gv;}mean/=(S*S);let lap=0,con=0,cnt=0;for(let y=1;y<S-1;y++)for(let xx=1;xx<S-1;xx++){const p=y*S+xx;const l=gA[p+1]+gA[p-1]+gA[p+S]+gA[p-S]-4*gA[p];lap+=l*l;con+=Math.abs(gA[p]-mean);cnt++;}res({blur:lap/cnt,contrast:con/cnt});};i.onerror=()=>res({blur:0,contrast:0});i.src=url;});}
 async function mobilenetLabels(url){try{await tfReady();if(!model)model=await mobilenet.load({version:2,alpha:0.75});const sm=await scaleDataUrl(url,224,.9);const img=await imgEl(sm);const p=await model.classify(img);return (p||[]).slice(0,3).map(x=>x.className.split(',')[0]);}catch(e){return[];}}
+async function webResearch(q){
+  const out={snippets:[],sources:[]};
+  try{
+    const ddg='https://api.duckduckgo.com/?q='+encodeURIComponent(q)+'&format=json&no_html=1&no_redirect=1';
+    const r=await fetch('https://api.allorigins.win/get?url='+encodeURIComponent(ddg));
+    if(r.ok){const j=await r.json();const d=JSON.parse(j.contents||'{}');
+      if(d.AbstractText){out.snippets.push(d.AbstractText);out.sources.push({t:d.Heading||q,u:d.FirstURL||''});}
+      (d.RelatedTopics||[]).slice(0,6).forEach(t=>{if(t&&t.Text){out.snippets.push(t.Text);if(t.FirstURL)out.sources.push({t:t.Text.slice(0,70),u:t.FirstURL});}});}
+  }catch(e){}
+  try{
+    const wiki='https://ar.wikipedia.org/w/api.php?action=query&list=search&srsearch='+encodeURIComponent(q)+'&format=json&origin=*';
+    const r2=await fetch(wiki);
+    if(r2.ok){const j2=await r2.json();((j2.query&&j2.query.search)||[]).slice(0,3).forEach(s=>{if(s.snippet){out.snippets.push(String(s.snippet).replace(/<[^>]+>/g,''));out.sources.push({t:s.title,u:'https://ar.wikipedia.org/wiki/'+encodeURIComponent(s.title)});}});}
+  }catch(e){}
+  return out;
+}
+async function llmDescribe(prompt){
+  try{
+    const r=await fetch('https://text.pollinations.ai/'+encodeURIComponent(prompt));
+    if(r.ok){const t=(await r.text()||'').trim();if(t.length>40)return t;}
+  }catch(e){}
+  return '';
+}
 async function smartAI(row,imageUrl,storedOcr){
- const ocr=(storedOcr&&storedOcr.trim())?storedOcr:await ocrText(await scaleDataUrl(imageUrl,800,.85));
- const clarity=await clarityScore(imageUrl);
- const labels=await mobilenetLabels(imageUrl);
- const hist=await histFrom(imageUrl);
- const colors=colorNames(hist);
- return {ocr,clarity,labels,colors,clear:(clarity.blur>60&&clarity.contrast>8)};
+  const ocr=(storedOcr&&storedOcr.trim())?storedOcr:await ocrText(await scaleDataUrl(imageUrl,800,.85));
+  const clarity=await clarityScore(imageUrl);
+  const labels=await mobilenetLabels(imageUrl);
+  const hist=await histFrom(imageUrl);
+  const colors=colorNames(hist);
+  const clear=clarity.blur>60&&clarity.contrast>8;
+  const nm=row?row.name:'المادة';
+  const latin=row?(row.latin||''):'';
+  const group=row?(row.group||NO_GROUP):'';
+  const research=await webResearch((latin||nm)+' '+group+' مواصفات تقنية');
+  const prompt='أنت خبير دهانات. اكتب وصفاً فنياً مختصراً بالعربية لمنتج باسم "'+nm+'"'+(latin?(' ('+latin+')'):'')+'. النص المقروء من العبوة: '+(ocr||'لا يوجد')+'. معلومات من مصادر متعددة: '+research.snippets.slice(0,5).join(' | ')+'. أذكر بوضوح: النوع، التركيب، الميزة الأساسية، الاستخدام، طريقة التطبيق. باختصار وبدون اختلاق.';
+  const llm=await llmDescribe(prompt);
+  return {ocr,clarity,labels,colors,clear,research,llm};
 }
 function composeAI(row,a){
- const nm=row?row.name:'المادة';const group=row?(row.group||NO_GROUP):'';
- const og=norm(a.ocr||'');const src=norm(nm)+' '+og;const has=k=>src.includes(norm(k));
- let type='منتج دهانات وتشطيبات';
- if(has('برايمر')||has('استار')||has('primer')||has('اساس'))type='برايمر / طبقة أساس';
- else if(has('معجون'))type='معجون تسوية';else if(has('شفاف')||has('ورنيش')||has('لك'))type='شفاف / ورنيش';
- else if(has('اكريليك'))type='دهان أكريليك مائي';else if(has('زيت'))type='دهان زيتي';
- else if(has('خارجي'))type='دهان خارجي';else if(has('داخلي'))type='دهان داخلي';
- else if(has('غراء')||has('لاصق'))type='لاصق';else if(has('ثنر')||has('مخفف'))type='مخفف / ثنر';
- const seen=a.labels.length?('التحليل البصري: '+a.labels.join('، ')+'.'):'';
- const read=a.ocr?('نص مقروء من العبوة: «'+a.ocr.slice(0,80)+'».'):'لا يوجد نص مقروء واضح.';
- const use=type.includes('برايمر')?'طبقة أساس بعد التنظيف والصنفرة.':type.includes('معجون')?'تسوية الشقوق ثم صنفرة.':type.includes('شفاف')?'طبقة نهائية للحماية.':'طبقتان بفاصل جفاف.';
- return '🏷 اسم المادة:\n'+nm+'\n\n📝 شرح عن المادة:\n'+nm+' ('+group+') — '+type+'. ألوان العبوة: '+a.colors.join('، ')+'. '+seen+' '+read+
- '\n\n🧬 التركيب:\n'+type+' — عبوة بألوان: '+a.colors.join('، ')+'.'+
- '\n\n🛠 طريقة الاستخدام:\n'+use+
- '\n\n🔎 محركات التحليل: شكل(MobileNet) + ألوان + OCR.';
+  const nm=row?row.name:'المادة';
+  const group=row?(row.group||NO_GROUP):'';
+  let desc;
+  if(a.llm){desc=a.llm;}
+  else{
+    const og=norm(a.ocr||'');const src=norm(nm)+' '+og;const has=k=>src.includes(norm(k));
+    let type='منتج دهانات وتشطيبات';
+    if(has('برايمر')||has('استار')||has('primer')||has('اساس'))type='برايمر / طبقة أساس';
+    else if(has('معجون'))type='معجون تسوية';else if(has('شفاف')||has('ورنيش')||has('لك'))type='شفاف / ورنيش';
+    else if(has('اكريليك'))type='دهان أكريليك مائي';else if(has('زيت'))type='دهان زيتي';
+    else if(has('خارجي'))type='دهان خارجي';else if(has('داخلي'))type='دهان داخلي';
+    else if(has('غراء')||has('لاصق'))type='لاصق';else if(has('ثنر')||has('مخفف'))type='مخفف / ثنر';
+    const use=type.includes('برايمر')?'طبقة أساس بعد التنظيف والصنفرة.':type.includes('معجون')?'تسوية الشقوق ثم صنفرة.':type.includes('شفاف')?'طبقة نهائية للحماية.':'طبقتان بفاصل جفاف.';
+    desc=nm+' ('+group+') — '+type+'. ألوان العبوة: '+a.colors.join('، ')+'. '+use;
+  }
+  const sources=(a.research&&a.research.sources&&a.research.sources.length)?('\n\n🌐 المصادر:\n'+a.research.sources.slice(0,5).map(s=>'• '+s.t).join('\n')):'';
+  return '🏷 اسم المادة:\n'+nm+'\n\n📝 شرح عن المادة:\n'+desc+sources+'\n\n🔎 محركات التحليل: شكل(MobileNet) + ألوان + OCR + بحث ويب متعدد المصادر.';
 }
-function generateAIInfo(row,ocr){return composeAI(row,{ocr:ocr,clarity:{blur:99,contrast:99},labels:[],colors:['غير محدد'],clear:true});}
+function generateAIInfo(row,ocr){return composeAI(row,{ocr:ocr,clarity:{blur:99,contrast:99},labels:[],colors:['غير محدد'],clear:true,research:{snippets:[],sources:[]},llm:''});}
 
 function fileToOrientedDataUrl(file,maxW,q){
   return new Promise(async res=>{
