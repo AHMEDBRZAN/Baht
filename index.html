@@ -708,13 +708,23 @@ $('saveNote').onclick=async()=>{const n=$('noteInput').value.trim();EXTRAS[curre
 $('btnGenAI').onclick=async()=>{
   const im=IMAGES[currentId];
   if(!im||!im.imgs.length)return toast('أضف صورة أولاً لتوليد الوصف','err');
-  const ocr=im.imgs.map(g=>g.ocr||'').join(' ');
-  const ai=generateAIInfo(ROWMAP[currentId],ocr);
+  const a=await smartAI(ROWMAP[currentId],im.imgs[0].thumb,im.imgs.map(g=>g.ocr||'').join(' '));
+  if(!a.clear)toast('⚠ الصورة المرفوعة للمادة غير واضحة — ارفع صورة أوضح','err');
+  const ai=composeAI(ROWMAP[currentId],a);
   EXTRAS[currentId]=Object.assign({},EXTRAS[currentId],{id:currentId,ai});
   await dbPut('extras',currentId,EXTRAS[currentId]);
   im.ai=ai;await dbPut('images',currentId,im);
+  const aiIn=$('aiInput');if(aiIn)aiIn.value=ai;
   openView(currentId);$('maintSec').hidden=false;
-  toast('✔ تم توليد الوصف الذكي');
+  toast(a.clear?'✔ تم توليد وصف ذكي دقيق':'✔ تم التوليد مع تنبيه وضوح الصورة');
+};
+$('saveAI').onclick=async()=>{
+  const v=$('aiInput').value.trim();
+  EXTRAS[currentId]=Object.assign({},EXTRAS[currentId],{id:currentId,ai:v});
+  await dbPut('extras',currentId,EXTRAS[currentId]);
+  if(IMAGES[currentId]){IMAGES[currentId].ai=v;await dbPut('images',currentId,IMAGES[currentId]);}
+  openView(currentId);$('maintSec').hidden=false;
+  toast('✔ تم حفظ الوصف المصحح');
 };
 $('btnDelDetails').onclick=async()=>{
   const ex=EXTRAS[currentId]||{};
