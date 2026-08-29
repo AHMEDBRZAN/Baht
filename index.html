@@ -303,6 +303,9 @@ textarea{width:calc(100% - 32px);margin:0 16px;border:2px solid #e3e7f5;border-r
         <div class="row"><button class="btn pri" id="saveNote">💾 حفظ التفاصيل</button></div>
         <div class="row" data-admin><button class="btn imgs" id="btnGenAI">🤖 توليد وصف ذكي من الصور</button></div>
         <div class="row" data-admin><button class="btn dngr" id="btnDelDetails">🗑 حذف التفاصيل (ذكي)</button></div>
+        <label>✏️ تصحيح الوصف الذكي</label>
+        <textarea id="aiInput" placeholder="عدّل وصف الذكاء هنا ثم احفظ…"></textarea>
+        <div class="row" data-admin><button class="btn pri" id="saveAI">💾 حفظ الوصف المصحح</button></div>
         <div class="row" data-admin>
           <button class="btn amb" id="camAttach2">📷 التقاط صورة</button>
           <button class="btn ghost" id="fileAttach2">🖼 رفع صورة</button>
@@ -424,6 +427,7 @@ const CHUNK=0x8000;
 function b64encode(str){const bytes=new TextEncoder().encode(str);let bin='';for(let i=0;i<bytes.length;i+=CHUNK){bin+=String.fromCharCode.apply(null,bytes.subarray(i,i+CHUNK));}return btoa(bin);}
 function bufToB64(buf){const bytes=new Uint8Array(buf);let bin='';for(let i=0;i<bytes.length;i+=CHUNK){bin+=String.fromCharCode.apply(null,bytes.subarray(i,i+CHUNK));}return btoa(bin);}
 
+/* ✔✔✔ ذكاء متعدد المحركات + فحص وضوح الصورة ✔✔✔ */
 function colorNames(hist){let r=0,g=0,b=0,tot=0;const L=[.125,.375,.625,.875];
 for(let ri=0;ri<4;ri++)for(let gi=0;gi<4;gi++)for(let bi=0;bi<4;bi++){const v=hist[ri*16+gi*4+bi]||0;tot+=v;r+=v*L[ri];g+=v*L[gi];b+=v*L[bi];}
 if(tot<=0)return['محايد'];r/=tot;g/=tot;b/=tot;const o=[];const mx=Math.max(r,g,b),mn=Math.min(r,g,b);
@@ -701,19 +705,31 @@ $('btnImgs').onclick=()=>{
   $('imgsModal').hidden=false;
   renderImgs();
 };
-$('btnMaint').onclick=()=>{$('maintSec').hidden=!$('maintSec').hidden;};
+$('btnMaint').onclick=()=>{$('maintSec').hidden=!$('maintSec').hidden;
+  const ai=(EXTRAS[currentId]&&EXTRAS[currentId].ai)||(IMAGES[currentId]&&IMAGES[currentId].ai)||'';
+  const aiIn=$('aiInput');if(aiIn)aiIn.value=ai;};
 $('saveNote').onclick=async()=>{const n=$('noteInput').value.trim();EXTRAS[currentId]=Object.assign({},EXTRAS[currentId],{id:currentId,note:n});
   await dbPut('extras',currentId,EXTRAS[currentId]);toast('تم حفظ التفاصيل ✔');openView(currentId);$('maintSec').hidden=false;};
 $('btnGenAI').onclick=async()=>{
   const im=IMAGES[currentId];
   if(!im||!im.imgs.length)return toast('أضف صورة أولاً لتوليد الوصف','err');
-  const ocr=im.imgs.map(g=>g.ocr||'').join(' ');
-  const ai=generateAIInfo(ROWMAP[currentId],ocr);
+  const a=await smartAI(ROWMAP[currentId],im.imgs[0].thumb,im.imgs.map(g=>g.ocr||'').join(' '));
+  if(!a.clear)toast('⚠ الصورة المرفوعة للمادة غير واضحة — ارفع صورة أوضح','err');
+  const ai=composeAI(ROWMAP[currentId],a);
   EXTRAS[currentId]=Object.assign({},EXTRAS[currentId],{id:currentId,ai});
   await dbPut('extras',currentId,EXTRAS[currentId]);
   im.ai=ai;await dbPut('images',currentId,im);
+  const aiIn=$('aiInput');if(aiIn)aiIn.value=ai;
   openView(currentId);$('maintSec').hidden=false;
-  toast('✔ تم توليد الوصف الذكي');
+  toast(a.clear?'✔ تم توليد وصف ذكي دقيق':'✔ تم التوليد مع تنبيه وضوح الصورة');
+};
+$('saveAI').onclick=async()=>{
+  const v=$('aiInput').value.trim();
+  EXTRAS[currentId]=Object.assign({},EXTRAS[currentId],{id:currentId,ai:v});
+  await dbPut('extras',currentId,EXTRAS[currentId]);
+  if(IMAGES[currentId]){IMAGES[currentId].ai=v;await dbPut('images',currentId,IMAGES[currentId]);}
+  openView(currentId);$('maintSec').hidden=false;
+  toast('✔ تم حفظ الوصف المصحح');
 };
 $('btnDelDetails').onclick=async()=>{
   const ex=EXTRAS[currentId]||{};
@@ -828,7 +844,8 @@ async function processAttach(url,which){
     const g=await analyze(url,(t,p)=>setProc(which,t,p));
     if(!IMAGES[currentId])IMAGES[currentId]={id:currentId,imgs:[]};
     IMAGES[currentId].imgs.push(g);
-    const a=await smartAI(ROWMAP[currentId],url,g.ocr);    if(!a.clear)toast('⚠ الصورة المرفوعة غير واضحة — ارفع صورة أوضح لتفاصيل أدق','err');
+    const a=await smartAI(ROWMAP[currentId],url,g.ocr);
+    if(!a.clear)toast('⚠ الصورة المرفوعة غير واضحة — ارفع صورة أوضح لتفاصيل أدق','err');
     const ai=composeAI(ROWMAP[currentId],a);
     IMAGES[currentId].ai=ai;
     EXTRAS[currentId]=Object.assign({},EXTRAS[currentId],{id:currentId,ai});
@@ -1005,11 +1022,10 @@ async function getServerImages(token){
   return merged;
 }
 async function putImagesJson(token,merged){
-  let sha;
-  const g=await fetch(SHARED_URL.replace('raw.githubusercontent.com','api.github.com/repos/'+REPO+'/contents/data').replace('/Baht/contents/data/images.json','') ,{headers:{Authorization:'token '+token}});
   const api='https://api.github.com/repos/'+REPO+'/contents/data/images.json';
-  const gg=await fetch(api,{headers:{Authorization:'token '+token,Accept:'application/vnd.github+json'}});
-  if(gg.ok){const gj=await gg.json();sha=gj.sha;}
+  let sha;
+  const g=await fetch(api,{headers:{Authorization:'token '+token,Accept:'application/vnd.github+json'}});
+  if(g.ok){const gj=await g.json();sha=gj.sha;}
   const put=await fetch(api,{method:'PUT',headers:{Authorization:'token '+token,Accept:'application/vnd.github+json','Content-Type':'application/json'},
     body:JSON.stringify({message:'sync images',content:b64encode(JSON.stringify(merged)),...(sha?{sha}:{})})});
   if(!put.ok){const er=await put.json().catch(()=>null);throw new Error((er&&er.message)||('HTTP '+put.status));}
@@ -1065,7 +1081,7 @@ async function publishCurrentMaterial(){
   }catch(e){console.error(e);toast('فشل الرفع: '+e.message,'err');}
 }
 
-/* ✔✔✔ [جديد] تعديل جزء من الكود: يتعرف على الجزء ويستبدله من كود المستودع ✔✔✔ */
+/* ✔✔✔ تعديل جزء من الكود ✔✔✔ */
 $('btnEditCode').onclick=()=>{$('codeModal').hidden=false;$('codeInput').value='';$('partialSec').hidden=true;};
 $('btnFetchCode').onclick=async()=>{
   toast('جارٍ جلب الكود الحالي…');
