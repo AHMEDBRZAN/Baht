@@ -87,6 +87,7 @@ main{max-width:960px;margin:0 auto;padding:14px 12px 60px}
 .m-body.spring{transition:transform .4s cubic-bezier(.22,.9,.32,1.15)}
 .modal input[type=text],.modal input[type=password]{width:calc(100% - 32px);margin:0 16px;border:2px solid #e3e7f5;border-radius:12px;padding:11px 12px;font-family:inherit;font-size:14px;outline:none;background:#fff}
 textarea.code{width:calc(100% - 32px);margin:0 16px;font-family:'Courier New',monospace;font-size:11px;min-height:320px;direction:ltr;text-align:left;white-space:pre;border:2px solid #e3e7f5;border-radius:12px;padding:10px;outline:none;background:#0f1220;color:#d7e0ff}
+textarea.code.small{min-height:120px}
 .g-tools{position:sticky;top:0;z-index:5;display:flex;gap:10px;flex-wrap:wrap;padding:12px 16px;background:#fff;border-bottom:1px solid #eef0f6}
 .gsearch{flex:1;min-width:180px;border:2px solid #e3e7f5;border-radius:12px;padding:10px 14px;font-family:inherit;font-size:13px;outline:none;background:#fff}
 .gsearch:focus{border-color:var(--pri)}
@@ -236,6 +237,15 @@ textarea{width:calc(100% - 32px);margin:0 16px;border:2px solid #e3e7f5;border-r
       <div class="row">
         <button class="btn ghost" id="btnFetchCode">⬇ جلب الكود الحالي</button>
         <button class="btn pri" id="btnPublishCode">🚀 نشر إلى المستودع</button>
+      </div>
+      <div class="row"><button class="btn amb" id="btnPartial">✏️ تعديل جزء من الكود</button></div>
+      <div id="partialSec" hidden>
+        <p class="hint">✏️ تعديل جزء: الصق <b>الجزء القديم</b> الموجود في كود المستودع، ثم <b>الجزء الجديد</b> البديل. سيتعرف النظام على الجزء ويستبدله ثم ينشر.</p>
+        <label>الجزء القديم (المراد استبداله)</label>
+        <textarea id="codeOld" class="code small" spellcheck="false" placeholder="... الصق هنا الجزء القديم كما هو في الكود"></textarea>
+        <label>الجزء الجديد (البديل)</label>
+        <textarea id="codeNew" class="code small" spellcheck="false" placeholder="... الصق هنا الجزء الجديد البديل"></textarea>
+        <div class="row"><button class="btn amb" id="btnPartialPublish">🔁 استبدال ونشر</button></div>
       </div>
     </div>
   </div>
@@ -392,6 +402,8 @@ const REPO_URLS=['https://raw.githubusercontent.com/'+REPO+'/main/'+encodeURICom
  'https://raw.githubusercontent.com/'+REPO+'/main/materials.xlsx',
  'https://raw.githubusercontent.com/'+REPO+'/main/data.xlsx'];
 const SHARED_URL='https://raw.githubusercontent.com/'+REPO+'/main/data/images.json';
+const INDEX_URL='https://raw.githubusercontent.com/'+REPO+'/main/index.html';
+const INDEX_API='https://api.github.com/repos/'+REPO+'/contents/index.html';
 
 let ROWS=[],ROWMAP={},GROUPS=[],IMAGES={},EXTRAS={},VIEWS={},FILES=[];
 let currentId=null,currentGroup=null,model=null,tfOk=false,camMode=null,lastScanUrl=null,lastRes=[],gSearchT=null,sSearchT=null,currentAi='';
@@ -704,7 +716,6 @@ $('btnGenAI').onclick=async()=>{
   openView(currentId);$('maintSec').hidden=false;
   toast('✔ تم توليد الوصف الذكي');
 };
-/* ✔✔✔ [1] حذف التفاصيل بذكاء (مدير) ✔✔✔ */
 $('btnDelDetails').onclick=async()=>{
   const ex=EXTRAS[currentId]||{};
   const hasAi=(ex.ai)||(IMAGES[currentId]&&IMAGES[currentId].ai);
@@ -994,10 +1005,11 @@ async function getServerImages(token){
   return merged;
 }
 async function putImagesJson(token,merged){
-  const api='https://api.github.com/repos/'+REPO+'/contents/data/images.json';
   let sha;
-  const g=await fetch(api,{headers:{Authorization:'token '+token,Accept:'application/vnd.github+json'}});
-  if(g.ok){const gj=await g.json();sha=gj.sha;}
+  const g=await fetch(SHARED_URL.replace('raw.githubusercontent.com','api.github.com/repos/'+REPO+'/contents/data').replace('/Baht/contents/data/images.json','') ,{headers:{Authorization:'token '+token}});
+  const api='https://api.github.com/repos/'+REPO+'/contents/data/images.json';
+  const gg=await fetch(api,{headers:{Authorization:'token '+token,Accept:'application/vnd.github+json'}});
+  if(gg.ok){const gj=await gg.json();sha=gj.sha;}
   const put=await fetch(api,{method:'PUT',headers:{Authorization:'token '+token,Accept:'application/vnd.github+json','Content-Type':'application/json'},
     body:JSON.stringify({message:'sync images',content:b64encode(JSON.stringify(merged)),...(sha?{sha}:{})})});
   if(!put.ok){const er=await put.json().catch(()=>null);throw new Error((er&&er.message)||('HTTP '+put.status));}
@@ -1053,6 +1065,65 @@ async function publishCurrentMaterial(){
   }catch(e){console.error(e);toast('فشل الرفع: '+e.message,'err');}
 }
 
+/* ✔✔✔ [جديد] تعديل جزء من الكود: يتعرف على الجزء ويستبدله من كود المستودع ✔✔✔ */
+$('btnEditCode').onclick=()=>{$('codeModal').hidden=false;$('codeInput').value='';$('partialSec').hidden=true;};
+$('btnFetchCode').onclick=async()=>{
+  toast('جارٍ جلب الكود الحالي…');
+  try{
+    const r=await fetch(INDEX_URL,{cache:'no-store'});
+    if(!r.ok)throw new Error('HTTP '+r.status);
+    $('codeInput').value=await r.text();
+    toast('تم جلب الكود الحالي ✔');
+  }catch(e){toast('فشل الجلب: '+e.message,'err');}
+};
+$('btnPartial').onclick=()=>{$('partialSec').hidden=!$('partialSec').hidden;};
+$('btnPartialPublish').onclick=async()=>{
+  const oldStr=$('codeOld').value;
+  const newStr=$('codeNew').value;
+  if(!oldStr){toast('أدخل الجزء القديم أولاً','err');return;}
+  const ok=await askConfirm('سيتم جلب كود المستودع، التعرف على الجزء القديم، استبداله بالجديد، ثم النشر. متابعة؟');
+  if(!ok)return;
+  const token=await ensureToken();
+  if(!token)return toast('أدخل التوكن أولاً','err');
+  toast('جارٍ جلب الكود من المستودع…');
+  try{
+    const r=await fetch(INDEX_URL,{cache:'no-store'});
+    if(!r.ok)throw new Error('HTTP '+r.status);
+    let code=await r.text();
+    if(!code.includes(oldStr)){toast('⚠ الجزء القديم غير موجود في كود المستودع — تأكد من النص','err');return;}
+    const count=code.split(oldStr).length-1;
+    code=code.split(oldStr).join(newStr);
+    let sha;
+    const g=await fetch(INDEX_API,{headers:{Authorization:'token '+token,Accept:'application/vnd.github+json'}});
+    if(g.ok){const gj=await g.json();sha=gj.sha;}
+    const put=await fetch(INDEX_API,{method:'PUT',headers:{Authorization:'token '+token,Accept:'application/vnd.github+json','Content-Type':'application/json'},
+      body:JSON.stringify({message:'partial edit index.html ('+count+')',content:b64encode(code),...(sha?{sha}:{})})});
+    if(!put.ok){const er=await put.json().catch(()=>null);throw new Error((er&&er.message)||('HTTP '+put.status));}
+    toast('✔ تم استبدال '+count+' موضع ونشر الكود — حدّث الصفحة');
+    setTimeout(()=>{$('codeModal').hidden=true;},800);
+  }catch(e){toast('فشل الاستبدال: '+e.message,'err');}
+};
+$('btnPublishCode').onclick=async()=>{
+  const code=$('codeInput').value;
+  if(code.length<200)return toast('الكود قصير جداً — تأكد من لصق الكود الكامل','err');
+  if(!/<!DOCTYPE html>/i.test(code))return toast('الكود لا يبدو ملف HTML صحيحاً','err');
+  const ok=await askConfirm('سيتم استبدال index.html في المستودع بالكود الجديد. متابعة؟');
+  if(!ok)return;
+  const token=await ensureToken();
+  if(!token)return toast('أدخل التوكن أولاً','err');
+  toast('جارٍ النشر إلى المستودع…');
+  try{
+    let sha;
+    const g=await fetch(INDEX_API,{headers:{Authorization:'token '+token,Accept:'application/vnd.github+json'}});
+    if(g.ok){const gj=await g.json();sha=gj.sha;}
+    const put=await fetch(INDEX_API,{method:'PUT',headers:{Authorization:'token '+token,Accept:'application/vnd.github+json','Content-Type':'application/json'},
+      body:JSON.stringify({message:'update index.html from app',content:b64encode(code),...(sha?{sha}:{})})});
+    if(!put.ok){const er=await put.json().catch(()=>null);throw new Error((er&&er.message)||('HTTP '+put.status));}
+    toast('✔ تم نشر الكود إلى المستودع — حدّث الصفحة لرؤية التغيير');
+    setTimeout(()=>{$('codeModal').hidden=true;},800);
+  }catch(e){toast('فشل النشر: '+e.message,'err');}
+};
+
 $('btnUpload').onclick=()=>$('filePick').click();
 $('filePick').onchange=async e=>{
   const f=e.target.files[0];if(!f)return;
@@ -1081,38 +1152,6 @@ $('btnRepo').onclick=async()=>{
   if(okRows)toast('✔ تم التحديث: '+rowsCount+' مادة • '+im.total+' صورة مرجعية (+'+im.added+' جديدة)');
   else if(im.total)toast('🖼 تم جلب '+im.total+' صورة مرجعية');
   else toast('تعذر الجلب — حاول لاحقاً','err');
-};
-
-$('btnEditCode').onclick=()=>{$('codeModal').hidden=false;$('codeInput').value='';};
-$('btnFetchCode').onclick=async()=>{
-  toast('جارٍ جلب الكود الحالي…');
-  try{
-    const r=await fetch('https://raw.githubusercontent.com/'+REPO+'/main/index.html',{cache:'no-store'});
-    if(!r.ok)throw new Error('HTTP '+r.status);
-    $('codeInput').value=await r.text();
-    toast('تم جلب الكود الحالي ✔');
-  }catch(e){toast('فشل الجلب: '+e.message,'err');}
-};
-$('btnPublishCode').onclick=async()=>{
-  const code=$('codeInput').value;
-  if(code.length<200)return toast('الكود قصير جداً — تأكد من لصق الكود الكامل','err');
-  if(!/<!DOCTYPE html>/i.test(code))return toast('الكود لا يبدو ملف HTML صحيحاً','err');
-  const ok=await askConfirm('سيتم استبدال index.html في المستودع بالكود الجديد. متابعة؟');
-  if(!ok)return;
-  const token=await ensureToken();
-  if(!token)return toast('أدخل التوكن أولاً','err');
-  toast('جارٍ النشر إلى المستودع…');
-  try{
-    const api='https://api.github.com/repos/'+REPO+'/contents/index.html';
-    let sha;
-    const g=await fetch(api,{headers:{Authorization:'token '+token,Accept:'application/vnd.github+json'}});
-    if(g.ok){const gj=await g.json();sha=gj.sha;}
-    const put=await fetch(api,{method:'PUT',headers:{Authorization:'token '+token,Accept:'application/vnd.github+json','Content-Type':'application/json'},
-      body:JSON.stringify({message:'update index.html from app',content:b64encode(code),...(sha?{sha}:{})})});
-    if(!put.ok){const er=await put.json().catch(()=>null);throw new Error((er&&er.message)||('HTTP '+put.status));}
-    toast('✔ تم نشر الكود إلى المستودع — حدّث الصفحة لرؤية التغيير');
-    setTimeout(()=>{$('codeModal').hidden=true;},800);
-  }catch(e){toast('فشل النشر: '+e.message,'err');}
 };
 
 const MOD_ORDER=['confirmModal','aiModal','codeModal','imgsModal','viewModal','imgsListModal','searchModal','scanModal','groupModal'];
