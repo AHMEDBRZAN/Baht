@@ -829,7 +829,8 @@ async function processAttach(url,which){
     const g=await analyze(url,(t,p)=>setProc(which,t,p));
     if(!IMAGES[currentId])IMAGES[currentId]={id:currentId,imgs:[]};
     IMAGES[currentId].imgs.push(g);
-    const ai=generateAIInfo(ROWMAP[currentId],g.ocr);
+    const a=await smartAI(ROWMAP[currentId],url,g.ocr);    if(!a.clear)toast('⚠ الصورة المرفوعة غير واضحة — ارفع صورة أوضح لتفاصيل أدق','err');
+    const ai=composeAI(ROWMAP[currentId],a);
     IMAGES[currentId].ai=ai;
     EXTRAS[currentId]=Object.assign({},EXTRAS[currentId],{id:currentId,ai});
     await dbPut('extras',currentId,EXTRAS[currentId]);
