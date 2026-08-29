@@ -75,6 +75,7 @@ main{max-width:960px;margin:0 auto;padding:14px 12px 60px}
 #viewModal{z-index:60}
 #imgsModal{z-index:65}
 #codeModal{z-index:72}
+#aiModal{z-index:74}
 #confirmModal{z-index:80}
 .modal{background:#fff;border-radius:22px;width:min(600px,96vw);max-height:calc(100vh - 24px);max-height:calc(100dvh - 24px);display:flex;flex-direction:column;padding:0;overflow:hidden;animation:up .25s;margin:auto}
 .modal.wide{width:min(780px,96vw)}
@@ -132,6 +133,7 @@ textarea.code{width:calc(100% - 32px);margin:0 16px;font-family:'Courier New',mo
 .vdetails .ln:last-child{border:none}
 .vdetails .ln b{color:var(--mut);min-width:95px;font-weight:800}
 .note{background:linear-gradient(135deg,#fff6dd,#ffedc2);border:2px solid #f0c64a;border-radius:14px;padding:12px;margin-top:10px;white-space:pre-wrap;font-weight:700;font-size:14px;color:#6b4d0f}
+.note.ai{background:linear-gradient(135deg,#eef6ff,#e8f1ff);border-color:#7aa7f0;color:#173a7a}
 .row{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;padding:0 16px}
 .row .btn{flex:1}
 label{display:block;font-size:13px;font-weight:800;margin:12px 16px 6px}
@@ -239,6 +241,14 @@ textarea{width:calc(100% - 32px);margin:0 16px;border:2px solid #e3e7f5;border-r
   </div>
 </div>
 
+<!-- الوصف الذكي الكامل -->
+<div class="overlay" id="aiModal" hidden>
+  <div class="modal">
+    <div class="m-head"><h2>🤖 تفاصيل المادة الذكية</h2><button class="x" data-close>✕</button></div>
+    <div class="m-body"><div id="aiFull" class="note ai" style="margin:0 16px"></div></div>
+  </div>
+</div>
+
 <!-- البحث عن أي مادة -->
 <div class="overlay" id="searchModal" hidden>
   <div class="modal wide">
@@ -281,6 +291,7 @@ textarea{width:calc(100% - 32px);margin:0 16px;border:2px solid #e3e7f5;border-r
         <label>إضافة تفاصيل تظهر مع المادة</label>
         <textarea id="noteInput" placeholder="اكتب أي ملاحظات إضافية…"></textarea>
         <div class="row"><button class="btn pri" id="saveNote">💾 حفظ التفاصيل</button></div>
+        <div class="row" data-admin><button class="btn imgs" id="btnGenAI">🤖 توليد وصف ذكي من الصور</button></div>
         <div class="row" data-admin>
           <button class="btn amb" id="camAttach2">📷 التقاط صورة</button>
           <button class="btn ghost" id="fileAttach2">🖼 رفع صورة</button>
@@ -308,6 +319,23 @@ textarea{width:calc(100% - 32px);margin:0 16px;border:2px solid #e3e7f5;border-r
         <div class="row" data-admin style="padding:0"><button class="btn grn" id="btnPublish2">📤 رفع الصور المرجعية</button></div>
         <input type="file" id="fileAttachInput" accept="image/*" hidden>
         <div id="procProg3" hidden><div class="bar"><i id="procBar3"></i></div><p class="prog-txt" id="procTxt3"></p></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- الكاميرا -->
+<div class="overlay" id="camModal" hidden>
+  <div class="modal">
+    <div class="m-head"><h2>📷 الكاميرا</h2><button class="x" id="camClose">✕</button></div>
+    <div class="m-body">
+      <div style="padding:12px 16px 0">
+        <video id="camVideo" class="cam-video" playsinline muted autoplay></video>
+        <div class="row" style="padding:0">
+          <button class="btn dngr" id="camShot">⬤ التقاط</button>
+          <button class="btn ghost" id="camUploadBtn">🖼 رفع صورة</button>
+        </div>
+        <input type="file" id="camUpload" accept="image/*" hidden>
       </div>
     </div>
   </div>
@@ -365,13 +393,13 @@ const REPO_URLS=['https://raw.githubusercontent.com/'+REPO+'/main/'+encodeURICom
 const SHARED_URL='https://raw.githubusercontent.com/'+REPO+'/main/data/images.json';
 
 let ROWS=[],ROWMAP={},GROUPS=[],IMAGES={},EXTRAS={},VIEWS={},FILES=[];
-let currentId=null,currentGroup=null,model=null,tfOk=false,camMode=null,lastScanUrl=null,lastRes=[],gSearchT=null,sSearchT=null;
+let currentId=null,currentGroup=null,model=null,tfOk=false,camMode=null,lastScanUrl=null,lastRes=[],gSearchT=null,sSearchT=null,currentAi='';
 let isAdmin=sessionStorage.getItem('isAdmin')==='1';
 
 function toast(m,t){const e=$('toast');e.textContent=m;e.className=t||'';e.hidden=false;clearTimeout(e._h);e._h=setTimeout(()=>e.hidden=true,5000);}
 function esc(s){return (s??'').toString().replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
 function short(s,n){n=n||42;s=s??'';return s.length>n?s.slice(0,n)+'…':s;}
-function parseNum(v){if(typeof v==='number')return isFinite(v)?v:0;if(v==null)return 0;let s=String(v).replace(/[٠-٩]/g,d=>'٠١٢٣٤٥٦٧٨٩'.indexOf(d)).replace(/[,،\s]/g,'');const n=parseFloat(s);return isFinite(n)?n:0;}
+function parseNum(v){if(typeof v==='number')return isFinite(v)?v:0;if(v==null)return 0;let s=String(v).replace(/[٠-٩]/g,d=>'٠١٣٤٥٧٨٩'.indexOf(d)).replace(/[,،\s]/g,'');const n=parseFloat(s);return isFinite(n)?n:0;}
 function fm(n){n=parseNum(n);return n?n.toLocaleString('en-US',{maximumFractionDigits:2}):'0';}
 function norm(s){return (s||'').toLowerCase().replace(/[\u064B-\u0652\u0640]/g,'').replace(/[أإآ]/g,'ا').replace(/ة/g,'ه').replace(/ى/g,'ي').replace(/[^\p{L}\p{N}]+/gu,' ').trim();}
 function lev(a,b){a=a||'';b=b||'';if(a===b)return 0;const m=a.length,n=b.length;if(!m||!n)return m||n;let p=Array.from({length:n+1},(_,i)=>i);for(let i=1;i<=m;i++){const c=[i];for(let j=1;j<=n;j++)c[j]=Math.min(p[j]+1,c[j-1]+1,p[j-1]+(a[i-1]===b[j-1]?0:1));p=c;}return p[n];}
@@ -383,7 +411,41 @@ const CHUNK=0x8000;
 function b64encode(str){const bytes=new TextEncoder().encode(str);let bin='';for(let i=0;i<bytes.length;i+=CHUNK){bin+=String.fromCharCode.apply(null,bytes.subarray(i,i+CHUNK));}return btoa(bin);}
 function bufToB64(buf){const bytes=new Uint8Array(buf);let bin='';for(let i=0;i<bytes.length;i+=CHUNK){bin+=String.fromCharCode.apply(null,bytes.subarray(i,i+CHUNK));}return btoa(bin);}
 
-/* ✔✔✔ معالجة اتجاه/قياسات الصورة من الكاميرا ✔✔✔ */
+/* ✔✔✔ [AI] توليد وصف ذكي من الصورة (OCR + الاسم + الفئة) ✔✔✔ */
+function generateAIInfo(row,ocr){
+  const nm=row?norm(row.name):'';
+  const og=norm(ocr||'');
+  const src=nm+' '+og;
+  const has=k=>src.includes(norm(k));
+  let type='منتج دهانات وتشطيبات';
+  if(has('برايمر')||has('استار')||has('أستار')||has('primer')||has('اساس'))type='برايمر / طبقة أساس';
+  else if(has('معجون'))type='معجون تسوية ومعادلة';
+  else if(has('شفاف')||has('ورنيش')||has('لك')||has('ملمع'))type='شفاف / ورنيش حماية وتشطيب';
+  else if(has('اكريليك')||has('أكريليك'))type='دهان أكريليك مائي';
+  else if(has('زيت'))type='دهان زيتي (ألكيد)';
+  else if(has('خارجي'))type='دهان خارجي';
+  else if(has('داخلي'))type='دهان داخلي';
+  else if(has('غراء')||has('غرا')||has('لاصق'))type='لاصق / غراء';
+  else if(has('ثنر')||has('تنر')||has('مخفف'))type='مخفف / ثنر';
+  let comp='تركيبة متوازنة من الروابط والصبغات عالية الجودة';
+  if(type.includes('أكريليك'))comp='راتنج أكريليك مائي + صباغ عالي الثبات + إضافات مقاومة للعوامل الجوية';
+  else if(type.includes('زيتي'))comp='راتنج زيتي (ألكيد) + صباغ + مذيبات عضوية';
+  else if(type.includes('برايمر'))comp='راتنج أساس + صباغ تحضير + مواد مالئة لتعزيز الالتصاق';
+  else if(type.includes('معجون'))comp='مواد مالئة (كاولين/كربونات كالسيوم) + رابط + مثبّتات';
+  else if(type.includes('شفاف'))comp='راتنج شفاف (أكريليك/بولي يوريثان) + مثبتات ضد الأشعة';
+  else if(type.includes('ثنر'))comp='مذيبات عضوية نقية سريعة التبخر';
+  let use='يُطبق على سطح نظيف وجاف بعد التحضير ويُترك ليجف قبل الطبقة التالية';
+  if(type.includes('برايمر'))use='يُطبق كطبقة أولى بعد التنظيف والصنفرة، يُترك ليجف 2-4 ساعات قبل المعجون أو الدهان';
+  else if(type.includes('معجون'))use='يُطبق بالمعجون لتسوية الشقوق، يُصنفر بعد الجفاف ثم يُطبق البرايمر';
+  else if(type.includes('شفاف'))use='يُطبق كطبقة نهائية لحماية الوجه وإبراز المظهر، طبقة أو طبقتان';
+  else if(type.includes('داخلي')||type.includes('خارجي'))use='يُطبق بالفرشاة أو الرولة أو الرش على سطح مُجهّز، طبقتان بفاصل جفاف كافٍ';
+  const sum=(row?row.name:'المادة')+' — '+type+' من '+(row?(row.group||NO_GROUP):'')+'. '+comp+'. '+use+'.';
+  return '🧪 ما هذه المادة:\n'+(row?row.name:'مادة')+' — '+type+
+    '\n\n🧬 التركيب:\n'+comp+
+    '\n\n🛠 طريقة الاستخدام:\n'+use+
+    '\n\n📋 ملخص:\n'+sum;
+}
+
 function fileToOrientedDataUrl(file,maxW,q){
   return new Promise(async res=>{
     try{
@@ -476,8 +538,8 @@ async function fetchSharedImages(){
           const valid=entry.imgs.filter(validImg);
           total+=valid.length;
           if(!valid.length)continue;
-          if(!IMAGES[id]){IMAGES[id]={id,imgs:valid};added+=valid.length;}
-          else{const have=new Set(IMAGES[id].imgs.map(g=>g.ts));valid.forEach(g=>{if(!have.has(g.ts)){IMAGES[id].imgs.push(g);added++;}});}
+          if(!IMAGES[id]){IMAGES[id]={id,imgs:valid,ai:entry.ai||''};added+=valid.length;}
+          else{const have=new Set(IMAGES[id].imgs.map(g=>g.ts));valid.forEach(g=>{if(!have.has(g.ts)){IMAGES[id].imgs.push(g);added++;}});if(entry.ai)IMAGES[id].ai=entry.ai;}
         }
       }
     }
@@ -603,12 +665,22 @@ function openView(id){const r=ROWMAP[id];if(!r)return;currentId=id;
   let html=lines.map(l=>`<div class="ln"><b>${l[0]}:</b><span>${esc(l[1])}</span></div>`).join('');
   const note=EXTRAS[id]&&EXTRAS[id].note;
   if(note)html+=`<div class="note"><b>📝 تفاصيل إضافية:</b><br>${esc(note)}</div>`;
+  const ai=(EXTRAS[id]&&EXTRAS[id].ai)||(IMAGES[id]&&IMAGES[id].ai)||'';
+  currentAi=ai;
+  if(ai){
+    const shortAi=ai.length>160?ai.slice(0,160)+'…':ai;
+    html+=`<div class="note ai"><b>🤖 وصف ذكي:</b><br>${esc(shortAi)}</div>
+    <div class="row" style="padding:0;margin-top:8px"><button class="btn ghost" id="btnAiFull">📖 عرض التفاصيل الكاملة</button></div>`;
+  }
   if(hasImg(id))html+=`<div style="margin-top:8px"><span class="chip" style="background:#e7f7ee;color:#177a4c;border-radius:20px;padding:3px 12px;font-size:12px;font-weight:800">🖼 ${IMAGES[id].imgs.length} صورة مرجعية</span></div>`;
   $('vDetails').innerHTML=html;
   $('maintSec').hidden=true;$('viewModal').hidden=false;
   $('noteInput').value=note||'';
   updateImgsBtn();
 }
+$('vDetails').addEventListener('click',e=>{
+  if(e.target.closest('#btnAiFull')){$('aiFull').textContent=currentAi;$('aiModal').hidden=false;}
+});
 function updateImgsBtn(){const n=hasImg(currentId)?IMAGES[currentId].imgs.length:0;
   $('btnImgs').textContent='🖼 الصور المرجعية ('+n+')';}
 $('btnImgs').onclick=()=>{
@@ -617,8 +689,19 @@ $('btnImgs').onclick=()=>{
   renderImgs();
 };
 $('btnMaint').onclick=()=>{$('maintSec').hidden=!$('maintSec').hidden;};
-$('saveNote').onclick=async()=>{const n=$('noteInput').value.trim();EXTRAS[currentId]={id:currentId,note:n};
+$('saveNote').onclick=async()=>{const n=$('noteInput').value.trim();EXTRAS[currentId]=Object.assign({},EXTRAS[currentId],{id:currentId,note:n});
   await dbPut('extras',currentId,EXTRAS[currentId]);toast('تم حفظ التفاصيل ✔');openView(currentId);$('maintSec').hidden=false;};
+$('btnGenAI').onclick=async()=>{
+  const im=IMAGES[currentId];
+  if(!im||!im.imgs.length)return toast('أضف صورة أولاً لتوليد الوصف','err');
+  const ocr=im.imgs.map(g=>g.ocr||'').join(' ');
+  const ai=generateAIInfo(ROWMAP[currentId],ocr);
+  EXTRAS[currentId]=Object.assign({},EXTRAS[currentId],{id:currentId,ai});
+  await dbPut('extras',currentId,EXTRAS[currentId]);
+  im.ai=ai;await dbPut('images',currentId,im);
+  openView(currentId);$('maintSec').hidden=false;
+  toast('✔ تم توليد الوصف الذكي');
+};
 function renderImgs(){const im=IMAGES[currentId];
   $('imgsGrid').innerHTML=(im&&im.imgs&&im.imgs.length)?im.imgs.map((g,i)=>`<div class="imbig"><img src="${g.thumb}" alt="">${isAdmin?`<button data-delimg="${i}" title="حذف">✕</button>`:''}</div>`).join('')
    :'<p class="empty">لا توجد صور مرجعية بعد.</p>';
@@ -660,7 +743,6 @@ async function deleteImgFromServer(id,deletedLocalIdx){
   }
 }
 
-/* ✔✔✔ الكاميرا: التقاط صورة واحدة عبر كاميرا الجهاز + معالجة الاتجاه ✔✔✔ */
 const nativeCam=document.createElement('input');
 nativeCam.type='file';nativeCam.accept='image/*';nativeCam.setAttribute('capture','environment');nativeCam.hidden=true;
 document.body.appendChild(nativeCam);
@@ -713,6 +795,10 @@ async function processAttach(url,which){
     const g=await analyze(url,(t,p)=>setProc(which,t,p));
     if(!IMAGES[currentId])IMAGES[currentId]={id:currentId,imgs:[]};
     IMAGES[currentId].imgs.push(g);
+    const ai=generateAIInfo(ROWMAP[currentId],g.ocr);
+    IMAGES[currentId].ai=ai;
+    EXTRAS[currentId]=Object.assign({},EXTRAS[currentId],{id:currentId,ai});
+    await dbPut('extras',currentId,EXTRAS[currentId]);
     await dbPut('images',currentId,IMAGES[currentId]);
     setProc(which,'✔ تمت المعالجة والإضافة',100);
     setTimeout(()=>{$('procProg').hidden=true;$('procProg3').hidden=true;},1200);
@@ -860,6 +946,10 @@ async function attachTo(id){
     const g=await analyze(lastScanUrl,(t,p)=>setScan(t,20+Math.round(p*.7)));
     if(!IMAGES[id])IMAGES[id]={id,imgs:[]};
     IMAGES[id].imgs.push(g);
+    const ai=generateAIInfo(ROWMAP[id],g.ocr);
+    IMAGES[id].ai=ai;
+    EXTRAS[id]=Object.assign({},EXTRAS[id],{id,ai});
+    await dbPut('extras',id,EXTRAS[id]);
     await dbPut('images',id,IMAGES[id]);
     $('scanModal').hidden=true;
     toast('✔ أُضيفت الصورة كمرجع إضافي — اضغط 📤 رفع الصور المرجعية لنشرها');
@@ -910,7 +1000,7 @@ async function publishAllImages(){
     const keep=have.filter(hg=>local.some(l=>l.ts===hg.ts));
     const smallOnes=[];
     for(const g of newOnes){smallOnes.push(await encodeSmall(g));}
-    merged[id]={imgs:keep.concat(smallOnes)};
+    merged[id]={imgs:keep.concat(smallOnes),ai:IMAGES[id].ai||merged[id].ai||''};
   }
   try{
     await putImagesJson(token,merged);
@@ -932,7 +1022,7 @@ async function publishCurrentMaterial(){
   const keep=have.filter(hg=>local.some(l=>l.ts===hg.ts));
   const smallOnes=[];
   for(const g of newOnes){smallOnes.push(await encodeSmall(g));}
-  merged[currentId]={imgs:keep.concat(smallOnes)};
+  merged[currentId]={imgs:keep.concat(smallOnes),ai:IMAGES[currentId].ai||''};
   try{
     await putImagesJson(token,merged);
     const name=ROWMAP[currentId]?ROWMAP[currentId].name:'مادة';
@@ -1002,7 +1092,7 @@ $('btnPublishCode').onclick=async()=>{
   }catch(e){toast('فشل النشر: '+e.message,'err');}
 };
 
-const MOD_ORDER=['confirmModal','codeModal','imgsModal','viewModal','imgsListModal','searchModal','scanModal','groupModal'];
+const MOD_ORDER=['confirmModal','aiModal','codeModal','imgsModal','viewModal','imgsListModal','searchModal','scanModal','groupModal'];
 function closeTop(){const id=MOD_ORDER.find(x=>{const el=$(x);return el&&!el.hidden;});if(!id)return;$(id).hidden=true;}
 document.querySelectorAll('[data-close]').forEach(b=>b.onclick=()=>{const o=b.closest('.overlay');if(o)o.hidden=true;});
 document.querySelectorAll('.overlay').forEach(o=>o.addEventListener('click',e=>{
