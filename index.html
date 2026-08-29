@@ -168,7 +168,7 @@ textarea{width:calc(100% - 32px);margin:0 16px;border:2px solid #e3e7f5;border-r
 
 <div class="overlay" id="imgsListModal" hidden><div class="modal wide">
   <div class="m-head"><h2>🖼 مواد مرفقة بالصور</h2><button class="x" data-close>✕</button></div>
-  <div class="g-tools"><input type="text" class="gsearch" id="imgsListSearch" style="margin:0;flex:1" placeholder="🔍 بحث…"><span id="imgsListCount" style="background:#eef1f8;color:var(--pri2);border-radius:20px;padding:3px 12px;font-size:12px;font-weight:800"></span></div>
+  <div class="g-tools"><input type="text" class="gsearch" id="imgsListSearch" style="margin:0;flex:1" placeholder="🔍 بحث في المواد المصوَّرة…"><span id="imgsListCount" style="background:#eef1f8;color:var(--pri2);border-radius:20px;padding:3px 12px;font-size:12px;font-weight:800"></span></div>
   <div class="m-body"><div id="imgsListContent" style="padding:12px 16px 0"></div></div>
 </div></div>
 
@@ -320,7 +320,6 @@ const CHUNK=0x8000;
 function b64encode(str){const bytes=new TextEncoder().encode(str);let bin='';for(let i=0;i<bytes.length;i+=CHUNK){bin+=String.fromCharCode.apply(null,bytes.subarray(i,i+CHUNK));}return btoa(bin);}
 function bufToB64(buf){const bytes=new Uint8Array(buf);let bin='';for(let i=0;i<bytes.length;i+=CHUNK){bin+=String.fromCharCode.apply(null,bytes.subarray(i,i+CHUNK));}return btoa(bin);}
 
-/* ✔✔✔ جلب الوصف من موقع الشركة (الطريقة الجديدة) ✔✔✔ */
 async function fetchText(url){const r=await fetch(url);if(!r.ok)throw new Error('HTTP '+r.status);return await r.text();}
 const proxy=u=>'https://api.allorigins.win/raw?url='+encodeURIComponent(u);
 function collectProducts(doc,base,list){
@@ -447,6 +446,30 @@ function renderGroupContent(){const g=GROUPS.find(x=>x.name===currentGroup);if(!
   g.hi=-1;}
 function searchScore(q,r){const nq=q;let s=0;if(r.n===nq)s+=120;else if(r.n.includes(nq))s+=100;else if(r.ln.includes(nq))s+=70;for(const t of nq.split(' ')){if(t.length<2)continue;if(r.n.includes(t))s+=30;else if(r.ln.includes(t))s+=20;else if(String(r.code).includes(t)||String(r.barcode).includes(t))s+=40;else for(const w of r.n.split(' '))if(w.length>=3&&lev(w,t)<=1){s+=18;break;}}return s;}
 
+/* ✔✔✔ إصلاح: مواد مرفقة بالصور (كانت بدون دوال) ✔✔✔ */
+function openImgsList(){
+  $('imgsListModal').hidden=false;
+  $('imgsListSearch').value='';
+  renderImgsList('');
+  setTimeout(()=>$('imgsListSearch').focus(),150);
+}
+$('btnImgsList').onclick=openImgsList;
+$('imgsListSearch').addEventListener('input',e=>renderImgsList(e.target.value.trim()));
+$('imgsListContent').addEventListener('click',e=>{const it=e.target.closest('[data-id]');if(it)openView(it.dataset.id);});
+function renderImgsList(q){
+  const nq=norm(q);
+  let list=Object.keys(IMAGES).filter(id=>hasImg(id)&&ROWMAP[id])
+    .map(id=>Object.assign({},ROWMAP[id],{imgCount:IMAGES[id].imgs.length}));
+  if(nq)list=list.filter(r=>searchScore(nq,r)>0);
+  list.sort((a,b)=>(b.imgCount-a.imgCount)||a.n.localeCompare(b.n,'ar'));
+  $('imgsListCount').textContent=list.length+' مادة';
+  const el=$('imgsListContent');
+  if(!list.length){el.innerHTML='<p class="empty">'+(q?'لا توجد نتائج مطابقة للبحث':'لا توجد مواد مصوَّرة بعد.')+'</p>';return;}
+  el.innerHTML='<table class="tbl"><thead><tr><th>ت</th><th>اسم المادة</th><th>🖼 الصور</th><th>الكمية</th><th>سعر المبيع</th></tr></thead><tbody>'
+    +list.map((r,i)=>`<tr tabindex="0" data-id="${r.id}" class="hi-img"><td>${i+1}</td><td style="text-align:right;padding-right:12px">${esc(short(r.name))}</td><td>${r.imgCount}</td><td>${fm(r.qty)}</td><td>${fm(r.sell)}</td></tr>`).join('')
+    +'</tbody></table>';
+}
+
 $('btnSearch').onclick=()=>{$('searchModal').hidden=false;$('sSearch').value='';renderSearchResults('');setTimeout(()=>$('sSearch').focus(),150);};
 $('sSearch').addEventListener('input',e=>{clearTimeout(sSearchT);sSearchT=setTimeout(()=>renderSearchResults(e.target.value.trim()),120);});
 $('sContent').addEventListener('click',e=>{const it=e.target.closest('[data-id]');if(it)openView(it.dataset.id);});
@@ -475,8 +498,6 @@ $('btnMaint').onclick=()=>{$('maintSec').hidden=!$('maintSec').hidden;
   const su=$('siteUrlInput');if(su)su.value=(localStorage.getItem('siteUrl')||DEFAULT_SITE);};
 $('siteUrlInput').addEventListener('change',e=>{localStorage.setItem('siteUrl',e.target.value.trim()||DEFAULT_SITE);localStorage.removeItem('siteIndex');toast('✔ تم حفظ رابط الموقع');});
 $('saveNote').onclick=async()=>{const n=$('noteInput').value.trim();EXTRAS[currentId]=Object.assign({},EXTRAS[currentId],{id:currentId,note:n});await dbPut('extras',currentId,EXTRAS[currentId]);toast('تم حفظ التفاصيل ✔');refreshDetails();};
-
-/* ✔ زر جلب الوصف من الموقع (الطريقة الجديدة) ✔ */
 $('btnGenAI').onclick=async()=>{
   const row=ROWMAP[currentId];if(!row)return toast('افتح مادة أولاً','err');
   toast('جارٍ جلب الوصف من الموقع…');
