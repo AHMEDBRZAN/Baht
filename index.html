@@ -428,175 +428,95 @@ const CHUNK=0x8000;
 function b64encode(str){const bytes=new TextEncoder().encode(str);let bin='';for(let i=0;i<bytes.length;i+=CHUNK){bin+=String.fromCharCode.apply(null,bytes.subarray(i,i+CHUNK));}return btoa(bin);}
 function bufToB64(buf){const bytes=new Uint8Array(buf);let bin='';for(let i=0;i<bytes.length;i+=CHUNK){bin+=String.fromCharCode.apply(null,bytes.subarray(i,i+CHUNK));}return btoa(bin);}
 
-/* ✔✔✔ رابط محرك الذكاء الخارجي ✔✔✔ */
-async function ensureAIEndpoint(){
-  let u=(localStorage.getItem(AI_ENDPOINT_KEY)||'').trim();
-  if(u)return u;
-  u=(prompt('ضع رابط محرك الذكاء الخارجي الخاص بالمواد:\nمثال:\nhttps://your-worker.workers.dev/material-ai\n\nملاحظة: لا تضع مفاتيح API داخل الكود.')||'').trim();
-  if(!u)return '';
-  localStorage.setItem(AI_ENDPOINT_KEY,u);
-  return u;
-}
-
-/* ✔✔✔ ذكاء متقدم: صورة + OCR + بحث مصادر خارجي ✔✔✔ */
+/* ✔✔✔ ذكاء يعتمد على الصور المرفقة فقط (صورة أو أكثر) ✔✔✔ */
 function colorNames(hist){
-  let r=0,g=0,b=0,tot=0;
-  const L=[.125,.375,.625,.875];
-  for(let ri=0;ri<4;ri++)for(let gi=0;gi<4;gi++)for(let bi=0;bi<4;bi++){
-    const v=hist[ri*16+gi*4+bi]||0;
-    tot+=v;r+=v*L[ri];g+=v*L[gi];b+=v*L[bi];
-  }
-  if(tot<=0)return['غير محدد'];
-  r/=tot;g/=tot;b/=tot;
-  const o=[];
-  const mx=Math.max(r,g,b),mn=Math.min(r,g,b);
-  if(mx<.25)o.push('داكن');
-  else if(mn>.7)o.push('فاتح / أبيض');
-  if(r>.58&&g>.38&&b<.35)o.push('أصفر / برتقالي');
-  if(r>.5&&g<.36&&b<.36)o.push('أحمر');
-  if(g>.45&&r<.55)o.push('أخضر');
-  if(b>.5&&g<.55)o.push('أزرق');
+  let r=0,g=0,b=0,tot=0;const L=[.125,.375,.625,.875];
+  for(let ri=0;ri<4;ri++)for(let gi=0;gi<4;gi++)for(let bi=0;bi<4;bi++){const v=hist[ri*16+gi*4+bi]||0;tot+=v;r+=v*L[ri];g+=v*L[gi];b+=v*L[bi];}
+  if(tot<=0)return['غير محدد'];r/=tot;g/=tot;b/=tot;const o=[];const mx=Math.max(r,g,b),mn=Math.min(r,g,b);
+  if(mx<.25)o.push('داكن');else if(mn>.7)o.push('فاتح/أبيض');
+  if(r>.58&&g>.38&&b<.35)o.push('أصفر/برتقالي');if(r>.5&&g<.36&&b<.36)o.push('أحمر');
+  if(g>.45&&r<.55)o.push('أخضر');if(b>.5&&g<.55)o.push('أزرق');
   if(!o.length)o.push('متعدد الألوان');
   return [...new Set(o)];
 }
-async function clarityScore(url){
-  return new Promise(res=>{
-    const i=new Image();
-    i.onload=()=>{
-      const S=112,c=document.createElement('canvas');
-      c.width=S;c.height=S;
-      const x=c.getContext('2d');
-      x.drawImage(i,0,0,S,S);
-      const d=x.getImageData(0,0,S,S).data;
-      const gA=new Array(S*S);
-      let mean=0;
-      for(let p=0;p<S*S;p++){
-        const q=p*4;
-        const gv=.299*d[q]+.587*d[q+1]+.114*d[q+2];
-        gA[p]=gv;
-        mean+=gv;
-      }
-      mean/=(S*S);
-      let lap=0,con=0,cnt=0;
-      for(let y=1;y<S-1;y++)for(let xx=1;xx<S-1;xx++){
-        const p=y*S+xx;
-        const l=gA[p+1]+gA[p-1]+gA[p+S]+gA[p-S]-4*gA[p];
-        lap+=l*l;
-        con+=Math.abs(gA[p]-mean);
-        cnt++;
-      }
-      res({blur:lap/cnt,contrast:con/cnt});
-    };
-    i.onerror=()=>res({blur:0,contrast:0});
-    i.src=url;
-  });
-}
-async function mobilenetLabels(url){
-  try{
-    await tfReady();
-    if(!model)model=await mobilenet.load({version:2,alpha:0.75});
-    const sm=await scaleDataUrl(url,224,.9);
-    const img=await imgEl(sm);
-    const p=await model.classify(img);
-    return (p||[]).slice(0,5).map(x=>x.className.split(',')[0]);
-  }catch(e){
-    return [];
+async function clarityScore(url){return new Promise(res=>{const i=new Image();i.onload=()=>{const S=112,c=document.createElement('canvas');c.width=S;c.height=S;const x=c.getContext('2d');x.drawImage(i,0,0,S,S);const d=x.getImageData(0,0,S,S).data;const gA=new Array(S*S);let mean=0;for(let p=0;p<S*S;p++){const q=p*4;const gv=.299*d[q]+.587*d[q+1]+.114*d[q+2];gA[p]=gv;mean+=gv;}mean/=(S*S);let lap=0,con=0,cnt=0;for(let y=1;y<S-1;y++)for(let xx=1;xx<S-1;xx++){const p=y*S+xx;const l=gA[p+1]+gA[p-1]+gA[p+S]+gA[p-S]-4*gA[p];lap+=l*l;con+=Math.abs(gA[p]-mean);cnt++;}res({blur:lap/cnt,contrast:con/cnt});};i.onerror=()=>res({blur:0,contrast:0});i.src=url;});}
+async function mobilenetLabels(url){try{await tfReady();if(!model)model=await mobilenet.load({version:2,alpha:0.75});const sm=await scaleDataUrl(url,224,.9);const img=await imgEl(sm);const p=await model.classify(img);return (p||[]).slice(0,5).map(x=>x.className.split(',')[0]);}catch(e){return[];}}
+function aiWordCount(t){return norm(t||'').split(' ').filter(w=>w.length>=3).length;}
+
+/* تحليل كل الصور المرفقة ودمج نتائجها */
+async function analyzeAllImages(im){
+  const ocrs=[],labels=[],colorsSet=new Set();
+  let blurSum=0,conSum=0,n=0;
+  for(const g of im.imgs){
+    const url=g.thumb;
+    const ocr=(g.ocr&&g.ocr.trim())?g.ocr:await ocrText(await scaleDataUrl(url,900,.88));
+    if(ocr&&ocr.trim())ocrs.push(ocr.trim());
+    const cl=await clarityScore(url);blurSum+=cl.blur;conSum+=cl.contrast;n++;
+    (await mobilenetLabels(url)).forEach(x=>labels.push(x));
+    colorNames(await histFrom(url)).forEach(c=>colorsSet.add(c));
   }
+  const clarity={blur:n?blurSum/n:0,contrast:n?conSum/n:0};
+  return {ocr:ocrs.join(' '),labels,colors:[...colorsSet],clarity,count:im.imgs.length,
+    clear:(clarity.blur>45&&clarity.contrast>7),textEnough:aiWordCount(ocrs.join(' '))>=3};
 }
-function aiWordCount(txt){
-  return norm(txt||'').split(' ').filter(w=>w.length>=3).length;
+/* نوع المنتج من نص الصورة فقط (لا يعتمد اسم المادة) */
+function detectTypeFromImage(a){
+  const src=norm((a.ocr||'')+' '+(a.labels||[]).join(' '));
+  const has=k=>src.includes(norm(k));
+  if(has('سيلكون')||has('silikon')){if(has('حرير')||has('ipek')||has('سيلك'))return 'دهان داخلي حريري مدعّم بالسيليكون (سيلك مطفي)';return 'دهان مدعّم بالسيليكون';}
+  if(has('ipek')||has('حرير')||has('سيلك'))return 'دهان داخلي حريري (سيلك مطفي)';
+  if(has('mat')||has('مطفي'))return 'دهان داخلي مطفي';
+  if(has('برايمر')||has('استار')||has('اساس')||has('primer'))return 'برايمر / طبقة أساس';
+  if(has('معجون'))return 'معجون تسوية';
+  if(has('شفاف')||has('ورنيش'))return 'شفاف / ورنيش حماية';
+  if(has('خارجي')||has('خارج'))return 'دهان خارجي';
+  if(has('داخلي')||has('داخل'))return 'دهان داخلي';
+  if(has('اكريليك'))return 'دهان أكريليك مائي';
+  if(has('زيت'))return 'دهان زيتي';
+  if(has('غراء')||has('لاصق'))return 'لاصق';
+  if(has('ثنر')||has('مخفف'))return 'مخفف / ثنر';
+  return 'منتج دهانات/تشطيبات';
 }
-function extractMaterialKeywords(row,ocr){
-  const words=(norm((row&&row.name)||'')+' '+norm(ocr||'')).split(' ')
-    .filter(w=>w.length>=3)
-    .filter(w=>!['ماده','دهان','منتج','عبوه','لتر','كيلو','لون','شركة'].includes(w));
-  return [...new Set(words)].slice(0,12);
-}
-async function smartAI(row,imageUrl,storedOcr){
-  const ocr=(storedOcr&&storedOcr.trim())?storedOcr:await ocrText(await scaleDataUrl(imageUrl,900,.88));
-  const clarity=await clarityScore(imageUrl);
-  const labels=await mobilenetLabels(imageUrl);
-  const hist=await histFrom(imageUrl);
-  const colors=colorNames(hist);
-  const wc=aiWordCount(ocr);
-  const clear=(clarity.blur>45&&clarity.contrast>7);
-  return {ocr,clarity,labels,colors,clear,textEnough:wc>=3,keywords:extractMaterialKeywords(row,ocr)};
+/* وصف محلي مبني على الصور فقط */
+function composeFromImages(row,a){
+  const type=detectTypeFromImage(a);
+  const colors=(a.colors||[]).join('، ')||'غير محدد';
+  const ocr=(a.ocr||'').trim();
+  const read=ocr?('النص المقروء من العبوة: «'+ocr.slice(0,200)+'»'):'لا يوجد نص مقروء واضح';
+  const seen=(a.labels&&a.labels.length)?('التحليل البصري: '+[...new Set(a.labels)].slice(0,3).join('، ')+'.'):'';
+  const comp=type.includes('سيليكون')?'أساسه أكريليك مدعّم بالسيليكون يعطي ملمساً حريرياً وقابلية للغسيل.':type.includes('حريري')?'أكريليك يعطي ملمساً حريرياً نصف مطفي.':type.includes('مطفي')?'تركيبة أكريليك مطفية.':type.includes('برايمر')?'راتنج أساس + مواد مالئة لتعزيز الالتصاق.':type.includes('معجون')?'مواد مالئة + رابط.':'تركيبة متوازنة عالية الجودة.';
+  const use=type.includes('برايمر')?'يُطبق كطبقة أساس بعد التنظيف والصنفرة ويُترك ليجف قبل الطبقة التالية.':type.includes('معجون')?'يُطبق لتسوية الشقوق ثم يُصنفر بعد الجفاف.':type.includes('شفاف')?'يُطبق كطبقة نهائية للحماية وإبراز المظهر.':type.includes('داخلي')?'يُطبق على الجدران والأسقف الداخلية بالفرشاة أو الرولة، طبقتان بفاصل جفاف.':type.includes('خارجي')?'يُطبق على الواجهات الخارجية بعد التحضير بطبقتين.':'طبقتان بفاصل جفاف كافٍ.';
+  return '🏷 اسم المادة:\n'+(row?row.name:'مادة')+
+   '\n\n📝 شرح عن المادة:\n'+type+'. ألوان العبوة: '+colors+'. '+seen+' '+read+
+   '\n\n🧬 التركيب:\n'+comp+
+   '\n\n🛠 طريقة الاستخدام:\n'+use+
+   '\n\n🔎 محركات التحليل: OCR + ألوان + شكل (MobileNet) من '+a.count+' صورة.';
 }
 function weakImageMessage(row,a){
-  const nm=row?row.name:'المادة';
-  return '⚠ الصورة المرفوعة للمادة غير واضحة بما يكفي.\n\n'+
-    '🏷 اسم المادة:\n'+nm+'\n\n'+
-    'السبب:\n'+
-    '- النص المقروء من العبوة قليل أو غير واضح.\n'+
-    '- تفاصيل الملصق لا تكفي لجلب معلومات موثوقة.\n\n'+
-    'الحل:\n'+
-    'ارفع صورة أوضح للواجهة الأمامية للعبوة، ويُفضّل أن تكون الإضاءة جيدة والكتابة ظاهرة.\n\n'+
-    '🔎 نتيجة التحليل المحلي:\n'+
-    'ألوان العبوة: '+(a.colors||[]).join('، ')+'\n'+
-    'نص OCR: '+((a.ocr||'').trim()?a.ocr.slice(0,180):'لم يتم قراءة نص واضح');
+  return '⚠ الصور المرفوعة غير واضحة بما يكفي.\n\n🏷 اسم المادة:\n'+(row?row.name:'مادة')+
+   '\n\nالسبب: النص المقروء قليل أو التفاصيل غير كافية.\nالحل: ارفع صورة أوضح للواجهة الأمامية للعبوة بإضاءة جيدة.\n\n🔎 تحليل محلي:\nألوان العبوة: '+(a.colors||[]).join('، ')+
+   '\nنص OCR: '+((a.ocr||'').trim()?a.ocr.slice(0,180):'لا يوجد نص واضح');
 }
-function formatOnlineAI(row,a,j){
-  const nm=(j.name||row.name||'المادة').trim();
-  const cat=(j.category||'غير محدد').trim();
-  const desc=(j.description||'لا توجد معلومات مؤكدة كافية.').trim();
-  const comp=(j.composition||'غير متوفر من المصادر.').trim();
-  const uses=(j.uses||'غير متوفر من المصادر.').trim();
-  const prep=(j.application||'غير متوفر من المصادر.').trim();
-  const warn=(j.warnings||'اتبع تعليمات الشركة المصنعة على العبوة.').trim();
-  const conf=Math.round((Number(j.confidence)||0)*100);
-  const srcs=Array.isArray(j.sources)?j.sources.slice(0,5):[];
-  return '🏷 اسم المادة:\n'+nm+
-    '\n\n📝 شرح عن المادة:\n'+desc+
-    '\n\n📌 التصنيف:\n'+cat+
-    '\n\n🧬 التركيب / الطبيعة:\n'+comp+
-    '\n\n🛠 الاستخدامات:\n'+uses+
-    '\n\n🎨 طريقة التطبيق:\n'+prep+
-    '\n\n⚠️ ملاحظات وتحذيرات:\n'+warn+
-    '\n\n🔎 ثقة التحليل:\n'+conf+'%'+
-    '\n\n🖼 تحليل الصورة:\n'+
-    '\n- ألوان العبوة: '+(a.colors||[]).join('، ')+
-    '\n- نص مقروء: '+((a.ocr||'').trim()?a.ocr.slice(0,220):'لا يوجد نص واضح')+
-    '\n\n🌐 المصادر:\n'+(srcs.length?srcs.map((s,i)=>(i+1)+') '+(s.title||s.url||'مصدر')+(s.url?' — '+s.url:'')).join('\n'):'لا توجد مصادر معروضة');
+/* محرك خارجي اختياري إن وُجد رابط */
+async function ensureAIEndpoint(){
+  let u=(localStorage.getItem(AI_ENDPOINT_KEY)||'').trim();
+  if(u)return u;
+  u=(prompt('ضع رابط محرك الذكاء الخارجي (اختياري):\nمثال: https://your-worker.workers.dev/material-ai\nاتركه فارغاً للاعتماد على التحليل المحلي.')||'').trim();
+  localStorage.setItem(AI_ENDPOINT_KEY,u);
+  return u;
 }
-async function onlineMaterialAI(row,imageUrl,storedOcr){
-  const a=await smartAI(row,imageUrl,storedOcr);
-  if(!a.clear&&!a.textEnough){
-    return {ok:false,unclear:true,ai:weakImageMessage(row,a),msg:'⚠ الصورة غير واضحة — ارفع صورة أوضح'};
-  }
-  const endpoint=await ensureAIEndpoint();
-  if(!endpoint){
-    return {ok:false,unclear:false,ai:weakImageMessage(row,a),msg:'لم يتم ضبط رابط محرك الذكاء الخارجي'};
-  }
-  const payload={
-    name:row.name,
-    group:row.group||NO_GROUP,
-    code:row.code||'',
-    latin:row.latin||'',
-    barcode:row.barcode||'',
-    ocr:a.ocr||'',
-    colors:a.colors||[],
-    labels:a.labels||[],
-    keywords:a.keywords||[]
-  };
-  const r=await fetch(endpoint,{
-    method:'POST',
-    headers:{'Content-Type':'application/json'},
-    body:JSON.stringify(payload)
-  });
+async function onlineMaterialAI(row,a){
+  const endpoint=(localStorage.getItem(AI_ENDPOINT_KEY)||'').trim();
+  if(!endpoint)return null;
+  const payload={name:row?row.name:'',group:row?(row.group||NO_GROUP):'',code:row?row.code:'',latin:row?row.latin:'',barcode:row?row.barcode:'',ocr:a.ocr||'',colors:a.colors||[],labels:a.labels||[]};
+  const r=await fetch(endpoint,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
   if(!r.ok)throw new Error('AI HTTP '+r.status);
   const j=await r.json();
-  if(!j||j.ok===false){
-    return {ok:false,ai:weakImageMessage(row,a),msg:(j&&j.message)||'تعذر جلب تفاصيل موثوقة'};
-  }
-  return {ok:true,unclear:false,ai:formatOnlineAI(row,a,j),msg:'✔ تم جلب تفاصيل المادة من عدة مصادر'};
+  if(!j||j.ok===false)return null;
+  const nm=(j.name||row.name||'').trim();
+  return '🏷 اسم المادة:\n'+nm+'\n\n📝 شرح عن المادة:\n'+(j.description||'')+'\n\n📌 التصنيف:\n'+(j.category||'')+'\n\n🧬 التركيب:\n'+(j.composition||'')+'\n\n🛠 الاستخدامات:\n'+(j.uses||'')+'\n\n🎨 طريقة التطبيق:\n'+(j.application||'')+'\n\n⚠️ ملاحظات:\n'+(j.warnings||'اتبع تعليمات الشركة المصنعة.')+'\n\n🌐 مصادر:\n'+((j.sources||[]).slice(0,5).map((s,i)=>(i+1)+') '+(s.title||'')+(s.url?' — '+s.url:'')).join('\n')||'لا توجد مصادر');
 }
-function composeAI(row,a){
-  return weakImageMessage(row,a||{colors:['غير محدد'],ocr:''});
-}
-function generateAIInfo(row,ocr){
-  return '⚠ الوصف المحلي غير كافٍ.\n\n🏷 اسم المادة:\n'+(row?row.name:'المادة')+
-    '\n\nللحصول على وصف دقيق، استخدم توليد الوصف الذكي المتصل بالمصادر.';
-}
+function generateAIInfo(row,ocr){return composeFromImages(row,{ocr:ocr,clarity:{blur:99,contrast:99},labels:[],colors:['غير محدد'],count:1,clear:true,textEnough:true});}
 
 function fileToOrientedDataUrl(file,maxW,q){
   return new Promise(async res=>{
@@ -845,28 +765,25 @@ $('btnMaint').onclick=()=>{$('maintSec').hidden=!$('maintSec').hidden;
   const aiIn=$('aiInput');if(aiIn)aiIn.value=ai;};
 $('saveNote').onclick=async()=>{const n=$('noteInput').value.trim();EXTRAS[currentId]=Object.assign({},EXTRAS[currentId],{id:currentId,note:n});
   await dbPut('extras',currentId,EXTRAS[currentId]);toast('تم حفظ التفاصيل ✔');openView(currentId);$('maintSec').hidden=false;};
+
+/* ✔✔✔ زر توليد الوصف: يعتمد على كل الصور المرفقة ولا يفشل ✔✔✔ */
 $('btnGenAI').onclick=async()=>{
   const im=IMAGES[currentId];
   if(!im||!im.imgs.length)return toast('أضف صورة أولاً لتوليد الوصف','err');
-  toast('جارٍ تحليل الصورة وجلب معلومات من عدة مصادر…');
+  toast('جارٍ تحليل '+im.imgs.length+' صورة وتوليد الوصف…');
   try{
-    const mainImg=im.imgs[0].thumb;
-    const allOcr=im.imgs.map(g=>g.ocr||'').join(' ');
-    const out=await onlineMaterialAI(ROWMAP[currentId],mainImg,allOcr);
-    const ai=out.ai;
+    const a=await analyzeAllImages(im);
+    let ai='';
+    try{const on=await onlineMaterialAI(ROWMAP[currentId],a);if(on)ai=on;}catch(e){}
+    if(!ai)ai=composeFromImages(ROWMAP[currentId],a);
+    if(!a.clear)toast('⚠ بعض الصور غير واضحة — الوصف اعتماداً على المتوفر','err');
     EXTRAS[currentId]=Object.assign({},EXTRAS[currentId],{id:currentId,ai});
     await dbPut('extras',currentId,EXTRAS[currentId]);
-    im.ai=ai;
-    await dbPut('images',currentId,im);
-    const aiIn=$('aiInput');
-    if(aiIn)aiIn.value=ai;
-    openView(currentId);
-    $('maintSec').hidden=false;
-    toast(out.msg,out.ok?'':'err');
-  }catch(e){
-    console.error(e);
-    toast('فشل جلب تفاصيل المادة: '+e.message,'err');
-  }
+    im.ai=ai;await dbPut('images',currentId,im);
+    const aiIn=$('aiInput');if(aiIn)aiIn.value=ai;
+    openView(currentId);$('maintSec').hidden=false;
+    toast('✔ تم توليد الوصف من '+im.imgs.length+' صورة');
+  }catch(e){console.error(e);toast('فشل التوليد: '+e.message,'err');}
 };
 $('saveAI').onclick=async()=>{
   const v=$('aiInput').value.trim();
@@ -991,13 +908,11 @@ async function processAttach(url,which){
     IMAGES[currentId].imgs.push(g);
     let ai='';
     try{
-      const out=await onlineMaterialAI(ROWMAP[currentId],url,g.ocr);
-      ai=out.ai;
-      if(out.unclear)toast('⚠ الصورة المرفوعة للمادة غير واضحة — ارفع صورة أوضح','err');
-    }catch(e){
-      ai=generateAIInfo(ROWMAP[currentId],g.ocr);
-      toast('تم رفع الصورة، لكن تعذر جلب تفاصيل من المصادر الآن','err');
-    }
+      const a=await analyzeAllImages(IMAGES[currentId]);
+      const on=await onlineMaterialAI(ROWMAP[currentId],a);
+      ai=on||composeFromImages(ROWMAP[currentId],a);
+      if(!a.clear)toast('⚠ الصورة غير واضحة — ارفع صورة أوضح لتفاصيل أدق','err');
+    }catch(e){ai=generateAIInfo(ROWMAP[currentId],g.ocr);}
     IMAGES[currentId].ai=ai;
     EXTRAS[currentId]=Object.assign({},EXTRAS[currentId],{id:currentId,ai});
     await dbPut('extras',currentId,EXTRAS[currentId]);
@@ -1232,7 +1147,6 @@ async function publishCurrentMaterial(){
   }catch(e){console.error(e);toast('فشل الرفع: '+e.message,'err');}
 }
 
-/* ✔✔✔ تعديل جزء من الكود ✔✔✔ */
 $('btnEditCode').onclick=()=>{$('codeModal').hidden=false;$('codeInput').value='';$('partialSec').hidden=true;};
 $('btnFetchCode').onclick=async()=>{
   toast('جارٍ جلب الكود الحالي…');
