@@ -298,8 +298,12 @@ const REPO_URLS=['https://raw.githubusercontent.com/'+REPO+'/main/'+encodeURICom
 const SHARED_URL='https://raw.githubusercontent.com/'+REPO+'/main/data/images.json';
 const INDEX_URL='https://raw.githubusercontent.com/'+REPO+'/main/index.html';
 const INDEX_API='https://api.github.com/repos/'+REPO+'/contents/index.html';
+/* ✔✔✔ ملف قائمة منتجات فاووري (ارفعه لجذر المستودع بنفس الاسم) ✔✔✔ */
+const CATALOG_URLS=['https://raw.githubusercontent.com/'+REPO+'/main/'+encodeURIComponent('فاووري_قائمة_المنتجات.xlsx'),
+ 'https://raw.githubusercontent.com/'+REPO+'/main/fawori_products.xlsx',
+ 'https://raw.githubusercontent.com/'+REPO+'/main/data/fawori_products.xlsx'];
 
-let ROWS=[],ROWMAP={},GROUPS=[],IMAGES={},EXTRAS={},VIEWS={};
+let ROWS=[],ROWMAP={},GROUPS=[],IMAGES={},EXTRAS={},VIEWS={},FAWORI_CAT=[];
 let currentId=null,currentGroup=null,model=null,tfOk=false,camStream=null,camMode=null,lastScanUrl=null,lastRes=[],gSearchT=null,sSearchT=null,currentAi='';
 let isAdmin=sessionStorage.getItem('isAdmin')==='1';
 
@@ -319,6 +323,41 @@ function textSim(a,b){const A=norm(a).split(' ').filter(w=>w.length>=3),B=norm(b
 const CHUNK=0x8000;
 function b64encode(str){const bytes=new TextEncoder().encode(str);let bin='';for(let i=0;i<bytes.length;i+=CHUNK){bin+=String.fromCharCode.apply(null,bytes.subarray(i,i+CHUNK));}return btoa(bin);}
 function bufToB64(buf){const bytes=new Uint8Array(buf);let bin='';for(let i=0;i<bytes.length;i+=CHUNK){bin+=String.fromCharCode.apply(null,bytes.subarray(i,i+CHUNK));}return btoa(bin);}
+
+/* ✔✔✔ قراءة قائمة منتجات فاووري من المستودع ✔✔✔ */
+function parseCatalog(buf){
+  try{
+    const wb=XLSX.read(new Uint8Array(buf),{type:'array'});
+    const ws=wb.Sheets[wb.SheetNames[0]];
+    const arr=XLSX.utils.sheet_to_json(ws,{header:1,defval:''});
+    let hi=-1,col={};
+    for(let i=0;i<Math.min(arr.length,20);i++){
+      const cells=arr[i].map(c=>String(c).trim());
+      const ni=cells.findIndex(c=>c.includes('اسم المنتج'));
+      if(ni>=0){hi=i;col={name:ni,cat:cells.findIndex(c=>c.includes('التصنيف')),ar:cells.findIndex(c=>c.includes('بالعربية')),tr:cells.findIndex(c=>c.includes('بالتركية')),link:cells.findIndex(c=>c.includes('رابط'))};break;}
+    }
+    if(hi<0)return [];
+    const list=[];
+    for(let i=hi+1;i<arr.length;i++){const r=arr[i];
+      const name=col.name>=0?String(r[col.name]??'').trim():'';
+      if(!name)continue;
+      list.push({cat:col.cat>=0?String(r[col.cat]??'').trim():'',name,
+        descAr:col.ar>=0?String(r[col.ar]??'').trim():'',
+        descTr:col.tr>=0?String(r[col.tr]??'').trim():'',
+        link:col.link>=0?String(r[col.link]??'').trim():''});}
+    return list;
+  }catch(e){return [];}
+}
+async function loadCatalog(){
+  if(FAWORI_CAT.length)return FAWORI_CAT;
+  try{const c=JSON.parse(localStorage.getItem('faworiCat')||'null');if(c&&c.t>Date.now()-7*86400000&&Array.isArray(c.list)&&c.list.length){FAWORI_CAT=c.list;return FAWORI_CAT;}}catch(e){}
+  for(const u of CATALOG_URLS){
+    try{const r=await fetch(u,{cache:'no-store'});if(!r.ok)continue;
+      const buf=await r.arrayBuffer();const list=parseCatalog(buf);
+      if(list.length){FAWORI_CAT=list;try{localStorage.setItem('faworiCat',JSON.stringify({t:Date.now(),list}));}catch(e){}return list;}}catch(e){}
+  }
+  return [];
+}
 
 async function fetchText(url){const r=await fetch(url);if(!r.ok)throw new Error('HTTP '+r.status);return await r.text();}
 const proxy=u=>'https://api.allorigins.win/raw?url='+encodeURIComponent(u);
@@ -356,21 +395,30 @@ function extractDescription(html){
   doc.querySelectorAll('p').forEach(p=>{const t=(p.textContent||'').trim();if(t.length>best.length&&t.length<1200)best=t;});
   return best;
 }
+/* ✔✔✔ جلب الوصف: أولاً من ملف القائمة (مطابقة بالاسم/اللاتيني) ثم من الموقع ✔✔✔ */
 async function fetchSiteDescription(row){
+  const tA=normTr(row.latin||''),tB=normTr(row.name||'');
+  const cat=await loadCatalog();
+  if(cat.length){
+    let best=null,bs=0;
+    for(const p of cat){const pn=normTr(p.name);
+      const s=Math.max(tA?simRatio(tA,pn):0,tB?simRatio(tB,pn):0);
+      if(s>bs){bs=s;best=p;}}
+    if(best&&bs>=0.5&&best.descAr){
+      return {name:best.name,desc:best.descAr,href:best.link,score:bs,source:'📚 ملف قائمة منتجات فاووري'};
+    }
+  }
   const base=(localStorage.getItem('siteUrl')||DEFAULT_SITE).trim();
   const index=await getSiteIndex(base);
-  const tA=normTr(row.latin||''),tB=normTr(row.name||'');
   let best=null,bs=0;
-  for(const p of index){
-    const pn=normTr(p.name);
+  for(const p of index){const pn=normTr(p.name);
     const s=Math.max(tA?simRatio(tA,pn):0,tB?simRatio(tB,pn):0);
-    if(s>bs){bs=s;best=p;}
-  }
+    if(s>bs){bs=s;best=p;}}
   if(!best||bs<0.4)return null;
   const html=await fetchText(proxy(best.href));
   const desc=extractDescription(html);
   if(!desc)return null;
-  return {name:best.name,desc,href:best.href,score:bs};
+  return {name:best.name,desc,href:best.href,score:bs,source:'🌐 موقع الشركة الرسمي'};
 }
 
 let dbP=null;
@@ -467,8 +515,6 @@ function renderImgsList(q){
     +list.map((r,i)=>`<tr tabindex="0" data-id="${r.id}" class="hi-img"><td>${i+1}</td><td style="text-align:right;padding-right:12px">${esc(short(r.name))}</td><td>${r.imgCount}</td><td>${fm(r.qty)}</td><td>${fm(r.sell)}</td></tr>`).join('')
     +'</tbody></table>';
 }
-
-/* ✔✔✔ إصلاح: فتح التفاصيل عند النقر على أي صف في كل القوائم ✔✔✔ */
 document.addEventListener('click',e=>{
   const row=e.target.closest('#imgsListContent [data-id], #gContent [data-id], #sContent [data-id]');
   if(row){openView(row.dataset.id);}
@@ -502,20 +548,26 @@ $('btnMaint').onclick=()=>{$('maintSec').hidden=!$('maintSec').hidden;
   const su=$('siteUrlInput');if(su)su.value=(localStorage.getItem('siteUrl')||DEFAULT_SITE);};
 $('siteUrlInput').addEventListener('change',e=>{localStorage.setItem('siteUrl',e.target.value.trim()||DEFAULT_SITE);localStorage.removeItem('siteIndex');toast('✔ تم حفظ رابط الموقع');});
 $('saveNote').onclick=async()=>{const n=$('noteInput').value.trim();EXTRAS[currentId]=Object.assign({},EXTRAS[currentId],{id:currentId,note:n});await dbPut('extras',currentId,EXTRAS[currentId]);toast('تم حفظ التفاصيل ✔');refreshDetails();};
+
+/* ✔✔✔ زر جلب الوصف: يطابق مع ملف القائمة ويعرض وصفه العربي ✔✔✔ */
 $('btnGenAI').onclick=async()=>{
   const row=ROWMAP[currentId];if(!row)return toast('افتح مادة أولاً','err');
-  toast('جارٍ جلب الوصف من الموقع…');
+  toast('جارٍ مطابقة المادة وجلب الوصف…');
   try{
     const out=await fetchSiteDescription(row);
-    if(!out)return toast('لم يُعثر على وصف مطابق في الموقع','err');
-    const desc='🏷 اسم المادة:\n'+row.name+'\n\n📝 الوصف (من الموقع الرسمي):\n'+out.desc+'\n\n🔗 المصدر: '+out.href+'\n\n🔎 طريقة الجلب: مطابقة اسم المنتج في موقع الشركة ('+Math.round(out.score*100)+'%)';
+    if(!out)return toast('لم يُعثر على وصف مطابق','err');
+    const desc='🏷 اسم المادة:\n'+row.name+
+      '\n\n📝 الوصف:\n'+out.desc+
+      '\n\n🔗 رابط المنتج: '+out.href+
+      '\n\n📚 مصدر المعلومات: '+out.source+
+      '\n\n🔎 نسبة مطابقة الاسم: '+Math.round(out.score*100)+'%';
     EXTRAS[currentId]=Object.assign({},EXTRAS[currentId],{id:currentId,ai:desc});
     await dbPut('extras',currentId,EXTRAS[currentId]);
     if(IMAGES[currentId]){IMAGES[currentId].ai=desc;await dbPut('images',currentId,IMAGES[currentId]);}
     const aiIn=$('aiInput');if(aiIn)aiIn.value=desc;
     refreshDetails();
-    toast('✔ تم جلب الوصف من الموقع');
-  }catch(e){console.error(e);toast('فشل الجلب من الموقع: '+e.message,'err');}
+    toast('✔ تم جلب الوصف من '+out.source);
+  }catch(e){console.error(e);toast('فشل الجلب: '+e.message,'err');}
 };
 $('saveAI').onclick=async()=>{const v=$('aiInput').value.trim();EXTRAS[currentId]=Object.assign({},EXTRAS[currentId],{id:currentId,ai:v});await dbPut('extras',currentId,EXTRAS[currentId]);if(IMAGES[currentId]){IMAGES[currentId].ai=v;await dbPut('images',currentId,IMAGES[currentId]);}refreshDetails();toast('✔ تم حفظ الوصف المصحح');};
 $('btnDelDetails').onclick=async()=>{
@@ -671,6 +723,7 @@ $('toolsChev').onclick=toggleTools;$('appTitle').addEventListener('click',toggle
   try{(await dbGetAll('extras')).forEach(x=>EXTRAS[x.id]=x);(await dbGetAll('images')).forEach(v=>{if(v&&Array.isArray(v.imgs))IMAGES[v.id]=v;else if(v)IMAGES[v.id]={id:v.id,imgs:[{thumb:v.thumb,emb:v.emb,hist:v.hist,ocr:v.ocr,ts:v.ts||Date.now()}]};});
     let rm=0;for(const id of Object.keys(IMAGES)){const im=IMAGES[id];im.imgs=(im.imgs||[]).filter(validImg);if(!im.imgs.length){delete IMAGES[id];dbDel('images',id);rm++;}else dbPut('images',id,im);}if(rm)toast('نُظفت '+rm+' صورة تالفة','err');}catch(e){}
   try{const c=localStorage.getItem('rowsCache');if(c){const rows=JSON.parse(c);if(rows&&rows.length)loadDataset(rows);}}catch(e){}
+  loadCatalog();
   (async()=>{const buf=await fetchRepoFile();let rc=0;if(buf){const rows=parseWorkbook(buf);if(rows){loadDataset(rows);try{localStorage.setItem('rowsCache',JSON.stringify(rows));}catch(e){}rc=rows.length;}}const im=await fetchSharedImages();if(rc)toast('✔ '+rc+' مادة • '+im.total+' صورة');else if(im.total)toast('🖼 '+im.total+' صورة');else if(!ROWS.length)$('emptyMsg').textContent='تعذر الجلب — افتح الأدوات ⌄ واضغط «تحديث من المستودع»';})();
 })();
 </script>
