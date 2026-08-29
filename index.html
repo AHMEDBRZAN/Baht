@@ -188,7 +188,7 @@ textarea{width:calc(100% - 32px);margin:0 16px;border:2px solid #e3e7f5;border-r
 </div></div>
 
 <div class="overlay" id="aiModal" hidden><div class="modal">
-  <div class="m-head"><h2>🤖 تفاصيل المادة الذكية</h2><button class="x" data-close>✕</button></div>
+  <div class="m-head"><h2>🤖 تفاصيل المادة</h2><button class="x" data-close>✕</button></div>
   <div class="m-body"><div id="aiFull" class="note ai" style="margin:0 16px"></div></div>
 </div></div>
 
@@ -217,13 +217,15 @@ textarea{width:calc(100% - 32px);margin:0 16px;border:2px solid #e3e7f5;border-r
     <div class="vdetails" id="vDetails"></div>
     <div class="row"><button class="btn ghost" id="btnImgs">🖼 الصور المرجعية (0)</button><button class="btn ghost" id="btnMaint">⚙ إعدادات / صيانة</button></div>
     <div id="maintSec" hidden>
+      <label>🔗 رابط موقع الشركة (لجلب الوصف)</label>
+      <input type="text" id="siteUrlInput" style="width:calc(100% - 32px);margin:0 16px;border:2px solid #e3e7f5;border-radius:12px;padding:10px;font-family:inherit;font-size:13px" placeholder="https://fawori.com/urunler">
       <label>إضافة تفاصيل تظهر مع المادة</label>
       <textarea id="noteInput" placeholder="اكتب أي ملاحظات إضافية…"></textarea>
       <div class="row"><button class="btn pri" id="saveNote">💾 حفظ التفاصيل</button></div>
-      <div class="row" data-admin><button class="btn imgs" id="btnGenAI">🤖 توليد وصف ذكي من الصور</button></div>
+      <div class="row" data-admin><button class="btn imgs" id="btnGenAI">🌐 جلب وصف من الموقع</button></div>
       <div class="row" data-admin><button class="btn dngr" id="btnDelDetails">🗑 حذف التفاصيل (ذكي)</button></div>
-      <label>✏️ تصحيح الوصف الذكي</label>
-      <textarea id="aiInput" placeholder="عدّل وصف الذكاء هنا ثم احفظ…"></textarea>
+      <label>✏️ تصحيح الوصف</label>
+      <textarea id="aiInput" placeholder="عدّل الوصف هنا ثم احفظ…"></textarea>
       <div class="row" data-admin><button class="btn pri" id="saveAI">💾 حفظ الوصف المصحح</button></div>
       <div class="row" data-admin><button class="btn amb" id="camAttach2">📷 التقاط صورة</button><button class="btn ghost" id="fileAttach2">🖼 رفع صورة</button></div>
       <div class="row" data-admin><button class="btn grn" id="btnPublish">📤 رفع الصور المرجعية</button></div>
@@ -248,7 +250,7 @@ textarea{width:calc(100% - 32px);margin:0 16px;border:2px solid #e3e7f5;border-r
 <div class="overlay" id="camModal" hidden><div class="modal">
   <div class="m-head"><h2>📷 الكاميرا</h2><button class="x" id="camClose">✕</button></div>
   <div class="m-body"><div style="padding:12px 16px 0">
-    <video id="camVideo" class="cam-video" playsinline muted autoplay style="width:100%;max-height:320px;object-fit:cover;border-radius:16px;background:#000"></video>
+    <video id="camVideo" style="width:100%;max-height:320px;object-fit:cover;border-radius:16px;background:#000" playsinline muted autoplay></video>
     <div class="row" style="padding:0"><button class="btn dngr" id="camShot">⬤ التقاط</button><button class="btn ghost" id="camUploadBtn">🖼 رفع صورة</button></div>
     <input type="file" id="camUpload" accept="image/*" hidden>
   </div></div>
@@ -287,6 +289,7 @@ const $=id=>document.getElementById(id);
 const NO_GROUP='مواد بدون بطاقة';
 const REPO='AHMEDBRZAN/Baht';
 const XLSX_NAME='جميع المواد.xlsx';
+const DEFAULT_SITE='https://fawori.com/urunler';
 const REPO_URLS=['https://raw.githubusercontent.com/'+REPO+'/main/'+encodeURIComponent(XLSX_NAME),
  'https://raw.githubusercontent.com/'+REPO+'/main/'+encodeURIComponent('جميع المواد .xlsx'),
  'https://raw.githubusercontent.com/'+REPO+'/master/'+encodeURIComponent(XLSX_NAME),
@@ -295,7 +298,6 @@ const REPO_URLS=['https://raw.githubusercontent.com/'+REPO+'/main/'+encodeURICom
 const SHARED_URL='https://raw.githubusercontent.com/'+REPO+'/main/data/images.json';
 const INDEX_URL='https://raw.githubusercontent.com/'+REPO+'/main/index.html';
 const INDEX_API='https://api.github.com/repos/'+REPO+'/contents/index.html';
-const AI_ENDPOINT_KEY='materialAiEndpoint';
 
 let ROWS=[],ROWMAP={},GROUPS=[],IMAGES={},EXTRAS={},VIEWS={};
 let currentId=null,currentGroup=null,model=null,tfOk=false,camStream=null,camMode=null,lastScanUrl=null,lastRes=[],gSearchT=null,sSearchT=null,currentAi='';
@@ -307,7 +309,9 @@ function short(s,n){n=n||42;s=s??'';return s.length>n?s.slice(0,n)+'…':s;}
 function parseNum(v){if(typeof v==='number')return isFinite(v)?v:0;if(v==null)return 0;let s=String(v).replace(/[٠-٩]/g,d=>'٠١٢٣٤٥٦٧٨٩'.indexOf(d)).replace(/[,،\s]/g,'');const n=parseFloat(s);return isFinite(n)?n:0;}
 function fm(n){n=parseNum(n);return n?n.toLocaleString('en-US',{maximumFractionDigits:2}):'0';}
 function norm(s){return (s||'').toLowerCase().replace(/[\u064B-\u0652\u0640]/g,'').replace(/[أإآ]/g,'ا').replace(/ة/g,'ه').replace(/ى/g,'ي').replace(/[^\p{L}\p{N}]+/gu,' ').trim();}
+function normTr(s){return (s||'').toLowerCase().replace(/[\u064B-\u0652\u0640]/g,'').replace(/[أإآ]/g,'ا').replace(/ة/g,'ه').replace(/ى/g,'ي').replace(/İ/g,'i').replace(/ı/g,'i').replace(/ş/g,'s').replace(/ç/g,'c').replace(/ğ/g,'g').replace(/ö/g,'o').replace(/ü/g,'u').replace(/[^\p{L}\p{N}]+/gu,' ').trim();}
 function lev(a,b){a=a||'';b=b||'';if(a===b)return 0;const m=a.length,n=b.length;if(!m||!n)return m||n;let p=Array.from({length:n+1},(_,i)=>i);for(let i=1;i<=m;i++){const c=[i];for(let j=1;j<=n;j++)c[j]=Math.min(p[j]+1,c[j-1]+1,p[j-1]+(a[i-1]===b[j-1]?0:1));p=c;}return p[n];}
+function simRatio(a,b){if(!a||!b)return 0;if(a===b)return 1;const d=lev(a,b);return 1-d/Math.max(a.length,b.length);}
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
 function scaleDataUrl(url,maxW,q){return new Promise(res=>{const i=new Image();i.onload=()=>{const s=Math.min(1,maxW/i.width);const c=document.createElement('canvas');c.width=Math.round(i.width*s);c.height=Math.round(i.height*s);c.getContext('2d').drawImage(i,0,0,c.width,c.height);res(c.toDataURL('image/jpeg',q||.85));};i.onerror=()=>res('');i.src=url;});}
 function imgEl(url){return new Promise((res,rej)=>{const i=new Image();i.onload=()=>res(i);i.onerror=rej;i.src=url;});}
@@ -316,125 +320,58 @@ const CHUNK=0x8000;
 function b64encode(str){const bytes=new TextEncoder().encode(str);let bin='';for(let i=0;i<bytes.length;i+=CHUNK){bin+=String.fromCharCode.apply(null,bytes.subarray(i,i+CHUNK));}return btoa(bin);}
 function bufToB64(buf){const bytes=new Uint8Array(buf);let bin='';for(let i=0;i<bytes.length;i+=CHUNK){bin+=String.fromCharCode.apply(null,bytes.subarray(i,i+CHUNK));}return btoa(bin);}
 
-/* ✔✔✔ ذكاء دقيق: كلمات موثوقة فقط + 3 طرق بأولوية + إظهار الطريقة الناجحة ✔✔✔ */
-const KW_AR=['برايمر','أساس','استار','معجون','شفاف','ورنيش','لك','ملمع','داخلي','خارجي','اكريليك','زيتي','غراء','لاصق','ثنر','مخفف','حريري','مطفي','سيلكون','سيراميك','جدران','أسقف','قابل للغسل','جودة'];
-const KW_LAT=['primer','acrylic','acryl','matt','matte','silk','ipek','silikon','silicone','ceramics','rough','gloss','satin','interior','exterior','paint','boya'];
-function extractPaintKeywords(ocr){
-  const n=norm(ocr||''),low=(ocr||'').toLowerCase(),f=[];
-  KW_AR.forEach(k=>{if(n.includes(norm(k)))f.push(k);});
-  KW_LAT.forEach(k=>{if(low.includes(k))f.push(k);});
-  return [...new Set(f)];
-}
-function typeFromKeys(keys){
-  const has=k=>keys.some(x=>x.toLowerCase()===k.toLowerCase()||norm(x)===norm(k));
-  if(has('سيلكون')||has('silikon'))return (has('حريري')||has('silk')||has('ipek'))?'دهان داخلي حريري مدعّم بالسيليكون':'دهان مدعّم بالسيليكون';
-  if(has('حريري')||has('silk')||has('ipek'))return 'دهان داخلي حريري (سيلك مطفي)';
-  if(has('مطفي')||has('matt')||has('matte'))return 'دهان داخلي مطفي';
-  if(has('برايمر')||has('primer')||has('أساس')||has('استار'))return 'برايمر / طبقة أساس';
-  if(has('معجون'))return 'معجون تسوية';
-  if(has('شفاف')||has('ورنيش'))return 'شفاف / ورنيش حماية';
-  if(has('خارجي')||has('exterior'))return 'دهان خارجي';
-  if(has('داخلي')||has('interior'))return 'دهان داخلي';
-  if(has('اكريليك')||has('acrylic'))return 'دهان أكريليك مائي';
-  if(has('سيراميك')||has('ceramics')||has('rough'))return 'دهان سيراميك/خشن';
-  if(has('زيتي'))return 'دهان زيتي';
-  if(has('غراء')||has('لاصق'))return 'لاصق';
-  if(has('ثنر')||has('مخفف'))return 'مخفف / ثنر';
-  return 'منتج دهانات/تشطيبات';
-}
-function compFor(t){
-  if(t.includes('سيليكون'))return 'أكريليك مدعّم بالسيليكون، ملمس حريري وقابلية للغسيل.';
-  if(t.includes('حريري'))return 'أكريليك بملمس حريري نصف مطفي.';
-  if(t.includes('مطفي'))return 'تركيبة أكريليك مطفية.';
-  if(t.includes('برايمر'))return 'راتنج أساس + مواد مالئة لتعزيز الالتصاق.';
-  if(t.includes('معجون'))return 'مواد مالئة + رابط.';
-  if(t.includes('سيراميك'))return 'تركيبة سيراميك خشن مقاومة.';
-  return 'تركيبة متوازنة عالية الجودة.';
-}
-function useFor(t){
-  if(t.includes('برايمر'))return 'طبقة أساس بعد التنظيف والصنفرة، يُترك ليجف قبل الطبقة التالية.';
-  if(t.includes('معجون'))return 'تسوية الشقوق ثم صنفرة بعد الجفاف.';
-  if(t.includes('شفاف'))return 'طبقة نهائية للحماية وإبراز المظهر.';
-  if(t.includes('خارجي'))return 'على الواجهات الخارجية بعد التحضير بطبقتين.';
-  if(t.includes('داخلي')||t.includes('حريري')||t.includes('مطفي'))return 'على الجدران والأسقف الداخلية بالفرشاة أو الرولة، طبقتان بفاصل جفاف.';
-  return 'طبقتان بفاصل جفاف كافٍ.';
-}
-async function clarityScore(url){return new Promise(res=>{const i=new Image();i.onload=()=>{const S=112,c=document.createElement('canvas');c.width=S;c.height=S;const x=c.getContext('2d');x.drawImage(i,0,0,S,S);const d=x.getImageData(0,0,S,S).data;const gA=new Array(S*S);let mean=0;for(let p=0;p<S*S;p++){const q=p*4;const gv=.299*d[q]+.587*d[q+1]+.114*d[q+2];gA[p]=gv;mean+=gv;}mean/=(S*S);let lap=0,con=0,cnt=0;for(let y=1;y<S-1;y++)for(let xx=1;xx<S-1;xx++){const p=y*S+xx;const l=gA[p+1]+gA[p-1]+gA[p+S]+gA[p-S]-4*gA[p];lap+=l*l;con+=Math.abs(gA[p]-mean);cnt++;}res({blur:lap/cnt,contrast:con/cnt});};i.onerror=()=>res({blur:0,contrast:0});i.src=url;});}
-function colorNames(hist){let r=0,g=0,b=0,tot=0;const L=[.125,.375,.625,.875];for(let ri=0;ri<4;ri++)for(let gi=0;gi<4;gi++)for(let bi=0;bi<4;bi++){const v=hist[ri*16+gi*4+bi]||0;tot+=v;r+=v*L[ri];g+=v*L[gi];b+=v*L[bi];}if(tot<=0)return['غير محدد'];r/=tot;g/=tot;b/=tot;const o=[];const mx=Math.max(r,g,b),mn=Math.min(r,g,b);if(mx<.25)o.push('داكن');else if(mn>.7)o.push('فاتح/أبيض');if(r>.58&&g>.38&&b<.35)o.push('أصفر/برتقالي');if(r>.5&&g<.36&&b<.36)o.push('أحمر');if(g>.45&&r<.55)o.push('أخضر');if(b>.5&&g<.55)o.push('أزرق');if(!o.length)o.push('متعدد الألوان');return[...new Set(o)];}
-async function mobilenetLabels(url){try{await tfReady();if(!model)model=await mobilenet.load({version:2,alpha:0.75});const sm=await scaleDataUrl(url,224,.9);const img=await imgEl(sm);const p=await model.classify(img);return(p||[]).slice(0,3).map(x=>x.className.split(',')[0]);}catch(e){return[];}}
-async function analyzeAllImages(im){
-  const ocrs=[],labels=[],colorsSet=new Set();let bS=0,cS=0,n=0;
-  for(const g of im.imgs){
-    const url=g.thumb;
-    const ocr=(g.ocr&&g.ocr.trim())?g.ocr:await ocrText(await scaleDataUrl(url,900,.88));
-    if(ocr&&ocr.trim())ocrs.push(ocr.trim());
-    const cl=await clarityScore(url);bS+=cl.blur;cS+=cl.contrast;n++;
-    (await mobilenetLabels(url)).forEach(x=>labels.push(x));
-    colorNames(await histFrom(url)).forEach(c=>colorsSet.add(c));
-  }
-  const clarity={blur:n?bS/n:0,contrast:n?cS/n:0};
-  return {ocr:ocrs.join(' '),labels,colors:[...colorsSet],clarity,count:im.imgs.length,clear:(clarity.blur>45&&clarity.contrast>7)};
-}
-/* الطريقة 3: تحليل محلي نظيف (بدون ضجيج) */
-function composeClean(row,a,method){
-  const keys=extractPaintKeywords(a.ocr);
-  const type=typeFromKeys(keys);
-  const colors=(a.colors||[]).join('، ')||'غير محدد';
-  return '🏷 اسم المادة:\n'+(row?row.name:'مادة')+
-   '\n\n📝 ما هذه المادة:\n'+type+'. عبوة بألوان: '+colors+'.'+
-   '\n\n🧬 التركيب:\n'+compFor(type)+
-   '\n\n🛠 طريقة الاستخدام:\n'+useFor(type)+
-   '\n\n🔤 كلمات مقروءة من العبوة: '+(keys.length?keys.join('، '):'لا توجد كلمات واضحة')+
-   '\n\n🔎 طريقة التحليل الناجحة: '+method;
-}
-/* الطريقة 1+2: محرك خارجي (بحث ويب + رؤية مثل Claude) */
-async function callExternalAI(endpoint,row,a,imgB64){
-  const r=await fetch(endpoint,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name:row?row.name:'',group:row?(row.group||NO_GROUP):'',latin:row?row.latin:'',barcode:row?row.barcode:'',ocr:a.ocr||'',colors:a.colors||[],labels:a.labels||[],image:imageB64||''})});
-  if(!r.ok)throw new Error('AI HTTP '+r.status);
-  const j=await r.json();
-  if(!j||j.ok===false)return null;
-  return j;
-}
-function formatExternal(row,a,j,method){
-  return '🏷 اسم المادة:\n'+(j.name||row.name||'')+
-   '\n\n📝 ما هذه المادة:\n'+(j.description||'')+
-   '\n\n📌 التصنيف:\n'+(j.category||'')+
-   '\n\n🧬 التركيب:\n'+(j.composition||'')+
-   '\n\n🛠 الاستخدامات:\n'+(j.uses||'')+
-   '\n\n🎨 طريقة التطبيق:\n'+(j.application||'')+
-   '\n\n⚠️ ملاحظات:\n'+(j.warnings||'اتبع تعليمات الشركة المصنعة.')+
-   '\n\n🌐 مصادر:\n'+((j.sources||[]).slice(0,5).map((s,i)=>(i+1)+') '+(s.title||'')+(s.url?' — '+s.url:'')).join('\n')||'')+
-   '\n\n🔎 طريقة التحليل الناجحة: '+method;
-}
-/* الأولوية: 1 خارجي(بحث+رؤية) → 2 رؤية خارجية → 3 محلي */
-async function generateSmart(row,im){
-  const a=await analyzeAllImages(im);
-  const endpoint=(localStorage.getItem(AI_ENDPOINT_KEY)||'').trim();
-  if(endpoint){
-    try{
-      const j=await callExternalAI(endpoint,row,a,im.imgs[0].thumb);
-      if(j)return {ai:formatExternal(row,a,j,'بحث ويب + رؤية خارجية (محرك ذكي)'),clear:a.clear};
-    }catch(e){}
-  }
-  return {ai:composeClean(row,a,'تحليل محلي (OCR مُنقّى + ألوان + شكل)'),clear:a.clear};
-}
-function generateAIInfo(row,ocr){return composeClean(row,{ocr:ocr,clarity:{blur:99,contrast:99},labels:[],colors:['غير محدد'],count:1,clear:true},'تحليل محلي');}
-
-function fileToOrientedDataUrl(file,maxW,q){
-  return new Promise(async res=>{
-    try{
-      if(window.createImageBitmap){
-        const bmp=await createImageBitmap(file,{imageOrientation:'from-image'});
-        const s=Math.min(1,maxW/bmp.width);
-        const c=document.createElement('canvas');
-        c.width=Math.max(1,Math.round(bmp.width*s));c.height=Math.max(1,Math.round(bmp.height*s));
-        c.getContext('2d').drawImage(bmp,0,0,c.width,c.height);
-        const out=c.toDataURL('image/jpeg',q||.85);
-        if(bmp.close)bmp.close();res(out);return;
-      }
-    }catch(e){}
-    const r=new FileReader();r.onload=async()=>res(await scaleDataUrl(r.result,maxW,q));r.readAsDataURL(file);
+/* ✔✔✔ جلب الوصف من موقع الشركة (الطريقة الجديدة) ✔✔✔ */
+async function fetchText(url){const r=await fetch(url);if(!r.ok)throw new Error('HTTP '+r.status);return await r.text();}
+const proxy=u=>'https://api.allorigins.win/raw?url='+encodeURIComponent(u);
+function collectProducts(doc,base,list){
+  const seen=new Set(list.map(p=>p.href));
+  [...doc.querySelectorAll('a[href]')].forEach(a=>{
+    const name=(a.textContent||'').trim();
+    let href=a.getAttribute('href')||'';
+    if(!name||name.length<4)return;
+    if(!href||href.startsWith('#')||href.startsWith('javascript'))return;
+    try{if(!href.startsWith('http'))href=new URL(href,base).href;}catch(e){return;}
+    if(seen.has(href))return;
+    if(/urunler\/?$|anasayfa|sepet|hesap|giris|iletisim|kategoriler|\.css|\.js/.test(href))return;
+    seen.add(href);list.push({name,href});
   });
+}
+async function getSiteIndex(base){
+  try{const c=JSON.parse(localStorage.getItem('siteIndex')||'null');if(c&&c.t>Date.now()-86400000&&Array.isArray(c.list)&&c.list.length)return c.list;}catch(e){}
+  const list=[];
+  try{
+    const baseHtml=await fetchText(proxy(base));
+    const doc=new DOMParser().parseFromString(baseHtml,'text/html');
+    collectProducts(doc,base,list);
+    const catLinks=[...new Set([...doc.querySelectorAll('a[href]')].map(a=>a.getAttribute('href')).filter(h=>h&&h.startsWith('/')&&h.includes('urun')&&!h.includes('urunler')))];
+    for(const c of catLinks.slice(0,8)){
+      try{const u=base.replace(/\/urunler.*$/,'')+c;const html=await fetchText(proxy(u));const d2=new DOMParser().parseFromString(html,'text/html');collectProducts(d2,u,list);}catch(e){}
+    }
+  }catch(e){}
+  if(list.length)localStorage.setItem('siteIndex',JSON.stringify({t:Date.now(),list}));
+  return list;
+}
+function extractDescription(html){
+  const doc=new DOMParser().parseFromString(html,'text/html');
+  let best='';
+  doc.querySelectorAll('p').forEach(p=>{const t=(p.textContent||'').trim();if(t.length>best.length&&t.length<1200)best=t;});
+  return best;
+}
+async function fetchSiteDescription(row){
+  const base=(localStorage.getItem('siteUrl')||DEFAULT_SITE).trim();
+  const index=await getSiteIndex(base);
+  const tA=normTr(row.latin||''),tB=normTr(row.name||'');
+  let best=null,bs=0;
+  for(const p of index){
+    const pn=normTr(p.name);
+    const s=Math.max(tA?simRatio(tA,pn):0,tB?simRatio(tB,pn):0);
+    if(s>bs){bs=s;best=p;}
+  }
+  if(!best||bs<0.4)return null;
+  const html=await fetchText(proxy(best.href));
+  const desc=extractDescription(html);
+  if(!desc)return null;
+  return {name:best.name,desc,href:best.href,score:bs};
 }
 
 let dbP=null;
@@ -517,7 +454,6 @@ function renderSearchResults(q){$('sContent')._hi=-1;const el=$('sContent');if(!
   el.innerHTML='<table class="tbl"><thead><tr><th>ت</th><th>اسم المادة</th><th>الرمز</th><th>الكمية</th><th>سعر المبيع</th></tr></thead><tbody>'+list.slice(0,80).map((r,i)=>`<tr tabindex="0" data-id="${r.id}" class="${hasImg(r.id)?'hi-img':''}"><td>${i+1}</td><td style="text-align:right">${hasImg(r.id)?'🖼 ':''}${esc(short(r.name))}</td><td>${esc(r.code||'-')}</td><td>${fm(r.qty)}</td><td>${fm(r.sell)}</td></tr>`).join('')+'</tbody></table>';}
 
 function hasImg(id){return !!(IMAGES[id]&&IMAGES[id].imgs&&IMAGES[id].imgs.length);}
-/* ✔ بناء التفاصيل كمكوّن مستقل لإعادة الاستخدام عند الحذف ✔ */
 function buildDetails(id){const r=ROWMAP[id];if(!r)return '';
   const lines=[['الرمز',r.code],['الوحدة',r.unit],['الباركود',r.barcode],['الاسم اللاتيني',r.latin]].filter(x=>x[1]);
   let html=lines.map(l=>`<div class="ln"><b>${l[0]}:</b><span>${esc(l[1])}</span></div>`).join('');
@@ -526,47 +462,43 @@ function buildDetails(id){const r=ROWMAP[id];if(!r)return '';
   const ai=(EXTRAS[id]&&EXTRAS[id].ai)||(IMAGES[id]&&IMAGES[id].ai)||'';
   currentAi=ai;
   if(ai){const sAi=ai.length>160?ai.slice(0,160)+'…':ai;
-    html+=`<div class="note ai"><b>🤖 وصف ذكي:</b><br>${esc(sAi)}</div><div class="row" style="padding:0;margin-top:8px"><button class="btn ghost" id="btnAiFull">📖 عرض التفاصيل الكاملة</button></div>`;}
+    html+=`<div class="note ai"><b>🤖 وصف المادة:</b><br>${esc(sAi)}</div><div class="row" style="padding:0;margin-top:8px"><button class="btn ghost" id="btnAiFull">📖 عرض التفاصيل الكاملة</button></div>`;}
   if(hasImg(id))html+=`<div style="margin-top:8px"><span style="background:#e7f7ee;color:#177a4c;border-radius:20px;padding:3px 12px;font-size:12px;font-weight:800">🖼 ${IMAGES[id].imgs.length} صورة مرجعية</span></div>`;
   return html;}
-function openView(id){const r=ROWMAP[id];if(!r)return;currentId=id;
-  $('vName').textContent=r.name;$('vGroup').textContent='📁 '+(r.group||NO_GROUP);
-  $('vPrice').textContent=fm(r.sell)+' د.ع';$('vQty').textContent=fm(r.qty);
-  $('vDetails').innerHTML=buildDetails(id);
-  $('maintSec').hidden=true;$('viewModal').hidden=false;
-  $('noteInput').value=(EXTRAS[id]&&EXTRAS[id].note)||'';
-  updateImgsBtn();}
-/* ✔ تحديث التفاصيل بدون إعادة فتح النافذة (إصلاح زر الحذف) ✔ */
-function refreshDetails(){ $('vDetails').innerHTML=buildDetails(currentId);updateImgsBtn(); }
+function refreshDetails(){$('vDetails').innerHTML=buildDetails(currentId);updateImgsBtn();}
 $('vDetails').addEventListener('click',e=>{if(e.target.closest('#btnAiFull')){$('aiFull').textContent=currentAi;$('aiModal').hidden=false;}});
 function updateImgsBtn(){const n=hasImg(currentId)?IMAGES[currentId].imgs.length:0;$('btnImgs').textContent='🖼 الصور المرجعية ('+n+')';}
 $('btnImgs').onclick=()=>{$('imgsTitle').textContent='🖼 الصور المرجعية — '+(ROWMAP[currentId]?ROWMAP[currentId].name:'');$('imgsModal').hidden=false;renderImgs();};
-$('btnMaint').onclick=()=>{$('maintSec').hidden=!$('maintSec').hidden;const ai=(EXTRAS[currentId]&&EXTRAS[currentId].ai)||(IMAGES[currentId]&&IMAGES[currentId].ai)||'';const aiIn=$('aiInput');if(aiIn)aiIn.value=ai;};
+$('btnMaint').onclick=()=>{$('maintSec').hidden=!$('maintSec').hidden;
+  const ai=(EXTRAS[currentId]&&EXTRAS[currentId].ai)||(IMAGES[currentId]&&IMAGES[currentId].ai)||'';
+  const aiIn=$('aiInput');if(aiIn)aiIn.value=ai;
+  const su=$('siteUrlInput');if(su)su.value=(localStorage.getItem('siteUrl')||DEFAULT_SITE);};
+$('siteUrlInput').addEventListener('change',e=>{localStorage.setItem('siteUrl',e.target.value.trim()||DEFAULT_SITE);localStorage.removeItem('siteIndex');toast('✔ تم حفظ رابط الموقع');});
 $('saveNote').onclick=async()=>{const n=$('noteInput').value.trim();EXTRAS[currentId]=Object.assign({},EXTRAS[currentId],{id:currentId,note:n});await dbPut('extras',currentId,EXTRAS[currentId]);toast('تم حفظ التفاصيل ✔');refreshDetails();};
 
-/* ✔ زر توليد الوصف: 3 طرق بأولوية + إظهار الطريقة الناجحة ✔ */
+/* ✔ زر جلب الوصف من الموقع (الطريقة الجديدة) ✔ */
 $('btnGenAI').onclick=async()=>{
-  const im=IMAGES[currentId];
-  if(!im||!im.imgs.length)return toast('أضف صورة أولاً لتوليد الوصف','err');
-  toast('جارٍ تحليل '+im.imgs.length+' صورة…');
+  const row=ROWMAP[currentId];if(!row)return toast('افتح مادة أولاً','err');
+  toast('جارٍ جلب الوصف من الموقع…');
   try{
-    const out=await generateSmart(ROWMAP[currentId],im);
-    EXTRAS[currentId]=Object.assign({},EXTRAS[currentId],{id:currentId,ai:out.ai});
+    const out=await fetchSiteDescription(row);
+    if(!out)return toast('لم يُعثر على وصف مطابق في الموقع','err');
+    const desc='🏷 اسم المادة:\n'+row.name+'\n\n📝 الوصف (من الموقع الرسمي):\n'+out.desc+'\n\n🔗 المصدر: '+out.href+'\n\n🔎 طريقة الجلب: مطابقة اسم المنتج في موقع الشركة ('+Math.round(out.score*100)+'%)';
+    EXTRAS[currentId]=Object.assign({},EXTRAS[currentId],{id:currentId,ai:desc});
     await dbPut('extras',currentId,EXTRAS[currentId]);
-    im.ai=out.ai;await dbPut('images',currentId,im);
-    const aiIn=$('aiInput');if(aiIn)aiIn.value=out.ai;
+    if(IMAGES[currentId]){IMAGES[currentId].ai=desc;await dbPut('images',currentId,IMAGES[currentId]);}
+    const aiIn=$('aiInput');if(aiIn)aiIn.value=desc;
     refreshDetails();
-    toast(out.clear?'✔ تم توليد الوصف':'✔ تم التوليد (صورة غير واضحة جزئياً)',out.clear?'':'err');
-  }catch(e){console.error(e);toast('فشل التوليد: '+e.message,'err');}
+    toast('✔ تم جلب الوصف من الموقع');
+  }catch(e){console.error(e);toast('فشل الجلب من الموقع: '+e.message,'err');}
 };
 $('saveAI').onclick=async()=>{const v=$('aiInput').value.trim();EXTRAS[currentId]=Object.assign({},EXTRAS[currentId],{id:currentId,ai:v});await dbPut('extras',currentId,EXTRAS[currentId]);if(IMAGES[currentId]){IMAGES[currentId].ai=v;await dbPut('images',currentId,IMAGES[currentId]);}refreshDetails();toast('✔ تم حفظ الوصف المصحح');};
-/* ✔ إصلاح الحذف: لا يعيد فتح النافذة، يحدّث التفاصيل فقط ✔ */
 $('btnDelDetails').onclick=async()=>{
   const ex=EXTRAS[currentId]||{};
   const hasAi=(ex.ai)||(IMAGES[currentId]&&IMAGES[currentId].ai);
   const hasNote=!!ex.note;
   if(!hasAi&&!hasNote)return toast('لا توجد تفاصيل لحذفها','err');
-  const ok=await askConfirm('سيتم حذف الوصف الذكي والملاحظات لهذه المادة من الجهاز والمستودع. متابعة؟');
+  const ok=await askConfirm('سيتم حذف الوصف والملاحظات لهذه المادة من الجهاز والمستودع. متابعة؟');
   if(!ok)return;
   EXTRAS[currentId]=Object.assign({},ex,{id:currentId,note:'',ai:''});
   await dbPut('extras',currentId,EXTRAS[currentId]);
@@ -611,9 +543,7 @@ async function processAttach(url,which){
     const g=await analyze(url,(t,p)=>setProc(which,t,p));
     if(!IMAGES[currentId])IMAGES[currentId]={id:currentId,imgs:[]};
     IMAGES[currentId].imgs.push(g);
-    let ai='';try{const out=await generateSmart(ROWMAP[currentId],IMAGES[currentId]);ai=out.ai;}catch(e){ai=generateAIInfo(ROWMAP[currentId],g.ocr);}
-    IMAGES[currentId].ai=ai;EXTRAS[currentId]=Object.assign({},EXTRAS[currentId],{id:currentId,ai});
-    await dbPut('extras',currentId,EXTRAS[currentId]);await dbPut('images',currentId,IMAGES[currentId]);
+    await dbPut('images',currentId,IMAGES[currentId]);
     setProc(which,'✔ تمت المعالجة',100);setTimeout(()=>{$('procProg').hidden=true;$('procProg3').hidden=true;},1200);
     renderImgs();toast('تمت معالجة الصورة ✔ — اضغط 📤 رفع لنشرها');
   }catch(e){$('procProg').hidden=true;$('procProg3').hidden=true;toast('خطأ: '+e.message,'err');}
@@ -662,8 +592,7 @@ $('scanRes').addEventListener('click',async e=>{const eye=e.target.closest('[dat
   const att=e.target.closest('[data-attach]');if(att&&isAdmin){const id=att.dataset.attach,r=ROWMAP[id];const ok=await askConfirm('إضافة الصورة الملتقطة كمرجع إضافي لـ «'+(r?r.name:'')+'»؟');if(ok)attachTo(id);}else if(att){openView(att.dataset.attach);}});
 async function attachTo(id){$('scanRes').hidden=true;$('scanProg').hidden=false;setScan('معالجة…',20);
   try{const g=await analyze(lastScanUrl,(t,p)=>setScan(t,20+Math.round(p*.7)));if(!IMAGES[id])IMAGES[id]={id,imgs:[]};IMAGES[id].imgs.push(g);
-    const ai=generateAIInfo(ROWMAP[id],g.ocr);IMAGES[id].ai=ai;EXTRAS[id]=Object.assign({},EXTRAS[id],{id,ai});
-    await dbPut('extras',id,EXTRAS[id]);await dbPut('images',id,IMAGES[id]);$('scanModal').hidden=true;toast('✔ أُضيفت كمرجع إضافي');}catch(e){toast('خطأ: '+e.message,'err');$('scanStart').hidden=false;}
+    await dbPut('images',id,IMAGES[id]);$('scanModal').hidden=true;toast('✔ أُضيفت كمرجع إضافي');}catch(e){toast('خطأ: '+e.message,'err');$('scanStart').hidden=false;}
   $('scanProg').hidden=true;}
 
 async function ensureToken(){let t=(localStorage.getItem('ghToken')||'').trim();if(t)return t;t=(prompt('🔑 أدخل Token GitHub (صلاحية Contents read/write):')||'').trim();if(!t)return null;localStorage.setItem('ghToken',t);return t;}
