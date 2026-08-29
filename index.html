@@ -424,41 +424,40 @@ const CHUNK=0x8000;
 function b64encode(str){const bytes=new TextEncoder().encode(str);let bin='';for(let i=0;i<bytes.length;i+=CHUNK){bin+=String.fromCharCode.apply(null,bytes.subarray(i,i+CHUNK));}return btoa(bin);}
 function bufToB64(buf){const bytes=new Uint8Array(buf);let bin='';for(let i=0;i<bytes.length;i+=CHUNK){bin+=String.fromCharCode.apply(null,bytes.subarray(i,i+CHUNK));}return btoa(bin);}
 
-/* ✔✔✔ [AI] وصف ذكي مرتّب: اسم المادة أولاً ثم شرح عنها ✔✔✔ */
-function generateAIInfo(row,ocr){
-  const nm=row?row.name:'مادة';
-  const group=row?(row.group||NO_GROUP):'';
-  const og=norm(ocr||'');
-  const src=norm(nm)+' '+og;
-  const has=k=>src.includes(norm(k));
-  let type='منتج دهانات وتشطيبات';
-  if(has('برايمر')||has('استار')||has('أستار')||has('primer')||has('اساس'))type='برايمر / طبقة أساس';
-  else if(has('معجون'))type='معجون تسوية ومعادلة';
-  else if(has('شفاف')||has('ورنيش')||has('لك')||has('ملمع'))type='شفاف / ورنيش حماية وتشطيب';
-  else if(has('اكريليك')||has('أكريليك'))type='دهان أكريليك مائي';
-  else if(has('زيت'))type='دهان زيتي (ألكيد)';
-  else if(has('خارجي'))type='دهان خارجي';
-  else if(has('داخلي'))type='دهان داخلي';
-  else if(has('غراء')||has('غرا')||has('لاصق'))type='لاصق / غراء';
-  else if(has('ثنر')||has('تنر')||has('مخفف'))type='مخفف / ثنر';
-  let comp='تركيبة متوازنة من الروابط والصبغات عالية الجودة';
-  if(type.includes('أكريليك'))comp='راتنج أكريليك مائي + صباغ عالي الثبات + إضافات مقاومة للعوامل الجوية';
-  else if(type.includes('زيتي'))comp='راتنج زيتي (ألكيد) + صباغ + مذيبات عضوية';
-  else if(type.includes('برايمر'))comp='راتنج أساس + صباغ تحضير + مواد مالئة لتعزيز الالتصاق';
-  else if(type.includes('معجون'))comp='مواد مالئة (كاولين/كربونات كالسيوم) + رابط + مثبّتات';
-  else if(type.includes('شفاف'))comp='راتنج شفاف (أكريليك/بولي يوريثان) + مثبتات ضد الأشعة';
-  else if(type.includes('ثنر'))comp='مذيبات عضوية نقية سريعة التبخر';
-  let use='يُطبق على سطح نظيف وجاف بعد التحضير ويُترك ليجف قبل الطبقة التالية';
-  if(type.includes('برايمر'))use='يُطبق كطبقة أولى بعد التنظيف والصنفرة، يُترك ليجف 2-4 ساعات قبل المعجون أو الدهان';
-  else if(type.includes('معجون'))use='يُطبق لتسوية الشقوق، يُصنفر بعد الجفاف ثم يُطبق البرايمر';
-  else if(type.includes('شفاف'))use='يُطبق كطبقة نهائية لحماية الوجه وإبراز المظهر، طبقة أو طبقتان';
-  else if(type.includes('داخلي')||type.includes('خارجي'))use='يُطبق بالفرشاة أو الرولة أو الرش على سطح مُجهّز، طبقتان بفاصل جفاف كافٍ';
-  const desc=`${nm} هو ${type} من ${group}. يتكوّن من ${comp}. طريقة الاستخدام: ${use}.`;
-  return '🏷 اسم المادة:\n'+nm+
-    '\n\n📝 شرح عن المادة:\n'+desc+
-    '\n\n🧬 التركيب:\n'+comp+
-    '\n\n🛠 طريقة الاستخدام:\n'+use;
+function colorNames(hist){let r=0,g=0,b=0,tot=0;const L=[.125,.375,.625,.875];
+for(let ri=0;ri<4;ri++)for(let gi=0;gi<4;gi++)for(let bi=0;bi<4;bi++){const v=hist[ri*16+gi*4+bi]||0;tot+=v;r+=v*L[ri];g+=v*L[gi];b+=v*L[bi];}
+if(tot<=0)return['محايد'];r/=tot;g/=tot;b/=tot;const o=[];const mx=Math.max(r,g,b),mn=Math.min(r,g,b);
+if(mx<.25)o.push('أسود/داكن');else if(mn>.7)o.push('أبيض/فاتح');
+if(r>.6&&g>.4&&b<.35)o.push('أصفر/برتقالي');if(r>.5&&g<.35&&b<.35)o.push('أحمر');if(g>.45&&r<.5)o.push('أخضر');if(b>.5&&g<.5)o.push('أزرق');
+if(!o.length)o.push('متعدد الألوان');return o;}
+async function clarityScore(url){return new Promise(res=>{const i=new Image();i.onload=()=>{const S=96,c=document.createElement('canvas');c.width=S;c.height=S;const x=c.getContext('2d');x.drawImage(i,0,0,S,S);const d=x.getImageData(0,0,S,S).data;const gA=new Array(S*S);let mean=0;for(let p=0;p<S*S;p++){const q=p*4;const gv=.299*d[q]+.587*d[q+1]+.114*d[q+2];gA[p]=gv;mean+=gv;}mean/=(S*S);let lap=0,con=0,cnt=0;for(let y=1;y<S-1;y++)for(let xx=1;xx<S-1;xx++){const p=y*S+xx;const l=gA[p+1]+gA[p-1]+gA[p+S]+gA[p-S]-4*gA[p];lap+=l*l;con+=Math.abs(gA[p]-mean);cnt++;}res({blur:lap/cnt,contrast:con/cnt});};i.onerror=()=>res({blur:0,contrast:0});i.src=url;});}
+async function mobilenetLabels(url){try{await tfReady();if(!model)model=await mobilenet.load({version:2,alpha:0.75});const sm=await scaleDataUrl(url,224,.9);const img=await imgEl(sm);const p=await model.classify(img);return (p||[]).slice(0,3).map(x=>x.className.split(',')[0]);}catch(e){return[];}}
+async function smartAI(row,imageUrl,storedOcr){
+ const ocr=(storedOcr&&storedOcr.trim())?storedOcr:await ocrText(await scaleDataUrl(imageUrl,800,.85));
+ const clarity=await clarityScore(imageUrl);
+ const labels=await mobilenetLabels(imageUrl);
+ const hist=await histFrom(imageUrl);
+ const colors=colorNames(hist);
+ return {ocr,clarity,labels,colors,clear:(clarity.blur>60&&clarity.contrast>8)};
 }
+function composeAI(row,a){
+ const nm=row?row.name:'المادة';const group=row?(row.group||NO_GROUP):'';
+ const og=norm(a.ocr||'');const src=norm(nm)+' '+og;const has=k=>src.includes(norm(k));
+ let type='منتج دهانات وتشطيبات';
+ if(has('برايمر')||has('استار')||has('primer')||has('اساس'))type='برايمر / طبقة أساس';
+ else if(has('معجون'))type='معجون تسوية';else if(has('شفاف')||has('ورنيش')||has('لك'))type='شفاف / ورنيش';
+ else if(has('اكريليك'))type='دهان أكريليك مائي';else if(has('زيت'))type='دهان زيتي';
+ else if(has('خارجي'))type='دهان خارجي';else if(has('داخلي'))type='دهان داخلي';
+ else if(has('غراء')||has('لاصق'))type='لاصق';else if(has('ثنر')||has('مخفف'))type='مخفف / ثنر';
+ const seen=a.labels.length?('التحليل البصري: '+a.labels.join('، ')+'.'):'';
+ const read=a.ocr?('نص مقروء من العبوة: «'+a.ocr.slice(0,80)+'».'):'لا يوجد نص مقروء واضح.';
+ const use=type.includes('برايمر')?'طبقة أساس بعد التنظيف والصنفرة.':type.includes('معجون')?'تسوية الشقوق ثم صنفرة.':type.includes('شفاف')?'طبقة نهائية للحماية.':'طبقتان بفاصل جفاف.';
+ return '🏷 اسم المادة:\n'+nm+'\n\n📝 شرح عن المادة:\n'+nm+' ('+group+') — '+type+'. ألوان العبوة: '+a.colors.join('، ')+'. '+seen+' '+read+
+ '\n\n🧬 التركيب:\n'+type+' — عبوة بألوان: '+a.colors.join('، ')+'.'+
+ '\n\n🛠 طريقة الاستخدام:\n'+use+
+ '\n\n🔎 محركات التحليل: شكل(MobileNet) + ألوان + OCR.';
+}
+function generateAIInfo(row,ocr){return composeAI(row,{ocr:ocr,clarity:{blur:99,contrast:99},labels:[],colors:['غير محدد'],clear:true});}
 
 function fileToOrientedDataUrl(file,maxW,q){
   return new Promise(async res=>{
@@ -708,23 +707,13 @@ $('saveNote').onclick=async()=>{const n=$('noteInput').value.trim();EXTRAS[curre
 $('btnGenAI').onclick=async()=>{
   const im=IMAGES[currentId];
   if(!im||!im.imgs.length)return toast('أضف صورة أولاً لتوليد الوصف','err');
-  const a=await smartAI(ROWMAP[currentId],im.imgs[0].thumb,im.imgs.map(g=>g.ocr||'').join(' '));
-  if(!a.clear)toast('⚠ الصورة المرفوعة للمادة غير واضحة — ارفع صورة أوضح','err');
-  const ai=composeAI(ROWMAP[currentId],a);
+  const ocr=im.imgs.map(g=>g.ocr||'').join(' ');
+  const ai=generateAIInfo(ROWMAP[currentId],ocr);
   EXTRAS[currentId]=Object.assign({},EXTRAS[currentId],{id:currentId,ai});
   await dbPut('extras',currentId,EXTRAS[currentId]);
   im.ai=ai;await dbPut('images',currentId,im);
-  const aiIn=$('aiInput');if(aiIn)aiIn.value=ai;
   openView(currentId);$('maintSec').hidden=false;
-  toast(a.clear?'✔ تم توليد وصف ذكي دقيق':'✔ تم التوليد مع تنبيه وضوح الصورة');
-};
-$('saveAI').onclick=async()=>{
-  const v=$('aiInput').value.trim();
-  EXTRAS[currentId]=Object.assign({},EXTRAS[currentId],{id:currentId,ai:v});
-  await dbPut('extras',currentId,EXTRAS[currentId]);
-  if(IMAGES[currentId]){IMAGES[currentId].ai=v;await dbPut('images',currentId,IMAGES[currentId]);}
-  openView(currentId);$('maintSec').hidden=false;
-  toast('✔ تم حفظ الوصف المصحح');
+  toast('✔ تم توليد الوصف الذكي');
 };
 $('btnDelDetails').onclick=async()=>{
   const ex=EXTRAS[currentId]||{};
