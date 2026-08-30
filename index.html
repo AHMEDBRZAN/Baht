@@ -140,7 +140,7 @@ textarea{width:calc(100% - 32px);margin:0 16px;border:2px solid #e3e7f5;border-r
     </div>
     <div class="hbtns" id="toolsBox" hidden>
       <button class="btn pri" id="btnRepo">🔄 تحديث من المستودع</button>
-      <button class="btn upload" id="btnUserSync">📤 رفع الصور والتفاصيل</button>
+      <button class="btn upload" id="btnUserSync">💾 حفظ الصور وتفاصيل</button>
       <button class="btn upload" id="btnUpload" data-admin>📂 رفع ملف (ونشره)</button>
       <button class="btn grn" id="btnSync" data-admin>☁️ مزامنة الصور</button>
       <button class="btn imgs" id="btnImgsList" data-admin>🖼 مواد مرفقة بالصور</button>
@@ -229,8 +229,9 @@ textarea{width:calc(100% - 32px);margin:0 16px;border:2px solid #e3e7f5;border-r
   <div class="m-head"><h2 id="imgsTitle">🖼 الصور المرجعية</h2><button class="x" data-close>✕</button></div>
   <div class="m-body"><div style="padding:12px 16px 0">
     <div id="imgsGrid"></div>
-    <div class="row" data-admin style="padding:0"><button class="btn amb" id="camAttach3">📷 التقاط صورة</button><button class="btn ghost" id="fileAttach3">🖼 رفع صورة</button></div>
+    <div class="row" style="padding:0"><button class="btn amb" id="camAttach3">📷 التقط صورة</button><button class="btn ghost" id="fileAttach3">🖼 رفع صورة</button></div>
     <div class="row" data-admin style="padding:0"><button class="btn grn" id="btnPublish2">📤 رفع الصور المرجعية</button></div>
+    <p class="hint">صوّر المادة ثم ارفعها للجميع عبر زر «💾 حفظ الصور وتفاصيل» في الصفحة الرئيسية.</p>
     <input type="file" id="fileAttachInput" accept="image/*" hidden>
     <div id="procProg3" hidden><div class="bar"><i id="procBar3"></i></div><p class="prog-txt" id="procTxt3"></p></div>
   </div></div>
@@ -444,7 +445,6 @@ $('btnDelDetails').onclick=async()=>{
   $('noteInput').value='';
   toast('✔ تم حذف التفاصيل');
 };
-/* ✔ حذف الصور متاح للمستخدم والمدير مع رسالة تأكيد ✔ */
 function renderImgs(){const im=IMAGES[currentId];
   $('imgsGrid').innerHTML=(im&&im.imgs&&im.imgs.length)?im.imgs.map((g,i)=>`<div class="imbig"><img src="${g.thumb}" alt=""><button data-delimg="${i}" title="حذف">✕</button></div>`).join(''):'<p class="empty">لا توجد صور مرجعية بعد.</p>';
   updateImgsBtn();if(currentGroup)renderGroupContent();}
@@ -489,8 +489,8 @@ function histFrom(url){return new Promise(res=>{const i=new Image();i.onload=()=
 function ocrText(url,onP){return new Promise(async res=>{try{if(!window.Tesseract)return res('');const r=await Tesseract.recognize(url,'ara+eng',{logger:m=>{if(onP&&m.status==='recognizing text')onP(Math.round(m.progress*100));}});res(r.data.text||'');}catch(e){res('');}});}
 async function analyze(url,onP){onP&&onP('المحرك 1/3…',15);const emb=await getEmbed(url);onP&&onP('المحرك 2/3…',45);const hist=await histFrom(url);onP&&onP('المحرك 3/3…',65);const ocr=await ocrText(await scaleDataUrl(url,800,.85));const thumb=await scaleDataUrl(url,300,.8);return{thumb,emb:emb.map(v=>+v.toFixed(4)),hist,ocr,ts:Date.now()};}
 function setProc(w,t,p){const bar=w==='imgs'?$('procBar3'):$('procBar'),txt=w==='imgs'?$('procTxt3'):$('procTxt'),wrap=w==='imgs'?$('procProg3'):$('procProg');wrap.hidden=false;txt.textContent=t;bar.style.width=p+'%';}
+/* ✔ متاح للمستخدم والمدير: يلتقط/يرفع صورة ويحفظها محلياً ثم تُنشر بزر حفظ الصور وتفاصيل ✔ */
 async function processAttach(url,which){
-  if(!isAdmin)return toast('الرفع للمدير فقط 🔐','err');
   setProc(which,'جارٍ المعالجة…',5);
   try{
     const g=await analyze(url,(t,p)=>setProc(which,t,p));
@@ -498,7 +498,7 @@ async function processAttach(url,which){
     IMAGES[currentId].imgs.push(g);
     await dbPut('images',currentId,IMAGES[currentId]);
     setProc(which,'✔ تمت المعالجة',100);setTimeout(()=>{$('procProg').hidden=true;$('procProg3').hidden=true;},1200);
-    renderImgs();toast('تمت معالجة الصورة ✔ — اضغط 📤 رفع لنشرها');
+    renderImgs();toast('تمت معالجة الصورة ✔ — اضغط 💾 حفظ الصور وتفاصيل لنشرها');
   }catch(e){$('procProg').hidden=true;$('procProg3').hidden=true;toast('خطأ: '+e.message,'err');}
 }
 
@@ -562,7 +562,7 @@ async function encodeSmall(g){const small=await scaleDataUrl(g.thumb,110,.55);re
 /* ✔✔✔ زر المستخدمين: يرفع كل الصور + كل التفاصيل إلى المستودع ✔✔✔ */
 $('btnUserSync').onclick=async()=>{
   const token=await ensureToken();if(!token)return toast('أدخل التوكن','err');
-  toast('جارٍ رفع الصور والتفاصيل…');
+  toast('جارٍ حفظ الصور والتفاصيل…');
   try{
     const merged=await getServerImages(token);
     let nI=0;
@@ -585,8 +585,8 @@ $('btnUserSync').onclick=async()=>{
       if(!mex[id]||mex[id].note!==note){mex[id]={id,note};nE++;}
     }
     await putJSON('data/extras.json',mex,token);
-    toast('✔ رُفعت '+nI+' صورة و '+nE+' تفاصيل إلى المستودع — محفوظة للجميع');
-  }catch(e){toast('فشل الرفع: '+e.message,'err');}
+    toast('✔ حُفظت '+nI+' صورة و '+nE+' تفاصيل في المستودع — متاحة للجميع');
+  }catch(e){toast('فشل الحفظ: '+e.message,'err');}
 };
 
 async function publishAllImages(){if(!isAdmin)return toast('للمدير فقط 🔐','err');const ids=Object.keys(IMAGES).filter(hasImg);if(!ids.length)return toast('لا توجد صور للنشر','err');const token=await ensureToken();if(!token)return toast('أدخل التوكن','err');toast('جارٍ النشر…');const merged=await getServerImages(token);let nM=0,rM=0,nI=0;
