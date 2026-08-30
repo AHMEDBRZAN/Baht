@@ -216,7 +216,7 @@ textarea{width:calc(100% - 32px);margin:0 16px;border:2px solid #e3e7f5;border-r
       <label>إضافة تفاصيل تظهر مع المادة</label>
       <textarea id="noteInput" placeholder="اكتب أي ملاحظات إضافية…"></textarea>
       <div class="row"><button class="btn pri" id="saveNote">💾 حفظ التفاصيل</button></div>
-      <div class="row" data-admin><button class="btn dngr" id="btnDelDetails">🗑 حذف التفاصيل</button></div>
+      <div class="row" data-dev><button class="btn dngr" id="btnDelDetails">🗑 حذف التفاصيل</button></div>
       <div class="row" data-admin><button class="btn amb" id="camAttach2">📷 التقاط صورة</button><button class="btn ghost" id="fileAttach2">🖼 رفع صورة</button></div>
       <div class="row" data-admin><button class="btn grn" id="btnPublish">📤 رفع الصور المرجعية</button></div>
       <p class="hint" data-admin>المدير مسؤول عن التعديلات والرفع — المستخدمون يجلبون النتائج تلقائياً.</p>
@@ -433,7 +433,9 @@ function openView(id){const r=ROWMAP[id];if(!r)return;currentId=id;
 $('btnImgs').onclick=()=>{$('imgsTitle').textContent='🖼 الصور المرجعية — '+(ROWMAP[currentId]?ROWMAP[currentId].name:'');$('imgsModal').hidden=false;renderImgs();};
 $('btnMaint').onclick=()=>{$('maintSec').hidden=!$('maintSec').hidden;};
 $('saveNote').onclick=async()=>{const n=$('noteInput').value.trim();EXTRAS[currentId]=Object.assign({},EXTRAS[currentId],{id:currentId,note:n});await dbPut('extras',currentId,EXTRAS[currentId]);toast('تم حفظ التفاصيل ✔');refreshDetails();};
+/* ✔ حذف التفاصيل: متاح للمطور والمدير ✔ */
 $('btnDelDetails').onclick=async()=>{
+  if(!canEdit())return toast('هذه الميزة للمطور/المدير 🔐','err');
   const ex=EXTRAS[currentId]||{};
   const hasNote=!!ex.note;const hasLegacyAi=!!(ex.ai)||(IMAGES[currentId]&&IMAGES[currentId].ai);
   if(!hasNote&&!hasLegacyAi)return toast('لا توجد تفاصيل لحذفها','err');
@@ -615,7 +617,7 @@ document.querySelectorAll('[data-close]').forEach(b=>b.onclick=()=>{const o=b.cl
 document.querySelectorAll('.overlay').forEach(o=>o.addEventListener('click',e=>{if(e.target!==o)return;if(o.id==='confirmModal'){$('confirmNo').click();return;}o.hidden=true;}));
 document.addEventListener('keydown',e=>{if(e.key==='Escape')closeTop();});
 
-/* ✔ الأدوار: مدير(97) / مطور(20) / مستخدم — بدون عرض الرموز ✔ */
+/* ✔ الأدوار: مدير(97) / مطور(20) / مستخدم ✔ */
 function applyAdminUI(){
   document.querySelectorAll('[data-admin]').forEach(el=>el.hidden=!isAdmin);
   document.querySelectorAll('[data-dev]').forEach(el=>el.hidden=!canEdit());
