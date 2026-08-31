@@ -539,7 +539,27 @@ async function deleteImgFromServer(id,deletedImg){
 }
 
 /* ✔✔✔ الكاميرا: الالتقاط/الرفع موجود فقط في نافذة الصور المرجعية ✔✔✔ */
-const nativeCam=document.createElement('input');nativeCam.type='file';nativeCam.accept='image/*';nativeCam.setAttribute('capture','environment');nativeCam.style.cssText='position:fixed;bottom:0;left:0;width:1px;height:1px;opacity:0;pointer-events:none;';document.body.appendChild(nativeCam);
+function openNativeCam(m){
+  camMode=m;
+  const inp=document.createElement('input');
+  inp.type='file';inp.accept='image/*';inp.setAttribute('capture','environment');
+  inp.style.cssText='position:fixed;bottom:0;left:0;width:2px;height:2px;opacity:0.01;pointer-events:none;';
+  document.body.appendChild(inp);
+  const cleanup=()=>{setTimeout(()=>{inp.remove();},500);};
+  inp.addEventListener('change',async()=>{
+    const f=inp.files&&inp.files[0];
+    cleanup();
+    if(!f){toast('لم يتم استلام صورة — حاول مجدداً','err');return;}
+    toast('📷 تم استلام الصورة — جارٍ المعالجة…');
+    try{
+      const url=await fileToOrientedDataUrl(f,900,.88);
+      if(!url){toast('تعذر قراءة الصورة','err');return;}
+      route(url);
+    }catch(err){console.error(err);toast('تعذر معالجة الصورة: '+err.message,'err');}
+  });
+  inp.addEventListener('cancel',cleanup);
+  inp.click();
+}
 nativeCam.addEventListener('change',async e=>{const f=e.target.files[0];nativeCam.value='';if(!f)return;route(await fileToOrientedDataUrl(f,900,.88));});
 function openNativeCam(m){camMode=m;nativeCam.click();}
 $('camAttach3').onclick=()=>openNativeCam('attach');
