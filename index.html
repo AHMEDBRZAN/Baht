@@ -297,7 +297,7 @@ function parseNum(v){
   if(typeof v==='number')return isFinite(v)?v:0;
   let s=String(v).trim();
   if(!s)return 0;
-  s=s.replace(/[٠-٩]/g,d=>'٠١٢٣٤٥٦٧٨٩'.indexOf(d));
+  s=s.replace(/[٠-٩]/g,d=>'٠١٣٤٥٧٨٩'.indexOf(d));
   s=s.replace(/[,،\s]/g,'');
   const n=parseFloat(s);
   return isFinite(n)?n:0;
@@ -313,6 +313,10 @@ const CHUNK=0x8000;
 function b64encode(str){const bytes=new TextEncoder().encode(str);let bin='';for(let i=0;i<bytes.length;i+=CHUNK){bin+=String.fromCharCode.apply(null,bytes.subarray(i,i+CHUNK));}return btoa(bin);}
 function bufToB64(buf){const bytes=new Uint8Array(buf);let bin='';for(let i=0;i<bytes.length;i+=CHUNK){bin+=String.fromCharCode.apply(null,bytes.subarray(i,i+CHUNK));}return btoa(bin);}
 function b64decode(b64){const bin=atob(b64);const bytes=Uint8Array.from(bin,c=>c.charCodeAt(0));return new TextDecoder().decode(bytes);}
+/* ✔✔✔ آثار الحذف (Tombstones) لمنع عودة المحذوف ✔✔✔ */
+function getTomb(){try{return JSON.parse(localStorage.getItem('imgTomb')||'[]');}catch(e){return[];}}
+function addTomb(id,ts){const t=getTomb();t.push({id,ts});if(t.length>500)t=t.slice(-500);localStorage.setItem('imgTomb',JSON.stringify(t));}
+function getCleared(){try{return JSON.parse(localStorage.getItem('clearedMats')||'[]');}catch(e){return[];}}
 
 let dbP=null;
 function db(){if(!dbP)dbP=new Promise((res,rej)=>{const r=indexedDB.open('matSysDB',1);r.onupgradeneeded=()=>{const d=r.result;['files','extras','images'].forEach(s=>{if(!d.objectStoreNames.contains(s))d.createObjectStore(s);});};r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error);});return dbP;}
@@ -384,7 +388,6 @@ async function pushXlsxToRepo(buf){
   if(!put.ok){const er=await put.json().catch(()=>null);throw new Error((er&&er.message)||('HTTP '+put.status));}
 }
 
-/* ✔✔✔ جلب لحظي من GitHub API (بدون كاش) ✔✔✔ */
 async function fetchJSONFresh(path){
   try{
     const r=await fetch('https://api.github.com/repos/'+REPO+'/contents/'+path+'?t='+Date.now(),{cache:'no-store',headers:{'Accept':'application/vnd.github+json'}});
@@ -393,14 +396,22 @@ async function fetchJSONFresh(path){
   try{const r=await fetch('https://cdn.jsdelivr.net/gh/'+REPO+'@main/'+path+'?v='+Date.now(),{cache:'no-store'});if(r.ok)return await r.json();}catch(e){}
   return null;
 }
+/* ✔✔✔ جلب الصور مع تجاهل المحذوف (آثار) حتى من نسخة قديمة ✔✔✔ */
 async function fetchSharedImages(){
   let added=0,total=0;
   try{
     const data=await fetchJSONFresh('data/images.json');
+    const tomb=getTomb();const cleared=getCleared();
+    const skip=(id,ts)=>cleared.includes(id)||tomb.some(t=>t.id===id&&t.ts===ts);
     if(data&&typeof data==='object'){
-      for(const id of Object.keys(data)){const entry=data[id];if(!entry||!Array.isArray(entry.imgs))continue;const valid=entry.imgs.filter(validImg);total+=valid.length;if(!valid.length)continue;
+      for(const id of Object.keys(data)){
+        if(cleared.includes(id))continue;
+        const entry=data[id];if(!entry||!Array.isArray(entry.imgs))continue;
+        const valid=entry.imgs.filter(validImg).filter(g=>!skip(id,g.ts));
+        total+=valid.length;if(!valid.length)continue;
         if(!IMAGES[id]){IMAGES[id]={id,imgs:valid};added+=valid.length;}
-        else{const have=new Set(IMAGES[id].imgs.map(g=>g.ts));valid.forEach(g=>{if(!have.has(g.ts)){IMAGES[id].imgs.push(g);added++;}});}}
+        else{const have=new Set(IMAGES[id].imgs.map(g=>g.ts));valid.forEach(g=>{if(!have.has(g.ts)){IMAGES[id].imgs.push(g);added++;}});}
+      }
     }
   }catch(e){}
   return {added,total};
@@ -514,8 +525,9 @@ $('imgsGrid').addEventListener('click',async e=>{
   if(!ok)return;
   const deletedImg=im.imgs[idx];
   im.imgs.splice(idx,1);
+  addTomb(currentId,deletedImg.ts);
   if(!im.imgs.length){delete IMAGES[currentId];await dbDel('images',currentId);
-    const cleared=JSON.parse(localStorage.getItem('clearedMats')||'[]');
+    const cleared=getCleared();
     if(!cleared.includes(currentId))cleared.push(currentId);
     localStorage.setItem('clearedMats',JSON.stringify(cleared));
   }
@@ -685,7 +697,7 @@ $('btnUserSync').onclick=async()=>{
       const sm=[];for(const g of nw)sm.push(await encodeSmall(g));
       merged[id]={imgs:keep.concat(sm)};nI+=nw.length;delI+=removed.length;
     }
-    const cleared=JSON.parse(localStorage.getItem('clearedMats')||'[]');
+    const cleared=getCleared();
     for(const id of cleared){if(merged[id]&&Array.isArray(merged[id].imgs)){delI+=merged[id].imgs.length;delete merged[id];}}
     await putJSON('data/images.json',merged,token);
     localStorage.setItem('clearedMats','[]');
