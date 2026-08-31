@@ -281,9 +281,9 @@ const REPO_URLS=['https://raw.githubusercontent.com/'+REPO+'/main/'+encodeURICom
  'https://raw.githubusercontent.com/'+REPO+'/master/'+encodeURIComponent(XLSX_NAME),
  'https://raw.githubusercontent.com/'+REPO+'/main/materials.xlsx',
  'https://raw.githubusercontent.com/'+REPO+'/main/data.xlsx'];
-const SHARED_URL='https://raw.githubusercontent.com/'+REPO+'/main/data/images.json';
-const EXTRAS_URL='https://raw.githubusercontent.com/'+REPO+'/main/data/extras.json';
-const INDEX_URL='https://raw.githubusercontent.com/'+REPO+'/main/index.html';
+const SHARED_URL='https://cdn.jsdelivr.net/gh/'+REPO+'@main/data/images.json';
+const EXTRAS_URL='https://cdn.jsdelivr.net/gh/'+REPO+'@main/data/extras.json';
+const INDEX_URL='https://cdn.jsdelivr.net/gh/'+REPO+'@main/index.html';
 const INDEX_API='https://api.github.com/repos/'+REPO+'/contents/index.html';
 
 let ROWS=[],ROWMAP={},GROUPS=[],IMAGES={},EXTRAS={},VIEWS={};
@@ -404,7 +404,10 @@ async function pushXlsxToRepo(buf){
 }
 async function fetchSharedImages(){
   let added=0,total=0;
-  try{const r=await fetch(SHARED_URL,{cache:'no-store'});if(r.ok){const data=await r.json();if(data&&typeof data==='object'){
+  try{
+    const cacheBuster='?v='+Date.now();
+    const r=await fetch(SHARED_URL+cacheBuster,{cache:'no-store',headers:{'Accept':'application/json'}});
+    if(r.ok){const data=await r.json();if(data&&typeof data==='object'){
     for(const id of Object.keys(data)){const entry=data[id];if(!entry||!Array.isArray(entry.imgs))continue;const valid=entry.imgs.filter(validImg);total+=valid.length;if(!valid.length)continue;
       if(!IMAGES[id]){IMAGES[id]={id,imgs:valid};added+=valid.length;}
       else{const have=new Set(IMAGES[id].imgs.map(g=>g.ts));valid.forEach(g=>{if(!have.has(g.ts)){IMAGES[id].imgs.push(g);added++;}});}}}
@@ -412,9 +415,13 @@ async function fetchSharedImages(){
   return {added,total};
 }
 async function fetchSharedExtras(){
-  try{const r=await fetch(EXTRAS_URL,{cache:'no-store'});if(r.ok){const data=await r.json();if(data&&typeof data==='object'){
-    for(const id of Object.keys(data)){if(!EXTRAS[id]&&data[id]&&data[id].note)EXTRAS[id]={id,note:data[id].note};}
-  }}}catch(e){}
+  try{
+    const cacheBuster='?v='+Date.now();
+    const r=await fetch(EXTRAS_URL+cacheBuster,{cache:'no-store',headers:{'Accept':'application/json'}});
+    if(r.ok){const data=await r.json();if(data&&typeof data==='object'){
+      for(const id of Object.keys(data)){if(!EXTRAS[id]&&data[id]&&data[id].note)EXTRAS[id]={id,note:data[id].note};}
+    }}
+  }catch(e){}
 }
 
 $('compsBar').addEventListener('click',e=>{const c=e.target.closest('[data-open-group]');if(c)openGroupModal(c.dataset.openGroup);});
@@ -498,10 +505,10 @@ $('btnDelDetails').onclick=async()=>{
   await dbPut('extras',currentId,EXTRAS[currentId]);
   if(IMAGES[currentId]){IMAGES[currentId].ai='';await dbPut('images',currentId,IMAGES[currentId]);}
   const t=(localStorage.getItem('ghToken')||'').trim();
-  if(t){try{const merged=await getServerImages(t);if(merged[currentId]){merged[currentId].ai='';await putJSON('data/images.json',merged,t);toast('✔ تم الحذف بنجاح — ستظهر التغييرات للجميع خلال دقائق');}}catch(e){}}
+  if(t){try{const merged=await getServerImages(t);if(merged[currentId]){merged[currentId].ai='';await putJSON('data/images.json',merged,t);toast('✔ تم الحذف بنجاح — ستظهر التغييرات للجميع خلال ثوانٍ');}}catch(e){}}
   refreshDetails();
   $('noteInput').value='';
-  if(!(localStorage.getItem('ghToken')||'').trim())toast('✔ تم الحذف بنجاح — ستظهر التغييرات للجميع خلال دقائق');
+  if(!(localStorage.getItem('ghToken')||'').trim())toast('✔ تم الحذف بنجاح — ستظهر التغييرات للجميع خلال ثوانٍ');
 };
 function renderImgs(){const im=IMAGES[currentId];
   $('imgsGrid').innerHTML=(im&&im.imgs&&im.imgs.length)?im.imgs.map((g,i)=>`<div class="imbig"><img src="${g.thumb}" alt="">${canEdit()?`<button data-delimg="${i}" title="حذف">✕</button>`:''}</div>`).join(''):'<p class="empty">لا توجد صور مرجعية بعد.</p>';
@@ -528,13 +535,13 @@ $('imgsGrid').addEventListener('click',async e=>{
 
 async function deleteImgFromServer(id,deletedImg){
   const token=await ensureToken();
-  if(!token)return toast('✔ تم الحذف بنجاح — ستظهر التغييرات للجميع خلال دقائق');
+  if(!token)return toast('✔ تم الحذف بنجاح — ستظهر التغييرات للجميع خلال ثوانٍ');
   
   try{
     const merged=await getServerImages(token);
     
     if(!merged[id]||!Array.isArray(merged[id].imgs)){
-      return toast('✔ تم الحذف بنجاح — ستظهر التغييرات للجميع خلال دقائق');
+      return toast('✔ تم الحذف بنجاح — ستظهر التغييرات للجميع خلال ثوانٍ');
     }
     
     const deletedTs=deletedImg.ts;
@@ -547,14 +554,14 @@ async function deleteImgFromServer(id,deletedImg){
       if(thumbMatch>=0){
         merged[id].imgs.splice(thumbMatch,1);
       }else{
-        return toast('✔ تم الحذف بنجاح — ستظهر التغييرات للجميع خلال دقائق');
+        return toast('✔ تم الحذف بنجاح — ستظهر التغييرات للجميع خلال ثوانٍ');
       }
     }
     
     if(!merged[id].imgs.length)delete merged[id];
     
     await putJSON('data/images.json',merged,token);
-    toast('✔ تم الحذف بنجاح — ستظهر التغييرات للجميع خلال دقائق');
+    toast('✔ تم الحذف بنجاح — ستظهر التغييرات للجميع خلال ثوانٍ');
   }catch(e){
     console.error(e);
     toast('⚠ حُذفت محلياً لكن فشل الحذف من المستودع: '+e.message,'err');
@@ -657,10 +664,11 @@ async function ensureToken(){let t=(localStorage.getItem('ghToken')||'').trim();
 async function getServerImages(token){
   let m={};
   try{
-    const cacheBuster='?t='+Date.now();
-    const r=await fetch(SHARED_URL+cacheBuster,{cache:'no-store'});
+    // jsDelivr يدعم cache busting بفعالية
+    const cacheBuster='?v='+Date.now();
+    const r=await fetch(SHARED_URL+cacheBuster,{cache:'no-store',headers:{'Accept':'application/json'}});
     if(r.ok){const d=await r.json();if(d&&typeof d==='object')m=d;}
-  }catch(e){}
+  }catch(e){console.error('getServerImages error:',e);}
   return m;
 }
 
