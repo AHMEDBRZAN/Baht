@@ -278,7 +278,6 @@ const REPO_URLS=['https://raw.githubusercontent.com/'+REPO+'/main/'+encodeURICom
  'https://raw.githubusercontent.com/'+REPO+'/master/'+encodeURIComponent(XLSX_NAME),
  'https://raw.githubusercontent.com/'+REPO+'/main/materials.xlsx',
  'https://raw.githubusercontent.com/'+REPO+'/main/data.xlsx'];
-/* ✔✔✔ jsDelivr لسرعة الجلب (1-10 ثوانٍ بدل 5 دقائق) ✔✔✔ */
 const SHARED_URL='https://cdn.jsdelivr.net/gh/'+REPO+'@main/data/images.json';
 const EXTRAS_URL='https://cdn.jsdelivr.net/gh/'+REPO+'@main/data/extras.json';
 const INDEX_URL='https://cdn.jsdelivr.net/gh/'+REPO+'@main/index.html';
@@ -314,6 +313,7 @@ function textSim(a,b){const A=norm(a).split(' ').filter(w=>w.length>=3),B=norm(b
 const CHUNK=0x8000;
 function b64encode(str){const bytes=new TextEncoder().encode(str);let bin='';for(let i=0;i<bytes.length;i+=CHUNK){bin+=String.fromCharCode.apply(null,bytes.subarray(i,i+CHUNK));}return btoa(bin);}
 function bufToB64(buf){const bytes=new Uint8Array(buf);let bin='';for(let i=0;i<bytes.length;i+=CHUNK){bin+=String.fromCharCode.apply(null,bytes.subarray(i,i+CHUNK));}return btoa(bin);}
+function b64decode(b64){const bin=atob(b64);const bytes=Uint8Array.from(bin,c=>c.charCodeAt(0));return new TextDecoder().decode(bytes);}
 
 let dbP=null;
 function db(){if(!dbP)dbP=new Promise((res,rej)=>{const r=indexedDB.open('matSysDB',1);r.onupgradeneeded=()=>{const d=r.result;['files','extras','images'].forEach(s=>{if(!d.objectStoreNames.contains(s))d.createObjectStore(s);});};r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error);});return dbP;}
@@ -384,26 +384,53 @@ async function pushXlsxToRepo(buf){
   const put=await fetch(api,{method:'PUT',headers:{Authorization:'token '+token,Accept:'application/vnd.github+json','Content-Type':'application/json'},body:JSON.stringify({message:'update materials',content:bufToB64(buf),...(sha?{sha}:{})})});
   if(!put.ok){const er=await put.json().catch(()=>null);throw new Error((er&&er.message)||('HTTP '+put.status));}
 }
-async function fetchSharedImages(){
-  let added=0,total=0;
+
+async function fetchJSONFresh(path){
   try{
-    const cacheBuster='?v='+Date.now();
-    const r=await fetch(SHARED_URL+cacheBuster,{cache:'no-store',headers:{'Accept':'application/json'}});
-    if(r.ok){const data=await r.json();if(data&&typeof data==='object'){
-      for(const id of Object.keys(data)){const entry=data[id];if(!entry||!Array.isArray(entry.imgs))continue;const valid=entry.imgs.filter(validImg);total+=valid.length;if(!valid.length)continue;
-        if(!IMAGES[id]){IMAGES[id]={id,imgs:valid};added+=valid.length;}
-        else{const have=new Set(IMAGES[id].imgs.map(g=>g.ts));valid.forEach(g=>{if(!have.has(g.ts)){IMAGES[id].imgs.push(g);added++;}});}}}
+    const r=await fetch('https://api.github.com/repos/'+REPO+'/contents/'+path+'?t='+Date.now(),{cache:'no-store',headers:{'Accept':'application/vnd.github+json'}});
+    if(r.ok){const j=await r.json();if(j&&j.content){return JSON.parse(b64decode(j.content));}}
+  }catch(e){}
+  try{const r=await fetch('https://cdn.jsdelivr.net/gh/'+REPO+'@main/'+path+'?v='+Date.now(),{cache:'no-store'});if(r.ok)return await r.json();}catch(e){}
+  return null;
+}
+/* ✔✔✔ آخر جلب من المستودع = المرجع النهائي (استبدال كامل للصور) ✔✔✔ */
+async function fetchSharedImages(){
+  let total=0;
+  try{
+    const data=await fetchJSONFresh('data/images.json');
+    if(data&&typeof data==='object'){
+      const fresh={};
+      for(const id of Object.keys(data)){
+        const entry=data[id];if(!entry||!Array.isArray(entry.imgs))continue;
+        const valid=entry.imgs.filter(validImg);
+        if(!valid.length)continue;
+        fresh[id]={id,imgs:valid};
+        total+=valid.length;
+      }
+      IMAGES=fresh;
+      try{
+        const old=await dbGetAll('images');
+        for(const v of old){if(!fresh[v.id])await dbDel('images',v.id);}
+        for(const id of Object.keys(fresh)){await dbPut('images',fresh[id]);}
+      }catch(e){}
     }
   }catch(e){}
-  return {added,total};
+  return total;
 }
+/* ✔✔✔ آخر جلب للتفاصيل = المرجع النهائي (استبدال كامل) ✔✔✔ */
 async function fetchSharedExtras(){
   try{
-    const cacheBuster='?v='+Date.now();
-    const r=await fetch(EXTRAS_URL+cacheBuster,{cache:'no-store',headers:{'Accept':'application/json'}});
-    if(r.ok){const data=await r.json();if(data&&typeof data==='object'){
-      for(const id of Object.keys(data)){if(!EXTRAS[id]&&data[id]&&data[id].note)EXTRAS[id]={id,note:data[id].note};}
-    }}
+    const data=await fetchJSONFresh('data/extras.json');
+    if(data&&typeof data==='object'){
+      const fresh={};
+      for(const id of Object.keys(data)){if(data[id]&&data[id].note)fresh[id]={id,note:data[id].note};}
+      EXTRAS=fresh;
+      try{
+        const old=await dbGetAll('extras');
+        for(const v of old){if(!fresh[v.id])await dbDel('extras',v.id);}
+        for(const id of Object.keys(fresh)){await dbPut('extras',fresh[id]);}
+      }catch(e){}
+    }
   }catch(e){}
 }
 
@@ -539,8 +566,11 @@ async function deleteImgFromServer(id,deletedImg){
   }
 }
 
-/* ✔✔✔ الكاميرا: الالتقاط/الرفع موجود فقط في نافذة الصور المرجعية ✔✔✔ */
-const nativeCam=document.createElement('input');nativeCam.type='file';nativeCam.accept='image/*';nativeCam.setAttribute('capture','environment');nativeCam.hidden=true;document.body.appendChild(nativeCam);
+/* ✔✔✔ إصلاح زر الالتقاط: حقل ظاهر (1px شفاف) بدل display:none ليفتح على iOS ✔✔✔ */
+const nativeCam=document.createElement('input');
+nativeCam.type='file';nativeCam.accept='image/*';nativeCam.setAttribute('capture','environment');
+nativeCam.style.cssText='position:fixed;bottom:0;left:0;width:1px;height:1px;opacity:0;pointer-events:none;';
+document.body.appendChild(nativeCam);
 nativeCam.addEventListener('change',async e=>{const f=e.target.files[0];nativeCam.value='';if(!f)return;route(await fileToOrientedDataUrl(f,900,.88));});
 function openNativeCam(m){camMode=m;nativeCam.click();}
 $('camAttach3').onclick=()=>openNativeCam('attach');
@@ -634,51 +664,46 @@ async function ensureToken(){let t=(localStorage.getItem('ghToken')||'').trim();
 
 async function getServerImages(token){
   let m={};
-  try{
-    const cacheBuster='?v='+Date.now();
-    const r=await fetch(SHARED_URL+cacheBuster,{cache:'no-store',headers:{'Accept':'application/json'}});
-    if(r.ok){const d=await r.json();if(d&&typeof d==='object')m=d;}
-  }catch(e){console.error('getServerImages error:',e);}
+  try{const d=await fetchJSONFresh('data/images.json');if(d&&typeof d==='object')m=d;}catch(e){console.error('getServerImages error:',e);}
   return m;
 }
 
 async function putJSON(path,obj,token){
   const api='https://api.github.com/repos/'+REPO+'/contents/'+path;
-  let sha;
-  const g=await fetch(api,{headers:{Authorization:'token '+token,Accept:'application/vnd.github+json'}});
-  if(g.ok){const gj=await g.json();sha=gj.sha;}
-  const put=await fetch(api,{method:'PUT',headers:{Authorization:'token '+token,Accept:'application/vnd.github+json','Content-Type':'application/json'},body:JSON.stringify({message:'sync '+path+' '+Date.now(),content:b64encode(JSON.stringify(obj)),...(sha?{sha}:{})})});
-  if(!put.ok){const er=await put.json().catch(()=>null);throw new Error((er&&er.message)||('HTTP '+put.status));}
+  let lastErr='';
+  for(let attempt=0;attempt<3;attempt++){
+    let sha;
+    try{
+      const g=await fetch(api+'?t='+Date.now()+'_'+attempt,{cache:'no-store',headers:{Authorization:'token '+token,Accept:'application/vnd.github+json'}});
+      if(g.ok){const gj=await g.json();sha=gj.sha;}
+    }catch(e){}
+    const put=await fetch(api,{method:'PUT',headers:{Authorization:'token '+token,Accept:'application/vnd.github+json','Content-Type':'application/json'},body:JSON.stringify({message:'sync '+path+' '+Date.now(),content:b64encode(JSON.stringify(obj)),...(sha?{sha}:{})})});
+    if(put.ok)return;
+    const er=await put.json().catch(()=>null);
+    lastErr=(er&&er.message)||('HTTP '+put.status);
+    if(put.status===409||put.status===422||put.status===403){await new Promise(rs=>setTimeout(rs,1000));continue;}
+    throw new Error(lastErr);
+  }
+  throw new Error(lastErr||'فشل التحديث بعد محاولات متعددة');
 }
 async function encodeSmall(g){const small=await scaleDataUrl(g.thumb,110,.55);return{thumb:small,emb:g.emb.map(v=>+v.toFixed(3)),hist:g.hist,ocr:g.ocr||'',ts:g.ts||Date.now()};}
 
+/* ✔✔✔ حفظ التغيرات: المحلي يصبح المرجع للجميع (استبدال كامل) ✔✔✔ */
 $('btnUserSync').onclick=async()=>{
   if(!canEdit())return toast('هذه الميزة لوضع المطور 🔐','err');
   const token=await ensureToken();if(!token)return toast('أدخل التوكن','err');
   toast('جارٍ حفظ التغيرات…');
   try{
-    const merged=await getServerImages(token);
-    let nI=0;
-    const ids=Object.keys(IMAGES).filter(hasImg);
-    for(const id of ids){
-      const local=IMAGES[id].imgs;const have=(merged[id]&&Array.isArray(merged[id].imgs))?merged[id].imgs:[];
-      const hTs=new Set(have.map(g=>g.ts));const nw=local.filter(g=>!hTs.has(g.ts));
-      if(!nw.length)continue;
-      const keep=have.filter(hg=>local.some(l=>l.ts===hg.ts));
-      const sm=[];for(const g of nw)sm.push(await encodeSmall(g));
-      merged[id]={imgs:keep.concat(sm)};nI+=nw.length;
+    const merged={};let nI=0;
+    for(const id of Object.keys(IMAGES).filter(hasImg)){
+      const sm=[];for(const g of IMAGES[id].imgs)sm.push(await encodeSmall(g));
+      merged[id]={imgs:sm};nI+=sm.length;
     }
     await putJSON('data/images.json',merged,token);
-    let mex={};
-    try{const r=await fetch(EXTRAS_URL,{cache:'no-store'});if(r.ok){mex=await r.json();}}catch(e){}
-    let nE=0;
-    for(const id of Object.keys(EXTRAS)){
-      const note=EXTRAS[id]&&EXTRAS[id].note;
-      if(!note)continue;
-      if(!mex[id]||mex[id].note!==note){mex[id]={id,note};nE++;}
-    }
+    const mex={};let nE=0;
+    for(const id of Object.keys(EXTRAS)){if(EXTRAS[id]&&EXTRAS[id].note){mex[id]={id,note:EXTRAS[id].note};nE++;}}
     await putJSON('data/extras.json',mex,token);
-    toast('✔ حُفظت التغيرات ('+nI+' صورة + '+nE+' تفاصيل) — ستظهر للجميع خلال ثوانٍ');
+    toast('✔ حُفظت التغيرات: '+nI+' صورة + '+nE+' تفاصيل (أصبحت المرجع للجميع)');
   }catch(e){toast('فشل الحفظ: '+e.message,'err');}
 };
 
@@ -784,7 +809,7 @@ $('btnPublishCode').onclick=async()=>{const code=$('codeInput').value;if(code.le
 $('btnUpload').onclick=()=>$('filePick').click();
 $('filePick').onchange=async e=>{const f=e.target.files[0];if(!f)return;let buf;try{buf=await f.arrayBuffer();}catch(err){return toast('تعذر القراءة','err');}const rows=parseWorkbook(buf);if(!rows)return toast('ملف غير مدعوم — تأكد من وجود عمود "اسم المادة"','err');loadDataset(rows);try{localStorage.setItem('rowsCache',JSON.stringify(rows));}catch(err){}toast('تم تحميل «'+f.name+'» — '+rows.length+' مادة ✔');if(isAdmin){const ok=await askConfirm('نشر الملف واستبدال الموجود؟');if(ok){toast('جارٍ الرفع…');try{await pushXlsxToRepo(buf);toast('✔ استُبدل الملف');}catch(err){toast('فشل: '+err.message,'err');}}}};
 
-$('btnRepo').onclick=async()=>{toast('جارٍ الجلب…');let rc=0,ok=false;const buf=await fetchRepoFile();if(buf){const rows=parseWorkbook(buf);if(rows){loadDataset(rows);try{localStorage.setItem('rowsCache',JSON.stringify(rows));}catch(e){}ok=true;rc=rows.length;}}await fetchSharedExtras();const im=await fetchSharedImages();if(ok)toast('✔ '+rc+' مادة • '+im.total+' صورة');else if(im.total)toast('🖼 '+im.total+' صورة');else toast('تعذر الجلب','err');};
+$('btnRepo').onclick=async()=>{toast('جارٍ الجلب…');let rc=0,ok=false;const buf=await fetchRepoFile();if(buf){const rows=parseWorkbook(buf);if(rows){loadDataset(rows);try{localStorage.setItem('rowsCache',JSON.stringify(rows));}catch(e){}ok=true;rc=rows.length;}}await fetchSharedExtras();const total=await fetchSharedImages();if(ok)toast('✔ '+rc+' مادة • '+total+' صورة (آخر جلب = المرجع)');else if(total)toast('🖼 '+total+' صورة (آخر جلب = المرجع)');else toast('تعذر الجلب','err');};
 
 const MOD_ORDER=['confirmModal','loginModalDyn','codeModal','imgsModal','viewModal','imgsListModal','searchModal','scanModal','groupModal'];
 function closeTop(){const id=MOD_ORDER.find(x=>{const el=$(x);return el&&!el.hidden;});if(!id)return;$(id).hidden=true;}
@@ -811,11 +836,14 @@ $('toolsChev').onclick=toggleTools;$('appTitle').addEventListener('click',toggle
 
 (async()=>{
   try{applyAdminUI();}catch(e){}
-  try{(await dbGetAll('extras')).forEach(x=>EXTRAS[x.id]=x);(await dbGetAll('images')).forEach(v=>{if(v&&Array.isArray(v.imgs))IMAGES[v.id]=v;else if(v)IMAGES[v.id]={id:v.id,imgs:[{thumb:v.thumb,emb:v.emb,hist:v.hist,ocr:v.ocr,ts:v.ts||Date.now()}]};});
-    let rm=0;for(const id of Object.keys(IMAGES)){const im=IMAGES[id];im.imgs=(im.imgs||[]).filter(validImg);if(!im.imgs.length){delete IMAGES[id];dbDel('images',id);rm++;}else dbPut('images',id,im);}if(rm)toast('نُظفت '+rm+' صورة تالفة','err');}catch(e){}
+  try{(await dbGetAll('extras')).forEach(x=>EXTRAS[x.id]=x);(await dbGetAll('images')).forEach(v=>{if(v&&Array.isArray(v.imgs))IMAGES[v.id]=v;else if(v)IMAGES[v.id]={id:v.id,imgs:[{thumb:v.thumb,emb:v.emb,hist:v.hist,ocr:v.ocr,ts:v.ts||Date.now()}]};});}catch(e){}
   try{const c=localStorage.getItem('rowsCache');if(c){const rows=JSON.parse(c);if(rows&&rows.length)loadDataset(rows);}}catch(e){}
-  await fetchSharedExtras();
-  (async()=>{const buf=await fetchRepoFile();let rc=0;if(buf){const rows=parseWorkbook(buf);if(rows){loadDataset(rows);try{localStorage.setItem('rowsCache',JSON.stringify(rows));}catch(e){}rc=rows.length;}}const im=await fetchSharedImages();if(rc)toast('✔ '+rc+' مادة • '+im.total+' صورة');else if(im.total)toast('🖼 '+im.total+' صورة');else if(!ROWS.length)$('emptyMsg').textContent='تعذر الجلب — افتح الأدوات ⌄ واضغط «تحديث من المستودع»';})();
+  (async()=>{const buf=await fetchRepoFile();let rc=0;if(buf){const rows=parseWorkbook(buf);if(rows){loadDataset(rows);try{localStorage.setItem('rowsCache',JSON.stringify(rows));}catch(e){}rc=rows.length;}}
+    await fetchSharedExtras();
+    const total=await fetchSharedImages();
+    if(rc)toast('✔ '+rc+' مادة • '+total+' صورة (آخر جلب = المرجع)');
+    else if(total)toast('🖼 '+total+' صورة (آخر جلب = المرجع)');
+    else if(!ROWS.length)$('emptyMsg').textContent='تعذر الجلب — افتح الأدوات ⌄ واضغط «تحديث من المستودع»';})();
 })();
 </script>
 </body>
