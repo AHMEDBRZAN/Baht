@@ -101,7 +101,7 @@ textarea.code.small{min-height:100px;width:100%;margin:0}
 .vdetails .ln:last-child{border:none}.vdetails .ln b{color:var(--mut);min-width:95px;font-weight:800}
 .note{background:linear-gradient(135deg,#fff6dd,#ffedc2);border:2px solid #f0c64a;border-radius:14px;padding:12px;margin-top:10px;white-space:pre-wrap;font-weight:700;font-size:14px;color:#6b4d0f}
 .row{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;padding:0 16px}.row .btn{flex:1}
-label{display:block;font-size:13px;font-weight:800;margin:12px 0 6px}
+label{display:block;font-size:13px;font-weight:800;margin:12px 16px 6px}
 textarea{width:100%;border:2px solid #e3e7f5;border-radius:12px;padding:10px;font-family:inherit;font-size:13px;min-height:70px;resize:vertical;outline:none}
 #maintSec{background:#f6f8ff;border:1px solid #e3e7f5;border-radius:16px;padding:12px 14px;margin:12px 16px 0}
 .bar{height:8px;background:#e5e9f5;border-radius:8px;overflow:hidden;margin-top:10px}
@@ -148,6 +148,7 @@ textarea{width:100%;border:2px solid #e3e7f5;border-radius:12px;padding:10px;fon
       <button class="btn pri" id="btnRepo">🔄 تحديث من المستودع</button>
       <button class="btn upload" id="btnUserSync" data-dev>💾 حفظ التغيرات</button>
       <button class="btn upload" id="btnUpload" data-admin>📂 رفع ملف (ونشره)</button>
+      <button class="btn grn" id="btnSync" data-admin>☁️ مزامنة الصور</button>
       <button class="btn imgs" id="btnImgsList" data-admin>🖼 مواد مرفقة بالصور</button>
       <button class="btn code" id="btnEditCode" data-admin>📝 تغيير الكود</button>
       <button class="btn dngr" id="btnLogout" data-dev>🚪 خروج</button>
@@ -223,7 +224,11 @@ textarea{width:100%;border:2px solid #e3e7f5;border-radius:12px;padding:10px;fon
       <textarea id="noteInput" placeholder="اكتب أي ملاحظات إضافية…"></textarea>
       <div class="row"><button class="btn pri" id="saveNote">💾 حفظ التفاصيل</button></div>
       <div class="row" data-dev><button class="btn dngr" id="btnDelDetails">🗑 حذف التفاصيل</button></div>
+      <div class="row" data-admin><button class="btn amb" id="camAttach2">📷 التقاط صورة</button><button class="btn ghost" id="fileAttach2">🖼 رفع صورة</button></div>
+      <div class="row" data-admin><button class="btn grn" id="btnPublish">📤 رفع الصور المرجعية</button></div>
       <p class="hint" data-admin>المدير مسؤول عن التعديلات — المطورون يحفظون التغيرات بزر «💾 حفظ التغيرات».</p>
+      <input type="file" id="fileAttachInput3" accept="image/*" hidden>
+      <div id="procProg" hidden><div class="bar"><i id="procBar"></i></div><p class="prog-txt" id="procTxt"></p></div>
     </div>
   </div>
 </div></div>
@@ -278,9 +283,9 @@ const REPO_URLS=['https://raw.githubusercontent.com/'+REPO+'/main/'+encodeURICom
  'https://raw.githubusercontent.com/'+REPO+'/master/'+encodeURIComponent(XLSX_NAME),
  'https://raw.githubusercontent.com/'+REPO+'/main/materials.xlsx',
  'https://raw.githubusercontent.com/'+REPO+'/main/data.xlsx'];
-const SHARED_URL='https://cdn.jsdelivr.net/gh/'+REPO+'@main/data/images.json';
-const EXTRAS_URL='https://cdn.jsdelivr.net/gh/'+REPO+'@main/data/extras.json';
-const INDEX_URL='https://cdn.jsdelivr.net/gh/'+REPO+'@main/index.html';
+const SHARED_URL='https://raw.githubusercontent.com/'+REPO+'/main/data/images.json';
+const EXTRAS_URL='https://raw.githubusercontent.com/'+REPO+'/main/data/extras.json';
+const INDEX_URL='https://raw.githubusercontent.com/'+REPO+'/main/index.html';
 const INDEX_API='https://api.github.com/repos/'+REPO+'/contents/index.html';
 
 let ROWS=[],ROWMAP={},GROUPS=[],IMAGES={},EXTRAS={},VIEWS={};
@@ -313,7 +318,6 @@ function textSim(a,b){const A=norm(a).split(' ').filter(w=>w.length>=3),B=norm(b
 const CHUNK=0x8000;
 function b64encode(str){const bytes=new TextEncoder().encode(str);let bin='';for(let i=0;i<bytes.length;i+=CHUNK){bin+=String.fromCharCode.apply(null,bytes.subarray(i,i+CHUNK));}return btoa(bin);}
 function bufToB64(buf){const bytes=new Uint8Array(buf);let bin='';for(let i=0;i<bytes.length;i+=CHUNK){bin+=String.fromCharCode.apply(null,bytes.subarray(i,i+CHUNK));}return btoa(bin);}
-function b64decode(b64){const bin=atob(b64);const bytes=Uint8Array.from(bin,c=>c.charCodeAt(0));return new TextDecoder().decode(bytes);}
 
 let dbP=null;
 function db(){if(!dbP)dbP=new Promise((res,rej)=>{const r=indexedDB.open('matSysDB',1);r.onupgradeneeded=()=>{const d=r.result;['files','extras','images'].forEach(s=>{if(!d.objectStoreNames.contains(s))d.createObjectStore(s);});};r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error);});return dbP;}
@@ -327,7 +331,7 @@ function parseWorkbook(buf){
     if(!wb||!wb.SheetNames||!wb.SheetNames.length)return null;
     const ws=wb.Sheets[wb.SheetNames[0]];
     if(!ws)return null;
-    const arr=XLSX.utils.sheet_to_json(ws,{header:1,defval:'',raw:true});
+    const arr=XLSX.utils.sheet_to_json(ws,{header:1,defval:''});
     let hi=-1,col={};
     for(let i=0;i<Math.min(arr.length,50);i++){
       const cells=(arr[i]||[]).map(c=>String(c||'').trim());
@@ -384,54 +388,19 @@ async function pushXlsxToRepo(buf){
   const put=await fetch(api,{method:'PUT',headers:{Authorization:'token '+token,Accept:'application/vnd.github+json','Content-Type':'application/json'},body:JSON.stringify({message:'update materials',content:bufToB64(buf),...(sha?{sha}:{})})});
   if(!put.ok){const er=await put.json().catch(()=>null);throw new Error((er&&er.message)||('HTTP '+put.status));}
 }
-
-async function fetchJSONFresh(path){
-  try{
-    const r=await fetch('https://api.github.com/repos/'+REPO+'/contents/'+path+'?t='+Date.now(),{cache:'no-store',headers:{'Accept':'application/vnd.github+json'}});
-    if(r.ok){const j=await r.json();if(j&&j.content){return JSON.parse(b64decode(j.content));}}
-  }catch(e){}
-  try{const r=await fetch('https://cdn.jsdelivr.net/gh/'+REPO+'@main/'+path+'?v='+Date.now(),{cache:'no-store'});if(r.ok)return await r.json();}catch(e){}
-  return null;
-}
-/* ✔✔✔ آخر جلب من المستودع = المرجع النهائي (استبدال كامل للصور) ✔✔✔ */
 async function fetchSharedImages(){
-  let total=0;
-  try{
-    const data=await fetchJSONFresh('data/images.json');
-    if(data&&typeof data==='object'){
-      const fresh={};
-      for(const id of Object.keys(data)){
-        const entry=data[id];if(!entry||!Array.isArray(entry.imgs))continue;
-        const valid=entry.imgs.filter(validImg);
-        if(!valid.length)continue;
-        fresh[id]={id,imgs:valid};
-        total+=valid.length;
-      }
-      IMAGES=fresh;
-      try{
-        const old=await dbGetAll('images');
-        for(const v of old){if(!fresh[v.id])await dbDel('images',v.id);}
-        for(const id of Object.keys(fresh)){await dbPut('images',fresh[id]);}
-      }catch(e){}
-    }
-  }catch(e){}
-  return total;
+  let added=0,total=0;
+  try{const r=await fetch(SHARED_URL,{cache:'no-store'});if(r.ok){const data=await r.json();if(data&&typeof data==='object'){
+    for(const id of Object.keys(data)){const entry=data[id];if(!entry||!Array.isArray(entry.imgs))continue;const valid=entry.imgs.filter(validImg);total+=valid.length;if(!valid.length)continue;
+      if(!IMAGES[id]){IMAGES[id]={id,imgs:valid};added+=valid.length;}
+      else{const have=new Set(IMAGES[id].imgs.map(g=>g.ts));valid.forEach(g=>{if(!have.has(g.ts)){IMAGES[id].imgs.push(g);added++;}});}}}
+  }}catch(e){}
+  return {added,total};
 }
-/* ✔✔✔ آخر جلب للتفاصيل = المرجع النهائي (استبدال كامل) ✔✔✔ */
 async function fetchSharedExtras(){
-  try{
-    const data=await fetchJSONFresh('data/extras.json');
-    if(data&&typeof data==='object'){
-      const fresh={};
-      for(const id of Object.keys(data)){if(data[id]&&data[id].note)fresh[id]={id,note:data[id].note};}
-      EXTRAS=fresh;
-      try{
-        const old=await dbGetAll('extras');
-        for(const v of old){if(!fresh[v.id])await dbDel('extras',v.id);}
-        for(const id of Object.keys(fresh)){await dbPut('extras',fresh[id]);}
-      }catch(e){}
-    }
-  }catch(e){}
+  try{const r=await fetch(EXTRAS_URL,{cache:'no-store'});if(r.ok){const data=await r.json();if(data&&typeof data==='object'){
+    for(const id of Object.keys(data)){if(!EXTRAS[id]&&data[id]&&data[id].note)EXTRAS[id]={id,note:data[id].note};}
+  }}}catch(e){}
 }
 
 $('compsBar').addEventListener('click',e=>{const c=e.target.closest('[data-open-group]');if(c)openGroupModal(c.dataset.openGroup);});
@@ -515,10 +484,10 @@ $('btnDelDetails').onclick=async()=>{
   await dbPut('extras',currentId,EXTRAS[currentId]);
   if(IMAGES[currentId]){IMAGES[currentId].ai='';await dbPut('images',currentId,IMAGES[currentId]);}
   const t=(localStorage.getItem('ghToken')||'').trim();
-  if(t){try{const merged=await getServerImages(t);if(merged[currentId]){merged[currentId].ai='';await putJSON('data/images.json',merged,t);toast('✔ تم الحذف بنجاح — ستظهر التغييرات للجميع خلال ثوانٍ');}}catch(e){}}
+  if(t){try{const merged=await getServerImages(t);if(merged[currentId]){merged[currentId].ai='';await putJSON('data/images.json',merged,t);toast('✔ تم الحذف بنجاح — ستظهر التغييرات للجميع خلال دقائق');}}catch(e){}}
   refreshDetails();
   $('noteInput').value='';
-  if(!(localStorage.getItem('ghToken')||'').trim())toast('✔ تم الحذف بنجاح — ستظهر التغييرات للجميع خلال ثوانٍ');
+  if(!(localStorage.getItem('ghToken')||'').trim())toast('✔ تم الحذف بنجاح — ستظهر التغييرات للجميع خلال دقائق');
 };
 function renderImgs(){const im=IMAGES[currentId];
   $('imgsGrid').innerHTML=(im&&im.imgs&&im.imgs.length)?im.imgs.map((g,i)=>`<div class="imbig"><img src="${g.thumb}" alt="">${canEdit()?`<button data-delimg="${i}" title="حذف">✕</button>`:''}</div>`).join(''):'<p class="empty">لا توجد صور مرجعية بعد.</p>';
@@ -542,11 +511,11 @@ $('imgsGrid').addEventListener('click',async e=>{
 
 async function deleteImgFromServer(id,deletedImg){
   const token=await ensureToken();
-  if(!token)return toast('✔ تم الحذف بنجاح — ستظهر التغييرات للجميع خلال ثوانٍ');
+  if(!token)return toast('✔ تم الحذف بنجاح — ستظهر التغييرات للجميع خلال دقائق');
   try{
     const merged=await getServerImages(token);
     if(!merged[id]||!Array.isArray(merged[id].imgs)){
-      return toast('✔ تم الحذف بنجاح — ستظهر التغييرات للجميع خلال ثوانٍ');
+      return toast('✔ تم الحذف بنجاح — ستظهر التغييرات للجميع خلال دقائق');
     }
     const deletedTs=deletedImg.ts;
     const beforeCount=merged[id].imgs.length;
@@ -555,27 +524,47 @@ async function deleteImgFromServer(id,deletedImg){
     if(beforeCount===afterCount){
       const thumbMatch=merged[id].imgs.findIndex(sg=>sg.thumb===deletedImg.thumb);
       if(thumbMatch>=0){merged[id].imgs.splice(thumbMatch,1);}
-      else{return toast('✔ تم الحذف بنجاح — ستظهر التغييرات للجميع خلال ثوانٍ');}
+      else{return toast('✔ تم الحذف بنجاح — ستظهر التغييرات للجميع خلال دقائق');}
     }
     if(!merged[id].imgs.length)delete merged[id];
     await putJSON('data/images.json',merged,token);
-    toast('✔ تم الحذف بنجاح — ستظهر التغييرات للجميع خلال ثوانٍ');
+    toast('✔ تم الحذف بنجاح — ستظهر التغييرات للجميع خلال دقائق');
   }catch(e){
     console.error(e);
     toast('⚠ حُذفت محلياً لكن فشل الحذف من المستودع: '+e.message,'err');
   }
 }
 
-/* ✔✔✔ إصلاح زر الالتقاط: حقل ظاهر (1px شفاف) بدل display:none ليفتح على iOS ✔✔✔ */
-const nativeCam=document.createElement('input');
-nativeCam.type='file';nativeCam.accept='image/*';nativeCam.setAttribute('capture','environment');
-nativeCam.style.cssText='position:fixed;bottom:0;left:0;width:1px;height:1px;opacity:0;pointer-events:none;';
-document.body.appendChild(nativeCam);
-nativeCam.addEventListener('change',async e=>{const f=e.target.files[0];nativeCam.value='';if(!f)return;route(await fileToOrientedDataUrl(f,900,.88));});
-function openNativeCam(m){camMode=m;nativeCam.click();}
+/* ✔✔✔ إصلاح الكاميرا النهائي: حقل جديد لكل ضغطة (يعمل على iOS ويطلق المعالجة فوراً) ✔✔✔ */
+function openNativeCam(m){
+  camMode=m;
+  const inp=document.createElement('input');
+  inp.type='file';inp.accept='image/*';inp.setAttribute('capture','environment');
+  inp.style.cssText='position:fixed;bottom:0;left:0;width:2px;height:2px;opacity:0.01;pointer-events:none;';
+  document.body.appendChild(inp);
+  const cleanup=()=>{setTimeout(()=>{inp.remove();},500);};
+  inp.addEventListener('change',async()=>{
+    const f=inp.files&&inp.files[0];
+    cleanup();
+    if(!f){toast('لم يتم استلام صورة — حاول مجدداً','err');return;}
+    toast('📷 تم استلام الصورة — جارٍ المعالجة…');
+    try{
+      const url=await fileToOrientedDataUrl(f,900,.88);
+      if(!url){toast('تعذر قراءة الصورة','err');return;}
+      route(url);
+    }catch(err){console.error(err);toast('تعذر معالجة الصورة: '+err.message,'err');}
+  });
+  inp.addEventListener('cancel',cleanup);
+  inp.click();
+}
+$('camAttach2').onclick=()=>openNativeCam('attach');
 $('camAttach3').onclick=()=>openNativeCam('attach');
+$('btnCamScan').onclick=()=>openNativeCam('scan');
+$('fileAttach2').onclick=()=>$('fileAttachInput3').click();
 $('fileAttach3').onclick=()=>$('fileAttachInput').click();
+$('fileAttachInput3').onchange=async e=>{const f=e.target.files[0];if(f)processAttach(await fileToOrientedDataUrl(f,900,.88));};
 $('fileAttachInput').onchange=async e=>{const f=e.target.files[0];if(f)processAttach(await fileToOrientedDataUrl(f,900,.88));};
+$('btnPublish').onclick=()=>publishCurrentMaterial();
 $('btnPublish2').onclick=()=>publishCurrentMaterial();
 function route(url){if(camMode==='attach'){if(!currentId)return toast('افتح المادة أولاً','err');if(!canEdit())return toast('هذه الميزة للمطور/المدير 🔐','err');processAttach(url);}else recognize(url);}
 function fileToOrientedDataUrl(file,maxW,q){
@@ -664,49 +653,57 @@ async function ensureToken(){let t=(localStorage.getItem('ghToken')||'').trim();
 
 async function getServerImages(token){
   let m={};
-  try{const d=await fetchJSONFresh('data/images.json');if(d&&typeof d==='object')m=d;}catch(e){console.error('getServerImages error:',e);}
+  try{
+    const cacheBuster='?t='+Date.now();
+    const r=await fetch(SHARED_URL+cacheBuster,{cache:'no-store'});
+    if(r.ok){const d=await r.json();if(d&&typeof d==='object')m=d;}
+  }catch(e){}
   return m;
 }
 
 async function putJSON(path,obj,token){
   const api='https://api.github.com/repos/'+REPO+'/contents/'+path;
-  let lastErr='';
-  for(let attempt=0;attempt<3;attempt++){
-    let sha;
-    try{
-      const g=await fetch(api+'?t='+Date.now()+'_'+attempt,{cache:'no-store',headers:{Authorization:'token '+token,Accept:'application/vnd.github+json'}});
-      if(g.ok){const gj=await g.json();sha=gj.sha;}
-    }catch(e){}
-    const put=await fetch(api,{method:'PUT',headers:{Authorization:'token '+token,Accept:'application/vnd.github+json','Content-Type':'application/json'},body:JSON.stringify({message:'sync '+path+' '+Date.now(),content:b64encode(JSON.stringify(obj)),...(sha?{sha}:{})})});
-    if(put.ok)return;
-    const er=await put.json().catch(()=>null);
-    lastErr=(er&&er.message)||('HTTP '+put.status);
-    if(put.status===409||put.status===422||put.status===403){await new Promise(rs=>setTimeout(rs,1000));continue;}
-    throw new Error(lastErr);
-  }
-  throw new Error(lastErr||'فشل التحديث بعد محاولات متعددة');
+  let sha;
+  const g=await fetch(api,{headers:{Authorization:'token '+token,Accept:'application/vnd.github+json'}});
+  if(g.ok){const gj=await g.json();sha=gj.sha;}
+  const put=await fetch(api,{method:'PUT',headers:{Authorization:'token '+token,Accept:'application/vnd.github+json','Content-Type':'application/json'},body:JSON.stringify({message:'sync '+path+' '+Date.now(),content:b64encode(JSON.stringify(obj)),...(sha?{sha}:{})})});
+  if(!put.ok){const er=await put.json().catch(()=>null);throw new Error((er&&er.message)||('HTTP '+put.status));}
 }
 async function encodeSmall(g){const small=await scaleDataUrl(g.thumb,110,.55);return{thumb:small,emb:g.emb.map(v=>+v.toFixed(3)),hist:g.hist,ocr:g.ocr||'',ts:g.ts||Date.now()};}
 
-/* ✔✔✔ حفظ التغيرات: المحلي يصبح المرجع للجميع (استبدال كامل) ✔✔✔ */
 $('btnUserSync').onclick=async()=>{
   if(!canEdit())return toast('هذه الميزة لوضع المطور 🔐','err');
   const token=await ensureToken();if(!token)return toast('أدخل التوكن','err');
   toast('جارٍ حفظ التغيرات…');
   try{
-    const merged={};let nI=0;
-    for(const id of Object.keys(IMAGES).filter(hasImg)){
-      const sm=[];for(const g of IMAGES[id].imgs)sm.push(await encodeSmall(g));
-      merged[id]={imgs:sm};nI+=sm.length;
+    const merged=await getServerImages(token);
+    let nI=0;
+    const ids=Object.keys(IMAGES).filter(hasImg);
+    for(const id of ids){
+      const local=IMAGES[id].imgs;const have=(merged[id]&&Array.isArray(merged[id].imgs))?merged[id].imgs:[];
+      const hTs=new Set(have.map(g=>g.ts));const nw=local.filter(g=>!hTs.has(g.ts));
+      if(!nw.length)continue;
+      const keep=have.filter(hg=>local.some(l=>l.ts===hg.ts));
+      const sm=[];for(const g of nw)sm.push(await encodeSmall(g));
+      merged[id]={imgs:keep.concat(sm)};nI+=nw.length;
     }
     await putJSON('data/images.json',merged,token);
-    const mex={};let nE=0;
-    for(const id of Object.keys(EXTRAS)){if(EXTRAS[id]&&EXTRAS[id].note){mex[id]={id,note:EXTRAS[id].note};nE++;}}
+    let mex={};
+    try{const r=await fetch(EXTRAS_URL,{cache:'no-store'});if(r.ok){mex=await r.json();}}catch(e){}
+    let nE=0;
+    for(const id of Object.keys(EXTRAS)){
+      const note=EXTRAS[id]&&EXTRAS[id].note;
+      if(!note)continue;
+      if(!mex[id]||mex[id].note!==note){mex[id]={id,note};nE++;}
+    }
     await putJSON('data/extras.json',mex,token);
-    toast('✔ حُفظت التغيرات: '+nI+' صورة + '+nE+' تفاصيل (أصبحت المرجع للجميع)');
+    toast('✔ حُفظت '+nI+' صورة و '+nE+' تفاصيل في المستودع — متاحة للجميع');
   }catch(e){toast('فشل الحفظ: '+e.message,'err');}
 };
 
+async function publishAllImages(){if(!isAdmin)return toast('للمدير فقط 🔐','err');const ids=Object.keys(IMAGES).filter(hasImg);if(!ids.length)return toast('لا توجد صور للنشر','err');const token=await ensureToken();if(!token)return toast('أدخل التوكن','err');toast('جارٍ النشر…');const merged=await getServerImages(token);let nM=0,rM=0,nI=0;
+  for(const id of ids){const local=IMAGES[id].imgs;const have=(merged[id]&&Array.isArray(merged[id].imgs))?merged[id].imgs:[];const hTs=new Set(have.map(g=>g.ts));const nw=local.filter(g=>!hTs.has(g.ts));nI+=nw.length;if(have.length)rM++;else nM++;const keep=have.filter(hg=>local.some(l=>l.ts===hg.ts));const sm=[];for(const g of nw)sm.push(await encodeSmall(g));merged[id]={imgs:keep.concat(sm)};}
+  try{await putJSON('data/images.json',merged,token);toast('✔ رُفعت '+ids.length+' مادة (+'+nM+' جديدة) واستبدال '+rM+' • '+nI+' صورة');}catch(e){toast('فشل: '+e.message,'err');}}
 async function publishCurrentMaterial(){if(!isAdmin)return toast('للمدير فقط 🔐','err');if(!currentId||!hasImg(currentId))return toast('لا توجد صور','err');const token=await ensureToken();if(!token)return toast('أدخل التوكن','err');toast('جارٍ رفع صور المادة…');const merged=await getServerImages(token);const local=IMAGES[currentId].imgs;const have=(merged[currentId]&&Array.isArray(merged[currentId].imgs))?merged[currentId].imgs:[];const hTs=new Set(have.map(g=>g.ts));const nw=local.filter(g=>!hTs.has(g.ts));const keep=have.filter(hg=>local.some(l=>l.ts===hg.ts));const sm=[];for(const g of nw)sm.push(await encodeSmall(g));merged[currentId]={imgs:keep.concat(sm)};
   try{await putJSON('data/images.json',merged,token);toast('✔ رُفعت صور «'+(ROWMAP[currentId]?ROWMAP[currentId].name:'')+'» — '+local.length+' صورة');}catch(e){toast('فشل: '+e.message,'err');}}
 
@@ -807,9 +804,9 @@ $('btnPartialPublish').onclick=async()=>{
 $('btnPublishCode').onclick=async()=>{const code=$('codeInput').value;if(code.length<200)return toast('الكود قصير','err');if(!/<!DOCTYPE html>/i.test(code))return toast('ليس HTML صحيحاً','err');const ok=await askConfirm('استبدال index.html؟');if(!ok)return;const token=await ensureToken();if(!token)return toast('أدخل التوكن','err');toast('جارٍ النشر…');try{let sha;const g=await fetch(INDEX_API,{headers:{Authorization:'token '+token,Accept:'application/vnd.github+json'}});if(g.ok){sha=(await g.json()).sha;}const put=await fetch(INDEX_API,{method:'PUT',headers:{Authorization:'token '+token,Accept:'application/vnd.github+json','Content-Type':'application/json'},body:JSON.stringify({message:'update index.html',content:b64encode(code),...(sha?{sha}:{})})});if(!put.ok)throw new Error('HTTP '+put.status);toast('✔ نُشر الكود');setTimeout(()=>{$('codeModal').hidden=true;},800);}catch(e){toast('فشل: '+e.message,'err');}};
 
 $('btnUpload').onclick=()=>$('filePick').click();
-$('filePick').onchange=async e=>{const f=e.target.files[0];if(!f)return;let buf;try{buf=await f.arrayBuffer();}catch(err){return toast('تعذر القراءة','err');}const rows=parseWorkbook(buf);if(!rows)return toast('ملف غير مدعوم — تأكد من وجود عمود "اسم المادة"','err');loadDataset(rows);try{localStorage.setItem('rowsCache',JSON.stringify(rows));}catch(err){}toast('تم تحميل «'+f.name+'» — '+rows.length+' مادة ✔');if(isAdmin){const ok=await askConfirm('نشر الملف واستبدال الموجود؟');if(ok){toast('جارٍ الرفع…');try{await pushXlsxToRepo(buf);toast('✔ استُبدل الملف');}catch(err){toast('فشل: '+err.message,'err');}}}};
+$('filePick').onchange=async e=>{const f=e.target.files[0];if(!f)return;let buf;try{buf=await f.arrayBuffer();}catch(err){return toast('تعذر القراءة','err');}const rows=parseWorkbook(buf);if(!rows)return toast('ملف غير مدعوم','err');loadDataset(rows);try{localStorage.setItem('rowsCache',JSON.stringify(rows));}catch(err){}toast('تم تحميل «'+f.name+'» ✔');if(isAdmin){const ok=await askConfirm('نشر الملف واستبدال الموجود؟');if(ok){toast('جارٍ الرفع…');try{await pushXlsxToRepo(buf);toast('✔ استُبدل الملف');}catch(err){toast('فشل: '+err.message,'err');}}}};
 
-$('btnRepo').onclick=async()=>{toast('جارٍ الجلب…');let rc=0,ok=false;const buf=await fetchRepoFile();if(buf){const rows=parseWorkbook(buf);if(rows){loadDataset(rows);try{localStorage.setItem('rowsCache',JSON.stringify(rows));}catch(e){}ok=true;rc=rows.length;}}await fetchSharedExtras();const total=await fetchSharedImages();if(ok)toast('✔ '+rc+' مادة • '+total+' صورة (آخر جلب = المرجع)');else if(total)toast('🖼 '+total+' صورة (آخر جلب = المرجع)');else toast('تعذر الجلب','err');};
+$('btnRepo').onclick=async()=>{toast('جارٍ الجلب…');let rc=0,ok=false;const buf=await fetchRepoFile();if(buf){const rows=parseWorkbook(buf);if(rows){loadDataset(rows);try{localStorage.setItem('rowsCache',JSON.stringify(rows));}catch(e){}ok=true;rc=rows.length;}}await fetchSharedExtras();const im=await fetchSharedImages();if(ok)toast('✔ '+rc+' مادة • '+im.total+' صورة');else if(im.total)toast('🖼 '+im.total+' صورة');else toast('تعذر الجلب','err');};
 
 const MOD_ORDER=['confirmModal','loginModalDyn','codeModal','imgsModal','viewModal','imgsListModal','searchModal','scanModal','groupModal'];
 function closeTop(){const id=MOD_ORDER.find(x=>{const el=$(x);return el&&!el.hidden;});if(!id)return;$(id).hidden=true;}
@@ -838,12 +835,8 @@ $('toolsChev').onclick=toggleTools;$('appTitle').addEventListener('click',toggle
   try{applyAdminUI();}catch(e){}
   try{(await dbGetAll('extras')).forEach(x=>EXTRAS[x.id]=x);(await dbGetAll('images')).forEach(v=>{if(v&&Array.isArray(v.imgs))IMAGES[v.id]=v;else if(v)IMAGES[v.id]={id:v.id,imgs:[{thumb:v.thumb,emb:v.emb,hist:v.hist,ocr:v.ocr,ts:v.ts||Date.now()}]};});}catch(e){}
   try{const c=localStorage.getItem('rowsCache');if(c){const rows=JSON.parse(c);if(rows&&rows.length)loadDataset(rows);}}catch(e){}
-  (async()=>{const buf=await fetchRepoFile();let rc=0;if(buf){const rows=parseWorkbook(buf);if(rows){loadDataset(rows);try{localStorage.setItem('rowsCache',JSON.stringify(rows));}catch(e){}rc=rows.length;}}
-    await fetchSharedExtras();
-    const total=await fetchSharedImages();
-    if(rc)toast('✔ '+rc+' مادة • '+total+' صورة (آخر جلب = المرجع)');
-    else if(total)toast('🖼 '+total+' صورة (آخر جلب = المرجع)');
-    else if(!ROWS.length)$('emptyMsg').textContent='تعذر الجلب — افتح الأدوات ⌄ واضغط «تحديث من المستودع»';})();
+  await fetchSharedExtras();
+  (async()=>{const buf=await fetchRepoFile();let rc=0;if(buf){const rows=parseWorkbook(buf);if(rows){loadDataset(rows);try{localStorage.setItem('rowsCache',JSON.stringify(rows));}catch(e){}rc=rows.length;}}const im=await fetchSharedImages();if(rc)toast('✔ '+rc+' مادة • '+im.total+' صورة');else if(im.total)toast('🖼 '+im.total+' صورة');else if(!ROWS.length)$('emptyMsg').textContent='تعذر الجلب — افتح الأدوات ⌄ واضغط «تحديث من المستودع»';})();
 })();
 </script>
 </body>
