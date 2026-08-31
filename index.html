@@ -506,7 +506,11 @@ $('imgsGrid').addEventListener('click',async e=>{
   if(!ok)return;
   const deletedImg=im.imgs[idx];
   im.imgs.splice(idx,1);
-  if(!im.imgs.length){delete IMAGES[currentId];await dbDel('images',currentId);}
+  if(!im.imgs.length){delete IMAGES[currentId];await dbDel('images',currentId);
+    const cleared=JSON.parse(localStorage.getItem('clearedMats')||'[]');
+    if(!cleared.includes(currentId))cleared.push(currentId);
+    localStorage.setItem('clearedMats',JSON.stringify(cleared));
+  }
   else await dbPut('images',currentId,im);
   renderImgs();
   await deleteImgFromServer(currentId,deletedImg);
@@ -643,11 +647,21 @@ async function getServerImages(token){
 
 async function putJSON(path,obj,token){
   const api='https://api.github.com/repos/'+REPO+'/contents/'+path;
-  let sha;
-  const g=await fetch(api,{headers:{Authorization:'token '+token,Accept:'application/vnd.github+json'}});
-  if(g.ok){const gj=await g.json();sha=gj.sha;}
-  const put=await fetch(api,{method:'PUT',headers:{Authorization:'token '+token,Accept:'application/vnd.github+json','Content-Type':'application/json'},body:JSON.stringify({message:'sync '+path+' '+Date.now(),content:b64encode(JSON.stringify(obj)),...(sha?{sha}:{})})});
-  if(!put.ok){const er=await put.json().catch(()=>null);throw new Error((er&&er.message)||('HTTP '+put.status));}
+  let lastErr='';
+  for(let attempt=0;attempt<3;attempt++){
+    let sha;
+    try{
+      const g=await fetch(api+'?t='+Date.now()+'_'+attempt,{cache:'no-store',headers:{Authorization:'token '+token,Accept:'application/vnd.github+json'}});
+      if(g.ok){const gj=await g.json();sha=gj.sha;}
+    }catch(e){}
+    const put=await fetch(api,{method:'PUT',headers:{Authorization:'token '+token,Accept:'application/vnd.github+json','Content-Type':'application/json'},body:JSON.stringify({message:'sync '+path+' '+Date.now(),content:b64encode(JSON.stringify(obj)),...(sha?{sha}:{})})});
+    if(put.ok)return;
+    const er=await put.json().catch(()=>null);
+    lastErr=(er&&er.message)||('HTTP '+put.status);
+    if(put.status===409||put.status===422||put.status===403){await new Promise(rs=>setTimeout(rs,1000));continue;}
+    throw new Error(lastErr);
+  }
+  throw new Error(lastErr||'فشل التحديث بعد محاولات متعددة');
 }
 async function encodeSmall(g){const small=await scaleDataUrl(g.thumb,110,.55);return{thumb:small,emb:g.emb.map(v=>+v.toFixed(3)),hist:g.hist,ocr:g.ocr||'',ts:g.ts||Date.now()};}
 
@@ -657,17 +671,21 @@ $('btnUserSync').onclick=async()=>{
   toast('جارٍ حفظ التغيرات…');
   try{
     const merged=await getServerImages(token);
-    let nI=0;
+    let nI=0,delI=0;
     const ids=Object.keys(IMAGES).filter(hasImg);
     for(const id of ids){
       const local=IMAGES[id].imgs;const have=(merged[id]&&Array.isArray(merged[id].imgs))?merged[id].imgs:[];
-      const hTs=new Set(have.map(g=>g.ts));const nw=local.filter(g=>!hTs.has(g.ts));
-      if(!nw.length)continue;
+      const nw=local.filter(g=>!have.some(h=>h.ts===g.ts));
+      const removed=have.filter(hg=>!local.some(l=>l.ts===hg.ts));
+      if(!nw.length&&!removed.length)continue;
       const keep=have.filter(hg=>local.some(l=>l.ts===hg.ts));
       const sm=[];for(const g of nw)sm.push(await encodeSmall(g));
-      merged[id]={imgs:keep.concat(sm)};nI+=nw.length;
+      merged[id]={imgs:keep.concat(sm)};nI+=nw.length;delI+=removed.length;
     }
+    const cleared=JSON.parse(localStorage.getItem('clearedMats')||'[]');
+    for(const id of cleared){if(merged[id]&&Array.isArray(merged[id].imgs)){delI+=merged[id].imgs.length;delete merged[id];}}
     await putJSON('data/images.json',merged,token);
+    localStorage.setItem('clearedMats','[]');
     let mex={};
     try{const r=await fetch(EXTRAS_URL,{cache:'no-store'});if(r.ok){mex=await r.json();}}catch(e){}
     let nE=0;
@@ -677,7 +695,11 @@ $('btnUserSync').onclick=async()=>{
       if(!mex[id]||mex[id].note!==note){mex[id]={id,note};nE++;}
     }
     await putJSON('data/extras.json',mex,token);
-    toast('✔ حُفظت التغيرات ('+nI+' صورة + '+nE+' تفاصيل) — ستظهر للجميع خلال ثوانٍ');
+    let msg='✔ حُفظت التغيرات';
+    if(nI)msg+=' • +'+nI+' صورة جديدة';
+    if(delI)msg+=' • 🗑 حُذف '+delI+' صورة من المستودع';
+    if(nE)msg+=' • '+nE+' تفاصيل';
+    toast(msg);
   }catch(e){toast('فشل الحفظ: '+e.message,'err');}
 };
 
