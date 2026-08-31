@@ -386,9 +386,8 @@ async function pushXlsxToRepo(buf){
 async function fetchSharedImages(){
   let added=0,total=0;
   try{
-    const cacheBuster='?v='+Date.now();
-    const r=await fetch(SHARED_URL+cacheBuster,{cache:'no-store',headers:{'Accept':'application/json'}});
-    if(r.ok){const data=await r.json();if(data&&typeof data==='object'){
+    const data=await fetchJSONFresh('data/images.json');
+    if(data&&typeof data==='object'){
       for(const id of Object.keys(data)){const entry=data[id];if(!entry||!Array.isArray(entry.imgs))continue;const valid=entry.imgs.filter(validImg);total+=valid.length;if(!valid.length)continue;
         if(!IMAGES[id]){IMAGES[id]={id,imgs:valid};added+=valid.length;}
         else{const have=new Set(IMAGES[id].imgs.map(g=>g.ts));valid.forEach(g=>{if(!have.has(g.ts)){IMAGES[id].imgs.push(g);added++;}});}}}
@@ -398,9 +397,8 @@ async function fetchSharedImages(){
 }
 async function fetchSharedExtras(){
   try{
-    const cacheBuster='?v='+Date.now();
-    const r=await fetch(EXTRAS_URL+cacheBuster,{cache:'no-store',headers:{'Accept':'application/json'}});
-    if(r.ok){const data=await r.json();if(data&&typeof data==='object'){
+    const data=await fetchJSONFresh('data/extras.json');
+    if(data&&typeof data==='object'){
       for(const id of Object.keys(data)){if(!EXTRAS[id]&&data[id]&&data[id].note)EXTRAS[id]={id,note:data[id].note};}
     }}
   }catch(e){}
@@ -506,11 +504,7 @@ $('imgsGrid').addEventListener('click',async e=>{
   if(!ok)return;
   const deletedImg=im.imgs[idx];
   im.imgs.splice(idx,1);
-  if(!im.imgs.length){delete IMAGES[currentId];await dbDel('images',currentId);
-    const cleared=JSON.parse(localStorage.getItem('clearedMats')||'[]');
-    if(!cleared.includes(currentId))cleared.push(currentId);
-    localStorage.setItem('clearedMats',JSON.stringify(cleared));
-  }
+  if(!im.imgs.length){delete IMAGES[currentId];await dbDel('images',currentId);}
   else await dbPut('images',currentId,im);
   renderImgs();
   await deleteImgFromServer(currentId,deletedImg);
@@ -635,33 +629,28 @@ async function attachTo(id){$('scanRes').hidden=true;$('scanProg').hidden=false;
 
 async function ensureToken(){let t=(localStorage.getItem('ghToken')||'').trim();if(t)return t;t=(prompt('🔑 أدخل Token GitHub (صلاحية Contents read/write):')||'').trim();if(!t)return null;localStorage.setItem('ghToken',t);return t;}
 
+function b64decode(b64){const bin=atob(b64);const bytes=Uint8Array.from(bin,c=>c.charCodeAt(0));return new TextDecoder().decode(bytes);}
+async function fetchJSONFresh(path){
+  try{
+    const r=await fetch('https://api.github.com/repos/'+REPO+'/contents/'+path+'?t='+Date.now(),{cache:'no-store',headers:{'Accept':'application/vnd.github+json'}});
+    if(r.ok){const j=await r.json();if(j&&j.content){return JSON.parse(b64decode(j.content));}}
+  }catch(e){}
+  try{const r=await fetch('https://cdn.jsdelivr.net/gh/'+REPO+'@main/'+path+'?v='+Date.now(),{cache:'no-store'});if(r.ok)return await r.json();}catch(e){}
+  return null;
+}
 async function getServerImages(token){
   let m={};
-  try{
-    const cacheBuster='?v='+Date.now();
-    const r=await fetch(SHARED_URL+cacheBuster,{cache:'no-store',headers:{'Accept':'application/json'}});
-    if(r.ok){const d=await r.json();if(d&&typeof d==='object')m=d;}
-  }catch(e){console.error('getServerImages error:',e);}
+  try{const d=await fetchJSONFresh('data/images.json');if(d&&typeof d==='object')m=d;}catch(e){console.error('getServerImages error:',e);}
   return m;
 }
 
 async function putJSON(path,obj,token){
   const api='https://api.github.com/repos/'+REPO+'/contents/'+path;
-  let lastErr='';
-  for(let attempt=0;attempt<3;attempt++){
-    let sha;
-    try{
-      const g=await fetch(api+'?t='+Date.now()+'_'+attempt,{cache:'no-store',headers:{Authorization:'token '+token,Accept:'application/vnd.github+json'}});
-      if(g.ok){const gj=await g.json();sha=gj.sha;}
-    }catch(e){}
-    const put=await fetch(api,{method:'PUT',headers:{Authorization:'token '+token,Accept:'application/vnd.github+json','Content-Type':'application/json'},body:JSON.stringify({message:'sync '+path+' '+Date.now(),content:b64encode(JSON.stringify(obj)),...(sha?{sha}:{})})});
-    if(put.ok)return;
-    const er=await put.json().catch(()=>null);
-    lastErr=(er&&er.message)||('HTTP '+put.status);
-    if(put.status===409||put.status===422||put.status===403){await new Promise(rs=>setTimeout(rs,1000));continue;}
-    throw new Error(lastErr);
-  }
-  throw new Error(lastErr||'فشل التحديث بعد محاولات متعددة');
+  let sha;
+  const g=await fetch(api,{headers:{Authorization:'token '+token,Accept:'application/vnd.github+json'}});
+  if(g.ok){const gj=await g.json();sha=gj.sha;}
+  const put=await fetch(api,{method:'PUT',headers:{Authorization:'token '+token,Accept:'application/vnd.github+json','Content-Type':'application/json'},body:JSON.stringify({message:'sync '+path+' '+Date.now(),content:b64encode(JSON.stringify(obj)),...(sha?{sha}:{})})});
+  if(!put.ok){const er=await put.json().catch(()=>null);throw new Error((er&&er.message)||('HTTP '+put.status));}
 }
 async function encodeSmall(g){const small=await scaleDataUrl(g.thumb,110,.55);return{thumb:small,emb:g.emb.map(v=>+v.toFixed(3)),hist:g.hist,ocr:g.ocr||'',ts:g.ts||Date.now()};}
 
@@ -671,23 +660,19 @@ $('btnUserSync').onclick=async()=>{
   toast('جارٍ حفظ التغيرات…');
   try{
     const merged=await getServerImages(token);
-    let nI=0,delI=0;
+    let nI=0;
     const ids=Object.keys(IMAGES).filter(hasImg);
     for(const id of ids){
       const local=IMAGES[id].imgs;const have=(merged[id]&&Array.isArray(merged[id].imgs))?merged[id].imgs:[];
-      const nw=local.filter(g=>!have.some(h=>h.ts===g.ts));
-      const removed=have.filter(hg=>!local.some(l=>l.ts===hg.ts));
-      if(!nw.length&&!removed.length)continue;
+      const hTs=new Set(have.map(g=>g.ts));const nw=local.filter(g=>!hTs.has(g.ts));
+      if(!nw.length)continue;
       const keep=have.filter(hg=>local.some(l=>l.ts===hg.ts));
       const sm=[];for(const g of nw)sm.push(await encodeSmall(g));
-      merged[id]={imgs:keep.concat(sm)};nI+=nw.length;delI+=removed.length;
+      merged[id]={imgs:keep.concat(sm)};nI+=nw.length;
     }
-    const cleared=JSON.parse(localStorage.getItem('clearedMats')||'[]');
-    for(const id of cleared){if(merged[id]&&Array.isArray(merged[id].imgs)){delI+=merged[id].imgs.length;delete merged[id];}}
     await putJSON('data/images.json',merged,token);
-    localStorage.setItem('clearedMats','[]');
     let mex={};
-    try{const r=await fetch(EXTRAS_URL,{cache:'no-store'});if(r.ok){mex=await r.json();}}catch(e){}
+    try{mex=await fetchJSONFresh('data/extras.json')||{};}catch(e){}
     let nE=0;
     for(const id of Object.keys(EXTRAS)){
       const note=EXTRAS[id]&&EXTRAS[id].note;
@@ -695,11 +680,7 @@ $('btnUserSync').onclick=async()=>{
       if(!mex[id]||mex[id].note!==note){mex[id]={id,note};nE++;}
     }
     await putJSON('data/extras.json',mex,token);
-    let msg='✔ حُفظت التغيرات';
-    if(nI)msg+=' • +'+nI+' صورة جديدة';
-    if(delI)msg+=' • 🗑 حُذف '+delI+' صورة من المستودع';
-    if(nE)msg+=' • '+nE+' تفاصيل';
-    toast(msg);
+    toast('✔ حُفظت التغيرات ('+nI+' صورة + '+nE+' تفاصيل) — ستظهر للجميع خلال ثوانٍ');
   }catch(e){toast('فشل الحفظ: '+e.message,'err');}
 };
 
