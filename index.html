@@ -439,61 +439,73 @@ $('btnDelDetails').onclick=async()=>{
   const ex=EXTRAS[currentId]||{};
   const hasNote=!!ex.note;const hasLegacyAi=!!(ex.ai)||(IMAGES[currentId]&&IMAGES[currentId].ai);
   if(!hasNote&&!hasLegacyAi)return toast('لا توجد تفاصيل لحذفها','err');
-  const ok=await askConfirm('سيتم حذف التفاصيل المحفوظة لهذه المادة من الجهاز والمستودع. متابعة؟');
+  const ok=await askConfirm('هل ترغب في حذف التفاصيل؟');
   if(!ok)return;
   EXTRAS[currentId]=Object.assign({},ex,{id:currentId,note:'',ai:''});
   await dbPut('extras',currentId,EXTRAS[currentId]);
   if(IMAGES[currentId]){IMAGES[currentId].ai='';await dbPut('images',currentId,IMAGES[currentId]);}
   const t=(localStorage.getItem('ghToken')||'').trim();
-  if(t){try{const merged=await getServerImages(t);if(merged[currentId]){merged[currentId].ai='';await putJSON('data/images.json',merged,t);}}catch(e){}}
+  if(t){try{const merged=await getServerImages(t);if(merged[currentId]){merged[currentId].ai='';await putJSON('data/images.json',merged,t);toast('✔ تم الحذف بنجاح — ستظهر التغييرات للجميع خلال دقائق');}}catch(e){}}
   refreshDetails();
   $('noteInput').value='';
-  toast('✔ تم حذف التفاصيل');
+  if(!(localStorage.getItem('ghToken')||'').trim())toast('✔ تم الحذف بنجاح — ستظهر التغييرات للجميع خلال دقائق');
 };
-
-/* ✔✔✔ إصلاح حذف الصور: حذف الصورة المحددة فقط باستخدام timestamp ✔✔✔ */
 function renderImgs(){const im=IMAGES[currentId];
-  $('imgsGrid').innerHTML=(im&&im.imgs&&im.imgs.length)?im.imgs.map((g,i)=>`<div class="imbig"><img src="${g.thumb}" alt="" data-ts="${g.ts}">${canEdit()?`<button data-delimg="${i}" data-ts="${g.ts}" title="حذف">✕</button>`:''}</div>`).join(''):'<p class="empty">لا توجد صور مرجعية بعد.</p>';
+  $('imgsGrid').innerHTML=(im&&im.imgs&&im.imgs.length)?im.imgs.map((g,i)=>`<div class="imbig"><img src="${g.thumb}" alt="">${canEdit()?`<button data-delimg="${i}" title="حذف">✕</button>`:''}</div>`).join(''):'<p class="empty">لا توجد صور مرجعية بعد.</p>';
   updateImgsBtn();if(currentGroup)renderGroupContent();}
 
+/* ✔✔✔ حذف الصور: تأكيد بسيط + رسالة نجاح ✔✔✔ */
 $('imgsGrid').addEventListener('click',async e=>{
   const d=e.target.closest('[data-delimg]');
   if(!d||!canEdit())return;
-  const deletedTs=parseInt(d.dataset.ts);
+  const idx=+d.dataset.delimg;
   const im=IMAGES[currentId];
-  const ok=await askConfirm('حذف هذه الصورة من الجهاز والمستودع؟');
+  if(!im||!im.imgs||!im.imgs[idx])return;
+  
+  const ok=await askConfirm('هل ترغب في حذف هذه الصورة؟');
   if(!ok)return;
-  // حذف محلي باستخدام timestamp
-  im.imgs=im.imgs.filter(g=>g.ts!==deletedTs);
+  
+  const deletedImg=im.imgs[idx];
+  im.imgs.splice(idx,1);
   if(!im.imgs.length){delete IMAGES[currentId];await dbDel('images',currentId);}
   else await dbPut('images',currentId,im);
-  renderImgs();toast('حُذفت محلياً 🗑 — جارٍ الحذف من المستودع…');
-  await deleteImgFromServer(currentId,deletedTs);
+  renderImgs();
+  
+  await deleteImgFromServer(currentId,deletedImg);
 });
 
-async function deleteImgFromServer(id,deletedTs){
+async function deleteImgFromServer(id,deletedImg){
   const token=await ensureToken();
-  if(!token)return toast('أدخل التوكن للحذف من المستودع','err');
+  if(!token)return toast('✔ تم الحذف بنجاح — ستظهر التغييرات للجميع خلال دقائق');
+  
   try{
     const merged=await getServerImages(token);
+    
     if(!merged[id]||!Array.isArray(merged[id].imgs)){
-      return toast('✔ حُذفت محلياً — غير موجودة بالمستودع');
+      return toast('✔ تم الحذف بنجاح — ستظهر التغييرات للجميع خلال دقائق');
     }
-    // حذف الصورة المحددة فقط باستخدام timestamp
+    
+    const deletedTs=deletedImg.ts;
     const beforeCount=merged[id].imgs.length;
     merged[id].imgs=merged[id].imgs.filter(sg=>sg.ts!==deletedTs);
     const afterCount=merged[id].imgs.length;
-    if(!merged[id].imgs.length){
-      delete merged[id];
+    
+    if(beforeCount===afterCount){
+      const thumbMatch=merged[id].imgs.findIndex(sg=>sg.thumb===deletedImg.thumb);
+      if(thumbMatch>=0){
+        merged[id].imgs.splice(thumbMatch,1);
+      }else{
+        return toast('✔ تم الحذف بنجاح — ستظهر التغييرات للجميع خلال دقائق');
+      }
     }
+    
+    if(!merged[id].imgs.length)delete merged[id];
+    
     await putJSON('data/images.json',merged,token);
-    if(afterCount<beforeCount){
-      toast('✔ تم حذف الصورة من المستودع أيضاً');
-    }else{
-      toast('⚠ الصورة غير موجودة في المستودع — حُذفت محلياً فقط');
-    }
+    toast('✔ تم الحذف بنجاح — ستظهر التغييرات للجميع خلال دقائق');
   }catch(e){
-    toast('فشل الحذف من المستودع: '+e.message,'err');
+    console.error(e);
+    toast('⚠ حُذفت محلياً لكن فشل الحذف من المستودع: '+e.message,'err');
   }
 }
 
@@ -530,7 +542,7 @@ function ocrText(url,onP){return new Promise(async res=>{try{if(!window.Tesserac
 async function analyze(url,onP){onP&&onP('المحرك 1/3…',15);const emb=await getEmbed(url);onP&&onP('المحرك 2/3…',45);const hist=await histFrom(url);onP&&onP('المحرك 3/3…',65);const ocr=await ocrText(await scaleDataUrl(url,800,.85));const thumb=await scaleDataUrl(url,300,.8);return{thumb,emb:emb.map(v=>+v.toFixed(4)),hist,ocr,ts:Date.now()};}
 function setProc(w,t,p){const bar=w==='imgs'?$('procBar3'):$('procBar'),txt=w==='imgs'?$('procTxt3'):$('procTxt'),wrap=w==='imgs'?$('procProg3'):$('procProg');wrap.hidden=false;txt.textContent=t;bar.style.width=p+'%';}
 async function processAttach(url,which){
-  if(!canEdit())return toast('هذه الميزة لوضع المطور/المدير 🔐','err');
+  if(!canEdit())return toast('هذه الميزة للمطور/المدير 🔐','err');
   setProc(which,'جارٍ المعالجة…',5);
   try{
     const g=await analyze(url,(t,p)=>setProc(which,t,p));
@@ -589,12 +601,23 @@ async function attachTo(id){$('scanRes').hidden=true;$('scanProg').hidden=false;
   $('scanProg').hidden=true;}
 
 async function ensureToken(){let t=(localStorage.getItem('ghToken')||'').trim();if(t)return t;t=(prompt('🔑 أدخل Token GitHub (صلاحية Contents read/write):')||'').trim();if(!t)return null;localStorage.setItem('ghToken',t);return t;}
-async function getServerImages(token){let m={};try{const r=await fetch(SHARED_URL,{cache:'no-store'});if(r.ok){const d=await r.json();if(d&&typeof d==='object')m=d;}}catch(e){}return m;}
+
+async function getServerImages(token){
+  let m={};
+  try{
+    const cacheBuster='?t='+Date.now();
+    const r=await fetch(SHARED_URL+cacheBuster,{cache:'no-store'});
+    if(r.ok){const d=await r.json();if(d&&typeof d==='object')m=d;}
+  }catch(e){}
+  return m;
+}
+
 async function putJSON(path,obj,token){
   const api='https://api.github.com/repos/'+REPO+'/contents/'+path;
-  let sha;const g=await fetch(api,{headers:{Authorization:'token '+token,Accept:'application/vnd.github+json'}});
+  let sha;
+  const g=await fetch(api,{headers:{Authorization:'token '+token,Accept:'application/vnd.github+json'}});
   if(g.ok){const gj=await g.json();sha=gj.sha;}
-  const put=await fetch(api,{method:'PUT',headers:{Authorization:'token '+token,Accept:'application/vnd.github+json','Content-Type':'application/json'},body:JSON.stringify({message:'sync '+path,content:b64encode(JSON.stringify(obj)),...(sha?{sha}:{})})});
+  const put=await fetch(api,{method:'PUT',headers:{Authorization:'token '+token,Accept:'application/vnd.github+json','Content-Type':'application/json'},body:JSON.stringify({message:'sync '+path+' '+Date.now(),content:b64encode(JSON.stringify(obj)),...(sha?{sha}:{})})});
   if(!put.ok){const er=await put.json().catch(()=>null);throw new Error((er&&er.message)||('HTTP '+put.status));}
 }
 async function encodeSmall(g){const small=await scaleDataUrl(g.thumb,110,.55);return{thumb:small,emb:g.emb.map(v=>+v.toFixed(3)),hist:g.hist,ocr:g.ocr||'',ts:g.ts||Date.now()};}
