@@ -44,6 +44,7 @@ header{max-width:960px;margin:16px auto 0;padding:0 12px}
 .scanbig,.searchbig{width:100%;margin-top:14px;padding:16px;font-size:16px;border-radius:18px}
 .searchbig{margin:0;background:linear-gradient(135deg,#4f46e5,#2563eb);color:#fff}
 .chev{border:none;background:#eef1f8;width:40px;height:40px;border-radius:14px;cursor:pointer;font-size:16px;font-weight:800;color:var(--pri2);flex:0 0 auto}
+.chev:active{transform:scale(.88)}
 .chev.open{transform:rotate(180deg);background:var(--pri);color:#fff}
 main{max-width:960px;margin:0 auto;padding:14px 12px 60px}
 .card{background:var(--card);border:1px solid #eceff8;border-radius:var(--rad);box-shadow:var(--sh);padding:14px;margin-bottom:14px}
@@ -433,7 +434,6 @@ function openView(id){const r=ROWMAP[id];if(!r)return;currentId=id;
 $('btnImgs').onclick=()=>{$('imgsTitle').textContent='🖼 الصور المرجعية — '+(ROWMAP[currentId]?ROWMAP[currentId].name:'');$('imgsModal').hidden=false;renderImgs();};
 $('btnMaint').onclick=()=>{$('maintSec').hidden=!$('maintSec').hidden;};
 $('saveNote').onclick=async()=>{const n=$('noteInput').value.trim();EXTRAS[currentId]=Object.assign({},EXTRAS[currentId],{id:currentId,note:n});await dbPut('extras',currentId,EXTRAS[currentId]);toast('تم حفظ التفاصيل ✔');refreshDetails();};
-/* ✔ حذف التفاصيل: متاح للمطور والمدير ✔ */
 $('btnDelDetails').onclick=async()=>{
   if(!canEdit())return toast('هذه الميزة للمطور/المدير 🔐','err');
   const ex=EXTRAS[currentId]||{};
@@ -453,14 +453,69 @@ $('btnDelDetails').onclick=async()=>{
 function renderImgs(){const im=IMAGES[currentId];
   $('imgsGrid').innerHTML=(im&&im.imgs&&im.imgs.length)?im.imgs.map((g,i)=>`<div class="imbig"><img src="${g.thumb}" alt="">${canEdit()?`<button data-delimg="${i}" title="حذف">✕</button>`:''}</div>`).join(''):'<p class="empty">لا توجد صور مرجعية بعد.</p>';
   updateImgsBtn();if(currentGroup)renderGroupContent();}
-$('imgsGrid').addEventListener('click',async e=>{const d=e.target.closest('[data-delimg]');if(!d||!canEdit())return;const idx=+d.dataset.delimg;const im=IMAGES[currentId];
-  const ok=await askConfirm('حذف هذه الصورة من الجهاز والمستودع؟');if(!ok)return;
-  im.imgs.splice(idx,1);if(!im.imgs.length){delete IMAGES[currentId];await dbDel('images',currentId);}else await dbPut('images',currentId,im);
-  renderImgs();toast('حُذفت محلياً 🗑 — جارٍ الحذف من المستودع…');await deleteImgFromServer(currentId);});
-async function deleteImgFromServer(id){const token=await ensureToken();if(!token)return toast('أدخل التوكن للحذف من المستودع','err');
-  try{const merged=await getServerImages(token);if(!merged[id]||!Array.isArray(merged[id].imgs))return toast('✔ حُذفت محلياً — غير موجودة بالمستودع');
-    const localNow=IMAGES[id]?IMAGES[id].imgs:[];const ts=new Set(localNow.map(g=>g.ts));merged[id].imgs=merged[id].imgs.filter(sg=>ts.has(sg.ts));if(!merged[id].imgs.length)delete merged[id];
-    await putJSON('data/images.json',merged,token);toast('✔ تم حذف الصورة من المستودع أيضاً');}catch(e){toast('فشل الحذف من المستودع: '+e.message,'err');}}
+
+/* ✔✔✔ تحسين حذف الصور: حذف صريح + cache busting ✔✔✔ */
+$('imgsGrid').addEventListener('click',async e=>{
+  const d=e.target.closest('[data-delimg]');
+  if(!d||!canEdit())return;
+  const idx=+d.dataset.delimg;
+  const im=IMAGES[currentId];
+  if(!im||!im.imgs||!im.imgs[idx])return;
+  
+  const ok=await askConfirm('حذف هذه الصورة من الجهاز والمستودع؟\n(قد تستغرق التحديثات حتى 5 دقائق للظهور للجميع بسبب cache GitHub)');
+  if(!ok)return;
+  
+  // حذف محلي
+  const deletedImg=im.imgs[idx];
+  im.imgs.splice(idx,1);
+  if(!im.imgs.length){delete IMAGES[currentId];await dbDel('images',currentId);}
+  else await dbPut('images',currentId,im);
+  renderImgs();
+  toast('حُذفت محلياً 🗑 — جارٍ الحذف من المستودع…');
+  
+  await deleteImgFromServer(currentId,deletedImg);
+});
+
+/* ✔✔✔ تحسين deleteImgFromServer: حذف صريح + cache busting ✔✔✔ */
+async function deleteImgFromServer(id,deletedImg){
+  const token=await ensureToken();
+  if(!token)return toast('أدخل التوكن للحذف من المستودع','err');
+  
+  try{
+    // جلب البيانات الحالية مع cache busting
+    const cacheBuster='?t='+Date.now();
+    const merged=await getServerImages(token);
+    
+    if(!merged[id]||!Array.isArray(merged[id].imgs)){
+      return toast('✔ حُذفت محلياً — الصورة غير موجودة بالمستودع');
+    }
+    
+    // حذف صريح بناءً على timestamp الصورة المحذوفة
+    const deletedTs=deletedImg.ts;
+    const beforeCount=merged[id].imgs.length;
+    merged[id].imgs=merged[id].imgs.filter(sg=>sg.ts!==deletedTs);
+    const afterCount=merged[id].imgs.length;
+    
+    if(beforeCount===afterCount){
+      // الصورة لم تُحذف - ربما timestamp مختلف
+      // حاول حذف بناءً على thumb match
+      const thumbMatch=merged[id].imgs.findIndex(sg=>sg.thumb===deletedImg.thumb);
+      if(thumbMatch>=0){
+        merged[id].imgs.splice(thumbMatch,1);
+      }else{
+        return toast('⚠ الصورة غير موجودة بالمستودع (ربما حُذفت سابقاً)');
+      }
+    }
+    
+    if(!merged[id].imgs.length)delete merged[id];
+    
+    await putJSON('data/images.json',merged,token);
+    toast('✔ تم حذف الصورة من المستودع أيضاً\n(قد تستغرق التحديثات حتى 5 دقائق للظهور للجميع بسبب cache GitHub)');
+  }catch(e){
+    console.error(e);
+    toast('فشل الحذف من المستودع: '+e.message,'err');
+  }
+}
 
 const nativeCam=document.createElement('input');nativeCam.type='file';nativeCam.accept='image/*';nativeCam.setAttribute('capture','environment');nativeCam.hidden=true;document.body.appendChild(nativeCam);
 nativeCam.addEventListener('change',async e=>{const f=e.target.files[0];nativeCam.value='';if(!f)return;route(await fileToOrientedDataUrl(f,900,.88));});
@@ -495,7 +550,7 @@ function ocrText(url,onP){return new Promise(async res=>{try{if(!window.Tesserac
 async function analyze(url,onP){onP&&onP('المحرك 1/3…',15);const emb=await getEmbed(url);onP&&onP('المحرك 2/3…',45);const hist=await histFrom(url);onP&&onP('المحرك 3/3…',65);const ocr=await ocrText(await scaleDataUrl(url,800,.85));const thumb=await scaleDataUrl(url,300,.8);return{thumb,emb:emb.map(v=>+v.toFixed(4)),hist,ocr,ts:Date.now()};}
 function setProc(w,t,p){const bar=w==='imgs'?$('procBar3'):$('procBar'),txt=w==='imgs'?$('procTxt3'):$('procTxt'),wrap=w==='imgs'?$('procProg3'):$('procProg');wrap.hidden=false;txt.textContent=t;bar.style.width=p+'%';}
 async function processAttach(url,which){
-  if(!canEdit())return toast('هذه الميزة لوضع المطور/المدير 🔐','err');
+  if(!canEdit())return toast('هذه الميزة للمطور/المدير 🔐','err');
   setProc(which,'جارٍ المعالجة…',5);
   try{
     const g=await analyze(url,(t,p)=>setProc(which,t,p));
@@ -554,12 +609,25 @@ async function attachTo(id){$('scanRes').hidden=true;$('scanProg').hidden=false;
   $('scanProg').hidden=true;}
 
 async function ensureToken(){let t=(localStorage.getItem('ghToken')||'').trim();if(t)return t;t=(prompt('🔑 أدخل Token GitHub (صلاحية Contents read/write):')||'').trim();if(!t)return null;localStorage.setItem('ghToken',t);return t;}
-async function getServerImages(token){let m={};try{const r=await fetch(SHARED_URL,{cache:'no-store'});if(r.ok){const d=await r.json();if(d&&typeof d==='object')m=d;}}catch(e){}return m;}
+
+/* ✔✔✔ تحسين getServerImages: cache busting ✔✔✔ */
+async function getServerImages(token){
+  let m={};
+  try{
+    const cacheBuster='?t='+Date.now();
+    const r=await fetch(SHARED_URL+cacheBuster,{cache:'no-store'});
+    if(r.ok){const d=await r.json();if(d&&typeof d==='object')m=d;}
+  }catch(e){}
+  return m;
+}
+
+/* ✔✔✔ تحسين putJSON: cache busting ✔✔✔ */
 async function putJSON(path,obj,token){
   const api='https://api.github.com/repos/'+REPO+'/contents/'+path;
-  let sha;const g=await fetch(api,{headers:{Authorization:'token '+token,Accept:'application/vnd.github+json'}});
+  let sha;
+  const g=await fetch(api,{headers:{Authorization:'token '+token,Accept:'application/vnd.github+json'}});
   if(g.ok){const gj=await g.json();sha=gj.sha;}
-  const put=await fetch(api,{method:'PUT',headers:{Authorization:'token '+token,Accept:'application/vnd.github+json','Content-Type':'application/json'},body:JSON.stringify({message:'sync '+path,content:b64encode(JSON.stringify(obj)),...(sha?{sha}:{})})});
+  const put=await fetch(api,{method:'PUT',headers:{Authorization:'token '+token,Accept:'application/vnd.github+json','Content-Type':'application/json'},body:JSON.stringify({message:'sync '+path+' '+Date.now(),content:b64encode(JSON.stringify(obj)),...(sha?{sha}:{})})});
   if(!put.ok){const er=await put.json().catch(()=>null);throw new Error((er&&er.message)||('HTTP '+put.status));}
 }
 async function encodeSmall(g){const small=await scaleDataUrl(g.thumb,110,.55);return{thumb:small,emb:g.emb.map(v=>+v.toFixed(3)),hist:g.hist,ocr:g.ocr||'',ts:g.ts||Date.now()};}
@@ -617,7 +685,6 @@ document.querySelectorAll('[data-close]').forEach(b=>b.onclick=()=>{const o=b.cl
 document.querySelectorAll('.overlay').forEach(o=>o.addEventListener('click',e=>{if(e.target!==o)return;if(o.id==='confirmModal'){$('confirmNo').click();return;}o.hidden=true;}));
 document.addEventListener('keydown',e=>{if(e.key==='Escape')closeTop();});
 
-/* ✔ الأدوار: مدير(97) / مطور(20) / مستخدم ✔ */
 function applyAdminUI(){
   document.querySelectorAll('[data-admin]').forEach(el=>el.hidden=!isAdmin);
   document.querySelectorAll('[data-dev]').forEach(el=>el.hidden=!canEdit());
