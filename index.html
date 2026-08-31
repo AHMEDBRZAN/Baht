@@ -223,11 +223,7 @@ textarea{width:100%;border:2px solid #e3e7f5;border-radius:12px;padding:10px;fon
       <textarea id="noteInput" placeholder="اكتب أي ملاحظات إضافية…"></textarea>
       <div class="row"><button class="btn pri" id="saveNote">💾 حفظ التفاصيل</button></div>
       <div class="row" data-dev><button class="btn dngr" id="btnDelDetails">🗑 حذف التفاصيل</button></div>
-      <div class="row" data-admin><button class="btn amb" id="camAttach2">📷 التقاط صورة</button><button class="btn ghost" id="fileAttach2">🖼 رفع صورة</button></div>
-      <div class="row" data-admin><button class="btn grn" id="btnPublish">📤 رفع الصور المرجعية</button></div>
       <p class="hint" data-admin>المدير مسؤول عن التعديلات — المطورون يحفظون التغيرات بزر «💾 حفظ التغيرات».</p>
-      <input type="file" id="fileAttachInput3" accept="image/*" hidden>
-      <div id="procProg" hidden><div class="bar"><i id="procBar"></i></div><p class="prog-txt" id="procTxt"></p></div>
     </div>
   </div>
 </div></div>
@@ -282,8 +278,6 @@ const REPO_URLS=['https://raw.githubusercontent.com/'+REPO+'/main/'+encodeURICom
  'https://raw.githubusercontent.com/'+REPO+'/master/'+encodeURIComponent(XLSX_NAME),
  'https://raw.githubusercontent.com/'+REPO+'/main/materials.xlsx',
  'https://raw.githubusercontent.com/'+REPO+'/main/data.xlsx'];
-const SHARED_URL='https://raw.githubusercontent.com/'+REPO+'/main/data/images.json';
-const EXTRAS_URL='https://raw.githubusercontent.com/'+REPO+'/main/data/extras.json';
 const INDEX_URL='https://raw.githubusercontent.com/'+REPO+'/main/index.html';
 const INDEX_API='https://api.github.com/repos/'+REPO+'/contents/index.html';
 
@@ -302,7 +296,7 @@ function parseNum(v){
   if(typeof v==='number')return isFinite(v)?v:0;
   let s=String(v).trim();
   if(!s)return 0;
-  s=s.replace(/[٠-٩]/g,d=>'٠١٢٣٤٥٦٧٨٩'.indexOf(d));
+  s=s.replace(/[٠-٩]/g,d=>'٠١٣٤٥٧٨٩'.indexOf(d));
   s=s.replace(/[,،\s]/g,'');
   const n=parseFloat(s);
   return isFinite(n)?n:0;
@@ -317,6 +311,7 @@ function textSim(a,b){const A=norm(a).split(' ').filter(w=>w.length>=3),B=norm(b
 const CHUNK=0x8000;
 function b64encode(str){const bytes=new TextEncoder().encode(str);let bin='';for(let i=0;i<bytes.length;i+=CHUNK){bin+=String.fromCharCode.apply(null,bytes.subarray(i,i+CHUNK));}return btoa(bin);}
 function bufToB64(buf){const bytes=new Uint8Array(buf);let bin='';for(let i=0;i<bytes.length;i+=CHUNK){bin+=String.fromCharCode.apply(null,bytes.subarray(i,i+CHUNK));}return btoa(bin);}
+function b64decode(b64){const bin=atob(b64);const bytes=Uint8Array.from(bin,c=>c.charCodeAt(0));return new TextDecoder().decode(bytes);}
 
 let dbP=null;
 function db(){if(!dbP)dbP=new Promise((res,rej)=>{const r=indexedDB.open('matSysDB',1);r.onupgradeneeded=()=>{const d=r.result;['files','extras','images'].forEach(s=>{if(!d.objectStoreNames.contains(s))d.createObjectStore(s);});};r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error);});return dbP;}
@@ -387,19 +382,40 @@ async function pushXlsxToRepo(buf){
   const put=await fetch(api,{method:'PUT',headers:{Authorization:'token '+token,Accept:'application/vnd.github+json','Content-Type':'application/json'},body:JSON.stringify({message:'update materials',content:bufToB64(buf),...(sha?{sha}:{})})});
   if(!put.ok){const er=await put.json().catch(()=>null);throw new Error((er&&er.message)||('HTTP '+put.status));}
 }
+
+/* ✔✔✔ جلب لحظي من GitHub API (بدون كاش) ✔✔✔ */
+async function fetchJSONFresh(path){
+  try{
+    const r=await fetch('https://api.github.com/repos/'+REPO+'/contents/'+path+'?t='+Date.now(),{cache:'no-store',headers:{'Accept':'application/vnd.github+json'}});
+    if(r.ok){const j=await r.json();if(j&&j.content){return JSON.parse(b64decode(j.content));}}
+  }catch(e){}
+  try{const r=await fetch('https://cdn.jsdelivr.net/gh/'+REPO+'@main/'+path+'?v='+Date.now(),{cache:'no-store'});if(r.ok)return await r.json();}catch(e){}
+  return null;
+}
+/* ✔✔✔ التحديث يستبدل المحلي بالكامل بآخر ما في المستودع (لا يعتمد على المحلي) ✔✔✔ */
 async function fetchSharedImages(){
-  let added=0,total=0;
-  try{const r=await fetch(SHARED_URL,{cache:'no-store'});if(r.ok){const data=await r.json();if(data&&typeof data==='object'){
-    for(const id of Object.keys(data)){const entry=data[id];if(!entry||!Array.isArray(entry.imgs))continue;const valid=entry.imgs.filter(validImg);total+=valid.length;if(!valid.length)continue;
-      if(!IMAGES[id]){IMAGES[id]={id,imgs:valid};added+=valid.length;}
-      else{const have=new Set(IMAGES[id].imgs.map(g=>g.ts));valid.forEach(g=>{if(!have.has(g.ts)){IMAGES[id].imgs.push(g);added++;}});}}}
-  }}catch(e){}
-  return {added,total};
+  let total=0;
+  try{
+    const data=await fetchJSONFresh('data/images.json');
+    if(data&&typeof data==='object'){
+      const fresh={};
+      for(const id of Object.keys(data)){const entry=data[id];if(!entry||!Array.isArray(entry.imgs))continue;const valid=entry.imgs.filter(validImg);if(!valid.length)continue;fresh[id]={id,imgs:valid};total+=valid.length;}
+      IMAGES=fresh;
+      try{const old=await dbGetAll('images');for(const v of old){if(!fresh[v.id])await dbDel('images',v.id);}for(const id of Object.keys(fresh)){await dbPut('images',fresh[id]);}}catch(e){}
+    }
+  }catch(e){}
+  return {total};
 }
 async function fetchSharedExtras(){
-  try{const r=await fetch(EXTRAS_URL,{cache:'no-store'});if(r.ok){const data=await r.json();if(data&&typeof data==='object'){
-    for(const id of Object.keys(data)){if(!EXTRAS[id]&&data[id]&&data[id].note)EXTRAS[id]={id,note:data[id].note};}
-  }}}catch(e){}
+  try{
+    const data=await fetchJSONFresh('data/extras.json');
+    if(data&&typeof data==='object'){
+      const fresh={};
+      for(const id of Object.keys(data)){if(data[id]&&data[id].note)fresh[id]={id,note:data[id].note};}
+      EXTRAS=fresh;
+      try{const old=await dbGetAll('extras');for(const v of old){if(!fresh[v.id])await dbDel('extras',v.id);}for(const id of Object.keys(fresh)){await dbPut('extras',fresh[id]);}}catch(e){}
+    }
+  }catch(e){}
 }
 
 $('compsBar').addEventListener('click',e=>{const c=e.target.closest('[data-open-group]');if(c)openGroupModal(c.dataset.openGroup);});
@@ -534,7 +550,7 @@ async function deleteImgFromServer(id,deletedImg){
   }
 }
 
-/* ✔✔✔ إصلاح الكاميرا النهائي: حقل جديد لكل ضغطة (يعمل على iOS ويطلق المعالجة فوراً) ✔✔✔ */
+/* ✔✔✔ الكاميرا: حقل جديد لكل ضغطة (يعمل على iOS) ✔✔✔ */
 function openNativeCam(m){
   camMode=m;
   const inp=document.createElement('input');
@@ -556,14 +572,10 @@ function openNativeCam(m){
   inp.addEventListener('cancel',cleanup);
   inp.click();
 }
-$('camAttach2').onclick=()=>openNativeCam('attach');
 $('camAttach3').onclick=()=>openNativeCam('attach');
 $('btnCamScan').onclick=()=>openNativeCam('scan');
-$('fileAttach2').onclick=()=>$('fileAttachInput3').click();
 $('fileAttach3').onclick=()=>$('fileAttachInput').click();
-$('fileAttachInput3').onchange=async e=>{const f=e.target.files[0];if(f)processAttach(await fileToOrientedDataUrl(f,900,.88));};
 $('fileAttachInput').onchange=async e=>{const f=e.target.files[0];if(f)processAttach(await fileToOrientedDataUrl(f,900,.88));};
-$('btnPublish').onclick=()=>publishCurrentMaterial();
 $('btnPublish2').onclick=()=>publishCurrentMaterial();
 function route(url){if(camMode==='attach'){if(!currentId)return toast('افتح المادة أولاً','err');if(!canEdit())return toast('هذه الميزة للمطور/المدير 🔐','err');processAttach(url);}else recognize(url);}
 function fileToOrientedDataUrl(file,maxW,q){
@@ -652,11 +664,7 @@ async function ensureToken(){let t=(localStorage.getItem('ghToken')||'').trim();
 
 async function getServerImages(token){
   let m={};
-  try{
-    const cacheBuster='?t='+Date.now();
-    const r=await fetch(SHARED_URL+cacheBuster,{cache:'no-store'});
-    if(r.ok){const d=await r.json();if(d&&typeof d==='object')m=d;}
-  }catch(e){}
+  try{const d=await fetchJSONFresh('data/images.json');if(d&&typeof d==='object')m=d;}catch(e){}
   return m;
 }
 
@@ -688,7 +696,7 @@ $('btnUserSync').onclick=async()=>{
     }
     await putJSON('data/images.json',merged,token);
     let mex={};
-    try{const r=await fetch(EXTRAS_URL,{cache:'no-store'});if(r.ok){mex=await r.json();}}catch(e){}
+    try{mex=await fetchJSONFresh('data/extras.json')||{};}catch(e){}
     let nE=0;
     for(const id of Object.keys(EXTRAS)){
       const note=EXTRAS[id]&&EXTRAS[id].note;
@@ -802,7 +810,8 @@ $('btnPublishCode').onclick=async()=>{const code=$('codeInput').value;if(code.le
 $('btnUpload').onclick=()=>$('filePick').click();
 $('filePick').onchange=async e=>{const f=e.target.files[0];if(!f)return;let buf;try{buf=await f.arrayBuffer();}catch(err){return toast('تعذر القراءة','err');}const rows=parseWorkbook(buf);if(!rows)return toast('ملف غير مدعوم','err');loadDataset(rows);try{localStorage.setItem('rowsCache',JSON.stringify(rows));}catch(err){}toast('تم تحميل «'+f.name+'» ✔');if(isAdmin){const ok=await askConfirm('نشر الملف واستبدال الموجود؟');if(ok){toast('جارٍ الرفع…');try{await pushXlsxToRepo(buf);toast('✔ استُبدل الملف');}catch(err){toast('فشل: '+err.message,'err');}}}};
 
-$('btnRepo').onclick=async()=>{toast('جارٍ الجلب…');let rc=0,ok=false;const buf=await fetchRepoFile();if(buf){const rows=parseWorkbook(buf);if(rows){loadDataset(rows);try{localStorage.setItem('rowsCache',JSON.stringify(rows));}catch(e){}ok=true;rc=rows.length;}}await fetchSharedExtras();const im=await fetchSharedImages();if(ok)toast('✔ '+rc+' مادة • '+im.total+' صورة');else if(im.total)toast('🖼 '+im.total+' صورة');else toast('تعذر الجلب','err');};
+/* ✔✔✔ تحديث من المستودع: يجلب آخر شيء ولا يعتمد على المحلي ✔✔✔ */
+$('btnRepo').onclick=async()=>{toast('جارٍ الجلب من المستودع…');let rc=0,ok=false;const buf=await fetchRepoFile();if(buf){const rows=parseWorkbook(buf);if(rows){loadDataset(rows);try{localStorage.setItem('rowsCache',JSON.stringify(rows));}catch(e){}ok=true;rc=rows.length;}}await fetchSharedExtras();const im=await fetchSharedImages();if(ok)toast('✔ '+rc+' مادة • '+im.total+' صورة (آخر نسخة من المستودع)');else if(im.total)toast('🖼 '+im.total+' صورة (آخر نسخة)');else toast('تعذر الجلب','err');};
 
 const MOD_ORDER=['confirmModal','loginModalDyn','codeModal','imgsModal','viewModal','imgsListModal','searchModal','scanModal','groupModal'];
 function closeTop(){const id=MOD_ORDER.find(x=>{const el=$(x);return el&&!el.hidden;});if(!id)return;$(id).hidden=true;}
