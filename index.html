@@ -73,7 +73,7 @@ main{max-width:960px;margin:0 auto;padding:14px 12px 60px}
 .m-body{overflow:auto;padding:0 0 16px;flex:1;overscroll-behavior:contain}
 .modal input[type=text],.modal input[type=password]{width:calc(100% - 32px);margin:0 16px;border:2px solid #e3e7f5;border-radius:12px;padding:11px 12px;font-family:inherit;font-size:14px;outline:none}
 textarea.code{width:calc(100% - 32px);margin:0 16px;font-family:'Courier New',monospace;font-size:11px;min-height:320px;direction:ltr;text-align:left;white-space:pre;border:2px solid #e3e7f5;border-radius:12px;padding:10px;outline:none;background:#0f1220;color:#d7e0ff}
-textarea.code.small{min-height:120px}
+textarea.code.small{min-height:100px;width:100%;margin:0}
 .g-tools{position:sticky;top:0;z-index:5;display:flex;gap:10px;flex-wrap:wrap;padding:12px 16px;background:#fff;border-bottom:1px solid #eef0f6}
 .gsearch{flex:1;min-width:180px;border:2px solid #e3e7f5;border-radius:12px;padding:10px 14px;font-family:inherit;font-size:13px;outline:none}
 .vtoggle{display:flex;background:#eef1f8;border-radius:12px;padding:3px}
@@ -101,9 +101,9 @@ textarea.code.small{min-height:120px}
 .vdetails .ln:last-child{border:none}.vdetails .ln b{color:var(--mut);min-width:95px;font-weight:800}
 .note{background:linear-gradient(135deg,#fff6dd,#ffedc2);border:2px solid #f0c64a;border-radius:14px;padding:12px;margin-top:10px;white-space:pre-wrap;font-weight:700;font-size:14px;color:#6b4d0f}
 .row{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;padding:0 16px}.row .btn{flex:1}
-label{display:block;font-size:13px;font-weight:800;margin:12px 16px 6px}
-textarea{width:calc(100% - 32px);margin:0 16px;border:2px solid #e3e7f5;border-radius:12px;padding:10px;font-family:inherit;font-size:13px;min-height:70px;resize:vertical;outline:none}
-#maintSec{background:#f6f8ff;border:1px solid #e3e7f5;border-radius:16px;padding:12px 0 4px;margin:12px 16px 0}
+label{display:block;font-size:13px;font-weight:800;margin:12px 0 6px}
+textarea{width:100%;border:2px solid #e3e7f5;border-radius:12px;padding:10px;font-family:inherit;font-size:13px;min-height:70px;resize:vertical;outline:none}
+#maintSec{background:#f6f8ff;border:1px solid #e3e7f5;border-radius:16px;padding:12px 14px;margin:12px 16px 0}
 .bar{height:8px;background:#e5e9f5;border-radius:8px;overflow:hidden;margin-top:10px}
 .bar i{display:block;height:100%;width:0;background:var(--pri);transition:width .3s}
 .prog-txt{text-align:center;font-size:12.5px;color:var(--mut);margin:6px 0 0;font-weight:700}
@@ -131,6 +131,10 @@ textarea{width:calc(100% - 32px);margin:0 16px;border:2px solid #e3e7f5;border-r
 .math-eq{margin:0 0 6px}
 .math-input{width:150px;font-size:24px;letter-spacing:6px;font-weight:800;text-align:center;border:2px solid #e3e7f5;border-radius:14px;padding:12px 10px;background:#f8f9ff;color:var(--pri2);outline:none;font-family:'Courier New',monospace}
 .math-input:focus{border-color:var(--pri);background:#fff;box-shadow:0 0 0 4px rgba(79,70,229,.12)}
+.partial-row{border:2px solid #e3e7f5;border-radius:16px;padding:14px;margin-bottom:12px;background:#f8f9ff;position:relative}
+.partial-row .ph{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+.partial-row .ph strong{color:var(--pri2)}
+.partial-row .rm-btn{background:var(--dng);color:#fff;border:none;border-radius:10px;padding:6px 12px;font-size:12px;font-weight:800;cursor:pointer}
 </style>
 </head>
 <body>
@@ -142,9 +146,8 @@ textarea{width:calc(100% - 32px);margin:0 16px;border:2px solid #e3e7f5;border-r
     </div>
     <div class="hbtns" id="toolsBox" hidden>
       <button class="btn pri" id="btnRepo">🔄 تحديث من المستودع</button>
-      <button class="btn upload" id="btnUserSync" data-dev>💾 حفظ الصور وتفاصيل</button>
+      <button class="btn upload" id="btnUserSync" data-dev>💾 حفظ التغيرات</button>
       <button class="btn upload" id="btnUpload" data-admin>📂 رفع ملف (ونشره)</button>
-      <button class="btn grn" id="btnSync" data-admin>☁️ مزامنة الصور</button>
       <button class="btn imgs" id="btnImgsList" data-admin>🖼 مواد مرفقة بالصور</button>
       <button class="btn code" id="btnEditCode" data-admin>📝 تغيير الكود</button>
       <button class="btn dngr" id="btnLogout" data-dev>🚪 خروج</button>
@@ -177,14 +180,15 @@ textarea{width:calc(100% - 32px);margin:0 16px;border:2px solid #e3e7f5;border-r
 <div class="overlay" id="codeModal" hidden><div class="modal wide">
   <div class="m-head"><h2>📝 تغيير كود index.html</h2><button class="x" data-close>✕</button></div>
   <div class="m-body">
-    <p class="hint">الصق الكود الكامل ثم «🚀 نشر».</p>
+    <p class="hint">الصق الكود الكامل ثم «🚀 نشر»، أو استخدم تعديل متعدد الأجزاء.</p>
     <textarea id="codeInput" class="code" spellcheck="false"></textarea>
     <div class="row"><button class="btn ghost" id="btnFetchCode">⬇ جلب الكود الحالي</button><button class="btn pri" id="btnPublishCode">🚀 نشر إلى المستودع</button></div>
-    <div class="row"><button class="btn amb" id="btnPartial">✏️ تعديل جزء من الكود</button></div>
+    <div class="row"><button class="btn amb" id="btnPartial">✏️ تعديل متعدد الأجزاء</button></div>
     <div id="partialSec" hidden>
-      <label>الجزء القديم</label><textarea id="codeOld" class="code small" spellcheck="false"></textarea>
-      <label>الجزء الجديد</label><textarea id="codeNew" class="code small" spellcheck="false"></textarea>
-      <div class="row"><button class="btn amb" id="btnPartialPublish">🔁 استبدال ونشر</button></div>
+      <p class="hint">أضف تغييراً أو أكثر — ستُستبدل جميعها في تعديل واحد لضمان عدم تضارب الكود.</p>
+      <div id="partialList" style="padding:0 16px"></div>
+      <div class="row"><button class="btn ghost" id="btnAddPartial">➕ إضافة تغيير آخر</button></div>
+      <div class="row"><button class="btn amb" id="btnPartialPublish">🔁 استبدال الكل ونشر</button></div>
     </div>
   </div>
 </div></div>
@@ -220,7 +224,7 @@ textarea{width:calc(100% - 32px);margin:0 16px;border:2px solid #e3e7f5;border-r
       <div class="row" data-dev><button class="btn dngr" id="btnDelDetails">🗑 حذف التفاصيل</button></div>
       <div class="row" data-admin><button class="btn amb" id="camAttach2">📷 التقاط صورة</button><button class="btn ghost" id="fileAttach2">🖼 رفع صورة</button></div>
       <div class="row" data-admin><button class="btn grn" id="btnPublish">📤 رفع الصور المرجعية</button></div>
-      <p class="hint" data-admin>المدير مسؤول عن التعديلات والرفع — المستخدمون يجلبون النتائج تلقائياً.</p>
+      <p class="hint" data-admin>المدير مسؤول عن التعديلات والرفع — المطورون يحفظون التغيرات بزر «💾 حفظ التغيرات».</p>
       <input type="file" id="fileAttachInput3" accept="image/*" hidden>
       <div id="procProg" hidden><div class="bar"><i id="procBar"></i></div><p class="prog-txt" id="procTxt"></p></div>
     </div>
@@ -233,7 +237,7 @@ textarea{width:calc(100% - 32px);margin:0 16px;border:2px solid #e3e7f5;border-r
     <div id="imgsGrid"></div>
     <div class="row" data-dev style="padding:0"><button class="btn amb" id="camAttach3">📷 التقط صورة</button><button class="btn ghost" id="fileAttach3">🖼 رفع صورة</button></div>
     <div class="row" data-admin style="padding:0"><button class="btn grn" id="btnPublish2">📤 رفع الصور المرجعية</button></div>
-    <p class="hint" data-dev>صوّر المادة ثم ارفعها للجميع عبر زر «💾 حفظ الصور وتفاصيل» في الأدوات.</p>
+    <p class="hint" data-dev>صوّر المادة ثم احفظ التغيرات للجميع عبر زر «💾 حفظ التغيرات» في الأدوات.</p>
     <input type="file" id="fileAttachInput" accept="image/*" hidden>
     <div id="procProg3" hidden><div class="bar"><i id="procBar3"></i></div><p class="prog-txt" id="procTxt3"></p></div>
   </div></div>
@@ -287,11 +291,23 @@ let currentId=null,currentGroup=null,model=null,tfOk=false,camMode=null,lastScan
 let isAdmin=sessionStorage.getItem('isAdmin')==='1';
 let isDev=sessionStorage.getItem('isDev')==='1';
 function canEdit(){return isAdmin||isDev;}
+let partialRows=[{old:'',new:''}];
 
 function toast(m,t){const e=$('toast');e.textContent=m;e.className=t||'';e.hidden=false;clearTimeout(e._h);e._h=setTimeout(()=>e.hidden=true,5000);}
 function esc(s){return (s??'').toString().replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
 function short(s,n){n=n||42;s=s??'';return s.length>n?s.slice(0,n)+'…':s;}
-function parseNum(v){if(typeof v==='number')return isFinite(v)?v:0;if(v==null)return 0;let s=String(v).replace(/[٠-٩]/g,d=>'٠١٢٣٤٥٦٧٨٩'.indexOf(d)).replace(/[,،\s]/g,'');const n=parseFloat(s);return isFinite(n)?n:0;}
+function parseNum(v){
+  if(v===null||v===undefined||v==='')return 0;
+  if(typeof v==='number')return isFinite(v)?v:0;
+  let s=String(v).trim();
+  if(!s)return 0;
+  // Arabic digits to Latin
+  s=s.replace(/[٠-٩]/g,d=>'٠١٢٣٤٥٦٧٨٩'.indexOf(d));
+  // Remove commas and spaces
+  s=s.replace(/[,،\s]/g,'');
+  const n=parseFloat(s);
+  return isFinite(n)?n:0;
+}
 function fm(n){n=parseNum(n);return n?n.toLocaleString('en-US',{maximumFractionDigits:2}):'0';}
 function norm(s){return (s||'').toLowerCase().replace(/[\u064B-\u0652\u0640]/g,'').replace(/[أإآ]/g,'ا').replace(/ة/g,'ه').replace(/ى/g,'ي').replace(/[^\p{L}\p{N}]+/gu,' ').trim();}
 function lev(a,b){a=a||'';b=b||'';if(a===b)return 0;const m=a.length,n=b.length;if(!m||!n)return m||n;let p=Array.from({length:n+1},(_,i)=>i);for(let i=1;i<=m;i++){const c=[i];for(let j=1;j<=n;j++)c[j]=Math.min(p[j]+1,c[j-1]+1,p[j-1]+(a[i-1]===b[j-1]?0:1));p=c;}return p[n];}
@@ -309,22 +325,59 @@ async function dbGetAll(s){const d=await db();return new Promise(res=>{const q=d
 async function dbPut(s,k,v){const d=await db();return new Promise(res=>{const t=d.transaction(s,'readwrite');t.objectStore(s).put(v,k);t.oncomplete=res;});}
 async function dbDel(s,k){const d=await db();return new Promise(res=>{const t=d.transaction(s,'readwrite');t.objectStore(s).delete(k);t.oncomplete=res;});}
 
+/* ✔✔✔ قراءة الملف محسّنة: تأكيد قراءة الكمية والسعر بشكل دقيق ✔✔✔ */
 function parseWorkbook(buf){
   try{
     const wb=XLSX.read(new Uint8Array(buf),{type:'array'});
+    if(!wb||!wb.SheetNames||!wb.SheetNames.length)return null;
     const ws=wb.Sheets[wb.SheetNames[0]];
-    const arr=XLSX.utils.sheet_to_json(ws,{header:1,defval:''});
+    if(!ws)return null;
+    const arr=XLSX.utils.sheet_to_json(ws,{header:1,defval:'',raw:true});
     let hi=-1,col={};
-    for(let i=0;i<Math.min(arr.length,30);i++){const cells=arr[i].map(c=>String(c).trim());if(cells.includes('اسم المادة')){hi=i;cells.forEach((c,j)=>col[c]=j);break;}}
-    if(hi<0)return null;
-    const g=k=>col[k]??-1,rows=[];
-    for(let i=hi+1;i<arr.length;i++){const r=arr[i];const name=String(r[g('اسم المادة')]??'').trim();
-      if(!name||name==='اسم المادة')continue;
+    // Find header row
+    for(let i=0;i<Math.min(arr.length,50);i++){
+      const cells=(arr[i]||[]).map(c=>String(c||'').trim());
+      if(cells.includes('اسم المادة')){
+        hi=i;
+        cells.forEach((c,j)=>{if(c)col[c]=j;});
+        break;
+      }
+    }
+    if(hi<0){
+      // Fallback: try first row as header
+      const cells=(arr[0]||[]).map(c=>String(c||'').trim());
+      if(cells.includes('اسم المادة')){
+        hi=0;
+        cells.forEach((c,j)=>{if(c)col[c]=j;});
+      }else{
+        return null;
+      }
+    }
+    const g=k=>(k in col)?col[k]:-1;
+    const rows=[];
+    for(let i=hi+1;i<arr.length;i++){
+      const r=arr[i];
+      if(!r||!Array.isArray(r))continue;
+      const name=String(r[g('اسم المادة')]??'').trim();
+      if(!name||name==='اسم المادة'||name==='المجموع')continue;
       const code=String(r[g('الرمز')]??'').trim();
-      rows.push({id:code?('c'+code):('r'+i),seq:String(r[g('#')]??'').trim(),code,name,unit:String(r[g('الوحدة')]??'').trim(),sell:parseNum(r[g('سعر المبيع')]),group:String(r[g('بطاقة مجموعة')]??'').trim(),latin:String(r[g('الاسم اللاتيني')]??'').trim(),qty:parseNum(r[g('الكمية')]),barcode:String(r[g('الباركود')]??'').replace(/;/g,'').trim()});
+      const qty=parseNum(r[g('الكمية')]);
+      const sell=parseNum(r[g('سعر المبيع')]);
+      rows.push({
+        id:code?('c'+code):('r'+i),
+        seq:String(r[g('#')]??'').trim(),
+        code,
+        name,
+        unit:String(r[g('الوحدة')]??'').trim(),
+        sell,
+        group:String(r[g('بطاقة مجموعة')]??'').trim(),
+        latin:String(r[g('الاسم اللاتيني')]??'').trim(),
+        qty,
+        barcode:String(r[g('الباركود')]??'').replace(/;/g,'').trim()
+      });
     }
     return rows.length?rows:null;
-  }catch(e){return null;}
+  }catch(e){console.error('parseWorkbook error:',e);return null;}
 }
 function loadDataset(rows){
   ROWS=rows;ROWMAP={};ROWS.forEach(r=>{r.n=norm(r.name);r.ln=norm(r.latin);ROWMAP[r.id]=r;});
@@ -433,7 +486,7 @@ function openView(id){const r=ROWMAP[id];if(!r)return;currentId=id;
   updateImgsBtn();}
 $('btnImgs').onclick=()=>{$('imgsTitle').textContent='🖼 الصور المرجعية — '+(ROWMAP[currentId]?ROWMAP[currentId].name:'');$('imgsModal').hidden=false;renderImgs();};
 $('btnMaint').onclick=()=>{$('maintSec').hidden=!$('maintSec').hidden;};
-$('saveNote').onclick=async()=>{const n=$('noteInput').value.trim();EXTRAS[currentId]=Object.assign({},EXTRAS[currentId],{id:currentId,note:n});await dbPut('extras',currentId,EXTRAS[currentId]);toast('تم حفظ التفاصيل ✔');refreshDetails();};
+$('saveNote').onclick=async()=>{const n=$('noteInput').value.trim();EXTRAS[currentId]=Object.assign({},EXTRAS[currentId]||{},{id:currentId,note:n});await dbPut('extras',currentId,EXTRAS[currentId]);toast('تم حفظ التفاصيل ✔');refreshDetails();};
 $('btnDelDetails').onclick=async()=>{
   if(!canEdit())return toast('هذه الميزة للمطور/المدير 🔐','err');
   const ex=EXTRAS[currentId]||{};
@@ -454,7 +507,6 @@ function renderImgs(){const im=IMAGES[currentId];
   $('imgsGrid').innerHTML=(im&&im.imgs&&im.imgs.length)?im.imgs.map((g,i)=>`<div class="imbig"><img src="${g.thumb}" alt="">${canEdit()?`<button data-delimg="${i}" title="حذف">✕</button>`:''}</div>`).join(''):'<p class="empty">لا توجد صور مرجعية بعد.</p>';
   updateImgsBtn();if(currentGroup)renderGroupContent();}
 
-/* ✔✔✔ حذف الصور: تأكيد بسيط + رسالة نجاح ✔✔✔ */
 $('imgsGrid').addEventListener('click',async e=>{
   const d=e.target.closest('[data-delimg]');
   if(!d||!canEdit())return;
@@ -550,7 +602,7 @@ async function processAttach(url,which){
     IMAGES[currentId].imgs.push(g);
     await dbPut('images',currentId,IMAGES[currentId]);
     setProc(which,'✔ تمت المعالجة',100);setTimeout(()=>{$('procProg').hidden=true;$('procProg3').hidden=true;},1200);
-    renderImgs();toast('تمت معالجة الصورة ✔ — اضغط 💾 حفظ الصور وتفاصيل لنشرها');
+    renderImgs();toast('تمت معالجة الصورة ✔ — اضغط 💾 حفظ التغيرات لنشرها');
   }catch(e){$('procProg').hidden=true;$('procProg3').hidden=true;toast('خطأ: '+e.message,'err');}
 }
 
@@ -622,10 +674,11 @@ async function putJSON(path,obj,token){
 }
 async function encodeSmall(g){const small=await scaleDataUrl(g.thumb,110,.55);return{thumb:small,emb:g.emb.map(v=>+v.toFixed(3)),hist:g.hist,ocr:g.ocr||'',ts:g.ts||Date.now()};}
 
+/* ✔✔✔ حفظ التغيرات (بدل حفظ الصور وتفاصيل): يرفع كل الصور + كل التفاصيل ✔✔✔ */
 $('btnUserSync').onclick=async()=>{
   if(!canEdit())return toast('هذه الميزة لوضع المطور 🔐','err');
   const token=await ensureToken();if(!token)return toast('أدخل التوكن','err');
-  toast('جارٍ حفظ الصور والتفاصيل…');
+  toast('جارٍ حفظ التغيرات…');
   try{
     const merged=await getServerImages(token);
     let nI=0;
@@ -648,24 +701,112 @@ $('btnUserSync').onclick=async()=>{
       if(!mex[id]||mex[id].note!==note){mex[id]={id,note};nE++;}
     }
     await putJSON('data/extras.json',mex,token);
-    toast('✔ حُفظت '+nI+' صورة و '+nE+' تفاصيل في المستودع — متاحة للجميع');
+    toast('✔ حُفظت التغيرات ('+nI+' صورة + '+nE+' تفاصيل) — ستظهر للجميع خلال دقائق');
   }catch(e){toast('فشل الحفظ: '+e.message,'err');}
 };
 
-async function publishAllImages(){if(!isAdmin)return toast('للمدير فقط 🔐','err');const ids=Object.keys(IMAGES).filter(hasImg);if(!ids.length)return toast('لا توجد صور للنشر','err');const token=await ensureToken();if(!token)return toast('أدخل التوكن','err');toast('جارٍ النشر…');const merged=await getServerImages(token);let nM=0,rM=0,nI=0;
-  for(const id of ids){const local=IMAGES[id].imgs;const have=(merged[id]&&Array.isArray(merged[id].imgs))?merged[id].imgs:[];const hTs=new Set(have.map(g=>g.ts));const nw=local.filter(g=>!hTs.has(g.ts));nI+=nw.length;if(have.length)rM++;else nM++;const keep=have.filter(hg=>local.some(l=>l.ts===hg.ts));const sm=[];for(const g of nw)sm.push(await encodeSmall(g));merged[id]={imgs:keep.concat(sm)};}
-  try{await putJSON('data/images.json',merged,token);toast('✔ رُفعت '+ids.length+' مادة (+'+nM+' جديدة) واستبدال '+rM+' • '+nI+' صورة');}catch(e){toast('فشل: '+e.message,'err');}}
 async function publishCurrentMaterial(){if(!isAdmin)return toast('للمدير فقط 🔐','err');if(!currentId||!hasImg(currentId))return toast('لا توجد صور','err');const token=await ensureToken();if(!token)return toast('أدخل التوكن','err');toast('جارٍ رفع صور المادة…');const merged=await getServerImages(token);const local=IMAGES[currentId].imgs;const have=(merged[currentId]&&Array.isArray(merged[currentId].imgs))?merged[currentId].imgs:[];const hTs=new Set(have.map(g=>g.ts));const nw=local.filter(g=>!hTs.has(g.ts));const keep=have.filter(hg=>local.some(l=>l.ts===hg.ts));const sm=[];for(const g of nw)sm.push(await encodeSmall(g));merged[currentId]={imgs:keep.concat(sm)};
   try{await putJSON('data/images.json',merged,token);toast('✔ رُفعت صور «'+(ROWMAP[currentId]?ROWMAP[currentId].name:'')+'» — '+local.length+' صورة');}catch(e){toast('فشل: '+e.message,'err');}}
 
-$('btnEditCode').onclick=()=>{$('codeModal').hidden=false;$('codeInput').value='';$('partialSec').hidden=true;};
+/* ✔✔✔ تعديل جزء من الكود: متعدد الأجزاء مع إضافة/حذف صفوف ✔✔✔ */
+function renderPartialRows(){
+  const list=$('partialList');
+  list.innerHTML=partialRows.map((r,i)=>`
+    <div class="partial-row">
+      <div class="ph">
+        <strong>تغيير ${i+1}</strong>
+        ${partialRows.length>1?`<button class="rm-btn" data-rm="${i}">🗑 حذف</button>`:''}
+      </div>
+      <label>الجزء القديم (الموجود في الكود)</label>
+      <textarea class="code small" data-old="${i}" spellcheck="false"></textarea>
+      <label>الجزء الجديد (البديل)</label>
+      <textarea class="code small" data-new="${i}" spellcheck="false"></textarea>
+    </div>
+  `).join('');
+  partialRows.forEach((r,i)=>{
+    const oldEl=list.querySelector(`[data-old="${i}"]`);
+    const newEl=list.querySelector(`[data-new="${i}"]`);
+    if(oldEl)oldEl.value=r.old||'';
+    if(newEl)newEl.value=r.new||'';
+  });
+  list.querySelectorAll('[data-old]').forEach(el=>{
+    el.addEventListener('input',e=>{const i=+e.target.dataset.old;partialRows[i].old=e.target.value;});
+  });
+  list.querySelectorAll('[data-new]').forEach(el=>{
+    el.addEventListener('input',e=>{const i=+e.target.dataset.new;partialRows[i].new=e.target.value;});
+  });
+  list.querySelectorAll('[data-rm]').forEach(el=>{
+    el.onclick=e=>{const i=+e.target.dataset.rm;partialRows.splice(i,1);renderPartialRows();};
+  });
+}
+function addPartialRow(){partialRows.push({old:'',new:''});renderPartialRows();}
+
+$('btnEditCode').onclick=()=>{$('codeModal').hidden=false;$('codeInput').value='';$('partialSec').hidden=true;partialRows=[{old:'',new:''}];};
 $('btnFetchCode').onclick=async()=>{toast('جارٍ الجلب…');try{const r=await fetch(INDEX_URL,{cache:'no-store'});if(!r.ok)throw new Error('HTTP '+r.status);$('codeInput').value=await r.text();toast('تم الجلب ✔');}catch(e){toast('فشل: '+e.message,'err');}};
-$('btnPartial').onclick=()=>{$('partialSec').hidden=!$('partialSec').hidden;};
-$('btnPartialPublish').onclick=async()=>{const o=$('codeOld').value,n=$('codeNew').value;if(!o)return toast('أدخل الجزء القديم','err');const ok=await askConfirm('استبدال الجزء ونشره؟');if(!ok)return;const token=await ensureToken();if(!token)return toast('أدخل التوكن','err');toast('جارٍ الجلب…');try{const r=await fetch(INDEX_URL,{cache:'no-store'});if(!r.ok)throw new Error('HTTP '+r.status);let code=await r.text();if(!code.includes(o))return toast('⚠ الجزء القديم غير موجود','err');const c=code.split(o).length-1;code=code.split(o).join(n);let sha;const g=await fetch(INDEX_API,{headers:{Authorization:'token '+token,Accept:'application/vnd.github+json'}});if(g.ok){sha=(await g.json()).sha;}const put=await fetch(INDEX_API,{method:'PUT',headers:{Authorization:'token '+token,Accept:'application/vnd.github+json','Content-Type':'application/json'},body:JSON.stringify({message:'partial edit ('+c+')',content:b64encode(code),...(sha?{sha}:{})})});if(!put.ok)throw new Error('HTTP '+put.status);toast('✔ استُبدل '+c+' موضع ونُشر');setTimeout(()=>{$('codeModal').hidden=true;},800);}catch(e){toast('فشل: '+e.message,'err');}};
+$('btnPartial').onclick=()=>{
+  $('partialSec').hidden=!$('partialSec').hidden;
+  if(!$('partialSec').hidden){
+    if(!partialRows.length)partialRows=[{old:'',new:''}];
+    renderPartialRows();
+  }
+};
+$('btnAddPartial').onclick=addPartialRow;
+$('btnPartialPublish').onclick=async()=>{
+  // Collect all pairs
+  const pairs=partialRows.filter(r=>r.old&&r.old.trim());
+  if(!pairs.length)return toast('أدخل جزءاً واحداً على الأقل','err');
+  
+  const ok=await askConfirm(`استبدال ${pairs.length} جزء في تعديل واحد ونشره؟\n(هذا يضمن عدم تضارب الكود)`);
+  if(!ok)return;
+  
+  const token=await ensureToken();
+  if(!token)return toast('أدخل التوكن','err');
+  
+  toast('جارٍ الجلب…');
+  try{
+    const r=await fetch(INDEX_URL,{cache:'no-store'});
+    if(!r.ok)throw new Error('HTTP '+r.status);
+    let code=await r.text();
+    
+    // Apply all replacements sequentially
+    let totalReplacements=0;
+    for(let i=0;i<pairs.length;i++){
+      const pair=pairs[i];
+      if(!code.includes(pair.old)){
+        return toast(`⚠ الجزء القديم غير موجود في التغيير ${i+1}:\n"${short(pair.old,50)}"`,'err');
+      }
+      const count=code.split(pair.old).length-1;
+      code=code.split(pair.old).join(pair.new);
+      totalReplacements+=count;
+    }
+    
+    // Get sha and publish
+    let sha;
+    const g=await fetch(INDEX_API,{headers:{Authorization:'token '+token,Accept:'application/vnd.github+json'}});
+    if(g.ok)sha=(await g.json()).sha;
+    
+    const put=await fetch(INDEX_API,{
+      method:'PUT',
+      headers:{Authorization:'token '+token,Accept:'application/vnd.github+json','Content-Type':'application/json'},
+      body:JSON.stringify({
+        message:`partial edit (${totalReplacements} replacements in ${pairs.length} parts)`,
+        content:b64encode(code),
+        ...(sha?{sha}:{})
+      })
+    });
+    
+    if(!put.ok)throw new Error('HTTP '+put.status);
+    toast(`✔ استُبدل ${totalReplacements} موضع من ${pairs.length} تغيير ونُشر بنجاح`);
+    partialRows=[{old:'',new:''}];
+    setTimeout(()=>$('codeModal').hidden=true,800);
+  }catch(e){
+    toast('فشل: '+e.message,'err');
+  }
+};
 $('btnPublishCode').onclick=async()=>{const code=$('codeInput').value;if(code.length<200)return toast('الكود قصير','err');if(!/<!DOCTYPE html>/i.test(code))return toast('ليس HTML صحيحاً','err');const ok=await askConfirm('استبدال index.html؟');if(!ok)return;const token=await ensureToken();if(!token)return toast('أدخل التوكن','err');toast('جارٍ النشر…');try{let sha;const g=await fetch(INDEX_API,{headers:{Authorization:'token '+token,Accept:'application/vnd.github+json'}});if(g.ok){sha=(await g.json()).sha;}const put=await fetch(INDEX_API,{method:'PUT',headers:{Authorization:'token '+token,Accept:'application/vnd.github+json','Content-Type':'application/json'},body:JSON.stringify({message:'update index.html',content:b64encode(code),...(sha?{sha}:{})})});if(!put.ok)throw new Error('HTTP '+put.status);toast('✔ نُشر الكود');setTimeout(()=>{$('codeModal').hidden=true;},800);}catch(e){toast('فشل: '+e.message,'err');}};
 
 $('btnUpload').onclick=()=>$('filePick').click();
-$('filePick').onchange=async e=>{const f=e.target.files[0];if(!f)return;let buf;try{buf=await f.arrayBuffer();}catch(err){return toast('تعذر القراءة','err');}const rows=parseWorkbook(buf);if(!rows)return toast('ملف غير مدعوم','err');loadDataset(rows);try{localStorage.setItem('rowsCache',JSON.stringify(rows));}catch(err){}toast('تم تحميل «'+f.name+'» ✔');if(isAdmin){const ok=await askConfirm('نشر الملف واستبدال الموجود؟');if(ok){toast('جارٍ الرفع…');try{await pushXlsxToRepo(buf);toast('✔ استُبدل الملف');}catch(err){toast('فشل: '+err.message,'err');}}}};
+$('filePick').onchange=async e=>{const f=e.target.files[0];if(!f)return;let buf;try{buf=await f.arrayBuffer();}catch(err){return toast('تعذر القراءة','err');}const rows=parseWorkbook(buf);if(!rows)return toast('ملف غير مدعوم — تأكد من وجود عمود "اسم المادة"','err');loadDataset(rows);try{localStorage.setItem('rowsCache',JSON.stringify(rows));}catch(err){}toast('تم تحميل «'+f.name+'» — '+rows.length+' مادة ✔');if(isAdmin){const ok=await askConfirm('نشر الملف واستبدال الموجود؟');if(ok){toast('جارٍ الرفع…');try{await pushXlsxToRepo(buf);toast('✔ استُبدل الملف');}catch(err){toast('فشل: '+err.message,'err');}}}};
 
 $('btnRepo').onclick=async()=>{toast('جارٍ الجلب…');let rc=0,ok=false;const buf=await fetchRepoFile();if(buf){const rows=parseWorkbook(buf);if(rows){loadDataset(rows);try{localStorage.setItem('rowsCache',JSON.stringify(rows));}catch(e){}ok=true;rc=rows.length;}}await fetchSharedExtras();const im=await fetchSharedImages();if(ok)toast('✔ '+rc+' مادة • '+im.total+' صورة');else if(im.total)toast('🖼 '+im.total+' صورة');else toast('تعذر الجلب','err');};
 
