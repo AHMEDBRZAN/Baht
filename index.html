@@ -148,7 +148,6 @@ textarea{width:100%;border:2px solid #e3e7f5;border-radius:12px;padding:10px;fon
       <button class="btn pri" id="btnRepo">🔄 تحديث من المستودع</button>
       <button class="btn upload" id="btnUserSync" data-dev>💾 حفظ التغيرات</button>
       <button class="btn upload" id="btnUpload" data-admin>📂 رفع ملف (ونشره)</button>
-      <button class="btn grn" id="btnSync" data-admin>☁️ مزامنة الصور</button>
       <button class="btn imgs" id="btnImgsList" data-admin>🖼 مواد مرفقة بالصور</button>
       <button class="btn code" id="btnEditCode" data-admin>📝 تغيير الكود</button>
       <button class="btn dngr" id="btnLogout" data-dev>🚪 خروج</button>
@@ -701,9 +700,6 @@ $('btnUserSync').onclick=async()=>{
   }catch(e){toast('فشل الحفظ: '+e.message,'err');}
 };
 
-async function publishAllImages(){if(!isAdmin)return toast('للمدير فقط 🔐','err');const ids=Object.keys(IMAGES).filter(hasImg);if(!ids.length)return toast('لا توجد صور للنشر','err');const token=await ensureToken();if(!token)return toast('أدخل التوكن','err');toast('جارٍ النشر…');const merged=await getServerImages(token);let nM=0,rM=0,nI=0;
-  for(const id of ids){const local=IMAGES[id].imgs;const have=(merged[id]&&Array.isArray(merged[id].imgs))?merged[id].imgs:[];const hTs=new Set(have.map(g=>g.ts));const nw=local.filter(g=>!hTs.has(g.ts));nI+=nw.length;if(have.length)rM++;else nM++;const keep=have.filter(hg=>local.some(l=>l.ts===hg.ts));const sm=[];for(const g of nw)sm.push(await encodeSmall(g));merged[id]={imgs:keep.concat(sm)};}
-  try{await putJSON('data/images.json',merged,token);toast('✔ رُفعت '+ids.length+' مادة (+'+nM+' جديدة) واستبدال '+rM+' • '+nI+' صورة');}catch(e){toast('فشل: '+e.message,'err');}}
 async function publishCurrentMaterial(){if(!isAdmin)return toast('للمدير فقط 🔐','err');if(!currentId||!hasImg(currentId))return toast('لا توجد صور','err');const token=await ensureToken();if(!token)return toast('أدخل التوكن','err');toast('جارٍ رفع صور المادة…');const merged=await getServerImages(token);const local=IMAGES[currentId].imgs;const have=(merged[currentId]&&Array.isArray(merged[currentId].imgs))?merged[currentId].imgs:[];const hTs=new Set(have.map(g=>g.ts));const nw=local.filter(g=>!hTs.has(g.ts));const keep=have.filter(hg=>local.some(l=>l.ts===hg.ts));const sm=[];for(const g of nw)sm.push(await encodeSmall(g));merged[currentId]={imgs:keep.concat(sm)};
   try{await putJSON('data/images.json',merged,token);toast('✔ رُفعت صور «'+(ROWMAP[currentId]?ROWMAP[currentId].name:'')+'» — '+local.length+' صورة');}catch(e){toast('فشل: '+e.message,'err');}}
 
